@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>차트토템</title>
+<meta name="description" content="책상에 세워두는 투자자의 작은 토템 — 차트토템 기기 관리">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="theme-color" content="#4FBF9A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="차트토템">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header class="brand">
+    <img src="icons/icon-192.png" alt="" width="36" height="36">
+    <div><div class="brand-name">차트토템</div><div class="brand-tag">책상에 세워두는 투자자의 작은 토템</div></div>
+  </header>
+
+  <div class="card hint hidden" id="installCard">
+    <div class="hint-title">홈 화면에 추가해 두세요</div>
+    <div class="msg" id="installText">다음에 기기를 바로 열 수 있어요.</div>
+    <div class="row">
+      <button class="primary" id="installBtn">홈 화면에 추가</button>
+      <button class="ghost" id="installLater">나중에</button>
+    </div>
+  </div>
+
+  <div class="card hint hidden" id="browserCard">
+    <div class="hint-title">이 브라우저에서는 기기 상태를 볼 수 없어요</div>
+    <div class="msg">기기 설정 페이지는 열 수 있지만, 가격·연결 상태 확인은 <b>Chrome</b>(안드로이드)에서만 돼요. Chrome으로 열면 더 편해요.</div>
+  </div>
+
+  <section id="devices"></section>
+
+  <div class="card empty" id="emptyCard">
+    <div class="hint-title">아직 등록된 기기가 없어요</div>
+    <div class="msg">기기 화면의 QR을 폰 카메라로 찍으면 여기에 자동으로 추가돼요.<br>처음 설정(Wi-Fi 연결)을 아직 안 했다면 기기 화면의 Wi-Fi QR부터 찍어 주세요.</div>
+  </div>
+
+  <div class="card">
+    <h2>기기 추가</h2>
+    <div class="row">
+      <input type="text" id="manualIp" placeholder="기기 화면의 주소 (예: 192.168.0.23)" inputmode="decimal">
+      <button class="lav" id="manualAdd">추가</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="ghost" id="scanBtn">같은 Wi-Fi에서 기기 찾기</button>
+    </div>
+    <div class="msg" id="addMsg"></div>
+  </div>
+
+  <div class="card" id="guideCard">
+    <h2>기기가 안 열릴 때</h2>
+    <ol class="guide">
+      <li><b>폰 Wi-Fi</b>가 기기와 같은 Wi-Fi인지 확인하세요. <span id="guideSsid"></span> (5GHz가 아닌 2.4GHz 이름)</li>
+      <li><b>기기 화면</b>이 켜져 있는지, 가격이 움직이는지 보세요.</li>
+      <li>기기 <b>전원을 뽑았다가 10초 뒤 다시</b> 꽂으세요. 켜질 때 화면에 주소가 잠깐 떠요.</li>
+      <li>기기 화면에 <b>QR</b>이 떠 있으면 폰 카메라로 다시 찍으세요. 주소가 바뀌어도 자동으로 맞춰져요.</li>
+      <li>주소가 화면에 보이면 위 <b>기기 추가</b>에 입력하거나 <b>같은 Wi-Fi에서 기기 찾기</b>를 누르세요.</li>
+      <li>기기 화면에 <b>Wi-Fi 설정 QR</b>(1/2)이 떠 있으면 Wi-Fi 정보가 지워진 거예요. 그 QR을 찍어 처음 설정을 다시 하세요.</li>
+    </ol>
+  </div>
+
+  <footer class="foot">차트토템 앱 <span id="ver"></span> · 오프라인에서도 열려요</footer>
+</main>
+<div class="toast hidden" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

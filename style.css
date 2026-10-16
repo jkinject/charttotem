@@ -1,0 +1,53 @@
+:root{--bg:#FAF7F2;--card:#FFFFFF;--line:#ECE7E0;--text:#3A3A44;--dim:#8E8EA0;
+ --mint:#BFE8DC;--mint-d:#4FBF9A;--lav:#DCD9F3;--lav-d:#8E88D8;--peach:#FBD9CC;--peach-d:#E8906F;
+ --ok:#6FCF97;--bad:#F28B82;--shadow:0 4px 18px rgba(80,70,60,.08)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:480px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 18px 40px}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.brand img{border-radius:10px}
+.brand-name{font-weight:800;font-size:18px;letter-spacing:.01em}
+.brand-tag{font-size:12px;color:var(--dim)}
+h2{font-size:13px;color:var(--dim);margin:0 0 12px;font-weight:600;letter-spacing:.04em}
+.card{background:var(--card);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card.hint{background:var(--mint);box-shadow:none}
+.card.empty{text-align:center;padding:28px 18px}
+.hint-title{font-weight:700;margin-bottom:6px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:0;background:var(--bg);border:1.5px solid var(--line);color:var(--text);border-radius:12px;padding:11px 14px;font-size:16px;outline:none}
+input:focus{border-color:var(--mint-d)}
+button{border:0;border-radius:12px;padding:11px 16px;font-weight:700;font-size:15px;cursor:pointer;color:var(--text);background:var(--mint);transition:transform .08s;white-space:nowrap}
+button:active{transform:scale(.97)}
+button.primary{background:var(--mint-d);color:#fff}
+button.lav{background:var(--lav)}
+button.ghost{background:transparent;border:1.5px solid var(--line)}
+button.small{padding:7px 12px;font-size:13px;border-radius:10px}
+button:disabled{opacity:.45;cursor:default}
+.msg{font-size:14px;color:var(--dim);min-height:20px;margin-top:8px}
+.msg.err{color:var(--bad)}
+.msg.ok{color:var(--mint-d)}
+
+/* device card */
+.dev{position:relative}
+.dev-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.dev-name{font-weight:800;font-size:18px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:50%;background:#D8D4CC;flex:none}
+.dot.on{background:var(--ok)}.dot.off{background:var(--bad)}.dot.wait{background:var(--lav-d)}
+.dev-sub{font-size:12px;color:var(--dim)}
+.hero{display:flex;align-items:baseline;gap:10px;margin:4px 0 10px}
+.sym{font-weight:700;font-size:15px}
+.price{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.chg{font-weight:600;font-size:14px}.up{color:var(--ok)}.down{color:var(--bad)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1.5px solid var(--line);background:#fff;color:var(--text);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;font-weight:600}
+.chip.on{border-color:var(--mint-d);background:var(--mint)}
+.dev-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.dev-actions a{text-decoration:none}
+.menu{position:absolute;top:14px;right:14px}
+.menu button{background:transparent;border:0;font-size:20px;padding:4px 8px;color:var(--dim)}
+.guide{margin:0;padding-left:20px}
+.guide li{margin-bottom:8px}
+.foot{text-align:center;font-size:12px;color:var(--dim);margin-top:10px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#3A3A44;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw}
+.hidden{display:none !important}
