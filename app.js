@@ -2,7 +2,7 @@
 // - 기기 목록은 localStorage. 온보딩 성공 페이지/기기 QR 이 ?add=1&id=&ip=&host=&ssid= 로 넘겨주면 자동 등록.
 // - 기기 통신은 HTTP(사설 IP) 라서 HTTPS 페이지에서는 원래 막히지만, Chrome 141+ 의 Local Network Access
 //   (fetch 에 targetAddressSpace 옵션) 로 허용된다 (권한 창 1회). 안 되는 브라우저는 "열기만" 모드.
-const APP_VERSION = "0.1.2";
+const APP_VERSION = "0.1.3";
 const KEY_DEVICES = "ct.devices";
 const KEY_INSTALL = "ct.installDone";
 const KEY_LNA = "ct.lnaOption";
@@ -213,27 +213,56 @@ $("manualAdd").onclick = async () => {
   $("manualIp").value = "";
 };
 
+// 폰이 지금 쓰는 사설 IP 를 WebRTC ICE 후보에서 읽는다. 최근 Chrome 은 mDNS 이름으로 가려서 안 나올 수 있다 → null.
+async function guessLocalIp() {
+  if (!window.RTCPeerConnection) return null;
+  return new Promise((resolve) => {
+    const pc = new RTCPeerConnection({ iceServers: [] });
+    const done = (v) => { try { pc.close(); } catch (e) {} resolve(v); };
+    const t = setTimeout(() => done(null), 2000);
+    pc.onicecandidate = (e) => {
+      const m = e.candidate && e.candidate.candidate.match(/(\d{1,3}(?:\.\d{1,3}){3})/);
+      if (m && /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(m[1])) { clearTimeout(t); done(m[1]); }
+    };
+    pc.createDataChannel("x");
+    pc.createOffer().then((o) => pc.setLocalDescription(o)).catch(() => done(null));
+  });
+}
+
+// 공유기 기본 대역 중 흔한 순서. 폰 IP 를 알아내면 그 대역을 맨 앞에 둔다.
+const COMMON_BASES = ["192.168.0", "192.168.1", "192.168.200", "192.168.10", "192.168.100", "192.168.2", "192.168.3",
+  "192.168.31", "192.168.50", "192.168.123", "192.168.8", "192.168.4", "10.0.0", "10.0.1", "172.16.0"];
+
+let scanning = false;
 $("scanBtn").onclick = async () => {
   if (openOnly) { setMsg("addMsg", "이 브라우저에서는 찾기가 안 돼요. Chrome에서 열어 주세요.", "err"); return; }
-  const bases = new Set(devices.map((d) => d.ip && d.ip.replace(/\.\d+$/, "")).filter(Boolean));
+  if (scanning) { scanning = false; return; }
+  scanning = true; $("scanBtn").textContent = "찾기 중지";
+  const bases = [];
+  const add = (b) => { if (b && !bases.includes(b)) bases.push(b); };
   const typed = $("manualIp").value.trim();
-  if (/^\d{1,3}(\.\d{1,3}){2}/.test(typed)) bases.add(typed.split(".").slice(0, 3).join("."));
-  if (!bases.size) bases.add("192.168.0").add("192.168.1");
-  $("scanBtn").disabled = true;
-  let found = 0, done = 0;
-  const total = bases.size * 254;
-  for (const base of bases) {
+  if (/^\d{1,3}(\.\d{1,3}){2}/.test(typed)) add(typed.split(".").slice(0, 3).join("."));
+  setMsg("addMsg", "폰의 네트워크 대역을 확인하는 중...");
+  const mine = await guessLocalIp();
+  if (mine) add(mine.replace(/\.\d+$/, ""));
+  for (const d of devices) if (d.ip) add(d.ip.replace(/\.\d+$/, ""));
+  for (const b of COMMON_BASES) add(b);
+
+  let found = 0;
+  outer: for (const base of bases) {
     const ips = []; for (let i = 1; i <= 254; i++) ips.push(`${base}.${i}`);
     for (let i = 0; i < ips.length; i += 32) {
+      if (!scanning) break outer;
+      setMsg("addMsg", `${base}.x 확인 중... (${Math.round(i / 254 * 100)}%)${found ? ` · 찾음 ${found}` : ""}${mine ? "" : " · 폰 IP를 못 읽어 흔한 대역을 차례로 봐요"}`);
       await Promise.all(ips.slice(i, i + 32).map(async (ip) => {
-        const s = await probe(ip, 1500); done++;
-        if (s && s.version && s.host && s.host.startsWith("charttotem")) { const d = upsertDevice({ ip, id: s.id, host: s.host, name: s.name, variant: s.variant }); found++; renderDevices(); applyState(d, s); }
-        setMsg("addMsg", `찾는 중... ${done}/${total} (찾음 ${found})`);
+        const s = await probe(ip, 1500);
+        if (s && s.version && s.host && s.host.startsWith("charttotem")) { const d = upsertDevice({ ip, id: s.id, host: s.host, name: s.name, variant: s.variant, ssid: s.ssid }); found++; renderDevices(); applyState(d, s); }
       }));
     }
+    if (found) break;   // 같은 대역에 다 있다고 보고 멈춘다. 더 찾으려면 다시 누르면 된다
   }
-  $("scanBtn").disabled = false;
-  setMsg("addMsg", found ? `${found}대를 찾았어요.` : "기기를 찾지 못했어요. 폰이 기기와 같은 Wi-Fi인지 확인해 주세요.", found ? "ok" : "err");
+  scanning = false; $("scanBtn").textContent = "같은 Wi-Fi에서 기기 찾기";
+  setMsg("addMsg", found ? `${found}대를 찾았어요.` : "기기를 찾지 못했어요. 기기 화면의 QR을 찍는 게 가장 확실해요. 폰이 기기와 같은 Wi-Fi인지도 확인해 주세요.", found ? "ok" : "err");
 };
 
 // ------------------------------------------------------------
