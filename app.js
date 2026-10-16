@@ -2,7 +2,7 @@
 // - 기기 목록은 localStorage. 온보딩 성공 페이지/기기 QR 이 ?add=1&id=&ip=&host=&ssid= 로 넘겨주면 자동 등록.
 // - 기기 통신은 HTTP(사설 IP) 라서 HTTPS 페이지에서는 원래 막히지만, Chrome 141+ 의 Local Network Access
 //   (fetch 에 targetAddressSpace 옵션) 로 허용된다 (권한 창 1회). 안 되는 브라우저는 "열기만" 모드.
-const APP_VERSION = "0.1.0";
+const APP_VERSION = "0.1.1";
 const KEY_DEVICES = "ct.devices";
 const KEY_INSTALL = "ct.installDone";
 const KEY_LNA = "ct.lnaOption";
@@ -41,9 +41,21 @@ const lnaLikely = !isIOS && chromeVer >= 141 && !/SamsungBrowser/.test(ua);
 
 try { lnaOption = JSON.parse(localStorage.getItem(KEY_LNA)); } catch (e) {}
 
+// 브라우저가 로컬 요청 자체를 막는지(혼합 콘텐츠) 알아낸다: 막히면 타임아웃 없이 즉시 실패한다.
+let blockedHits = 0;
+function markBlocked() {
+  if (++blockedHits < 2 || openOnly) return;
+  openOnly = true;
+  clearInterval(refreshTimer);
+  $("browserCard").classList.remove("hidden");
+  $("browserCard").querySelector(".msg").innerHTML = "이 브라우저는 기기와 직접 통신을 막아요. <b>기기 설정 열기</b>는 되지만 가격·연결 상태는 안 보여요. 안드로이드는 <b>Chrome 141 이상</b>에서 열면 돼요 (처음 한 번 '로컬 네트워크 접근' 허용).";
+  renderDevices();
+}
+
 async function deviceFetch(ip, path, { method = "GET", timeout = 2500 } = {}) {
   const url = `http://${ip}${path}`;
   const candidates = lnaOption ? [lnaOption] : [{ targetAddressSpace: "local" }, { targetAddressSpace: "private" }, {}];
+  const started = Date.now();
   for (const opt of candidates) {
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), timeout);
@@ -57,6 +69,7 @@ async function deviceFetch(ip, path, { method = "GET", timeout = 2500 } = {}) {
       if (e.name === "AbortError") return null;   // 타임아웃: 옵션 문제가 아니라 기기가 안 닿는 것
     }
   }
+  if (Date.now() - started < 400) markBlocked();  // 모든 시도가 즉시 실패 = 브라우저가 막음
   return null;
 }
 
@@ -134,10 +147,11 @@ function applyState(d, s) {
 
 async function refreshDevice(d) {
   const el = cardOf(d); if (!el) return;
-  if (openOnly) { setDot(el, ""); return; }
+  if (openOnly) { setDot(el, ""); el.querySelector('[data-r="msg"]').textContent = "이 브라우저에서는 상태를 볼 수 없어요. 「기기 설정 열기」로 바로 여세요."; return; }
   setDot(el, d.lastSeen ? "on" : "wait");
   const s = await probe(d.ip, 3000);
   if (s && s.version) { applyState(d, s); return; }
+  if (openOnly) { refreshDevice(d); return; }   // 방금 "막힘" 으로 판정됐으면 안내로 바꿈
   setDot(el, "off");
   el.querySelector('[data-r="msg"]').textContent = "지금은 기기에 닿지 않아요. 아래 '기기가 안 열릴 때'를 확인해 보세요.";
 }
