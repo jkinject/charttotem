@@ -2,7 +2,7 @@
 // - 기기 목록은 localStorage. 온보딩 성공 페이지/기기 QR 이 ?add=1&id=&ip=&host=&ssid= 로 넘겨주면 자동 등록.
 // - 기기 통신은 HTTP(사설 IP) 라서 HTTPS 페이지에서는 원래 막히지만, Chrome 141+ 의 Local Network Access
 //   (fetch 에 targetAddressSpace 옵션) 로 허용된다 (권한 창 1회). 안 되는 브라우저는 "열기만" 모드.
-const APP_VERSION = "0.1.3";
+const APP_VERSION = "0.1.4";
 const KEY_DEVICES = "ct.devices";
 const KEY_INSTALL = "ct.installDone";
 const KEY_LNA = "ct.lnaOption";
@@ -43,6 +43,11 @@ try { lnaOption = JSON.parse(localStorage.getItem(KEY_LNA)); } catch (e) {}
 
 // 브라우저가 로컬 요청 자체를 막는지(혼합 콘텐츠) 알아낸다: 막히면 타임아웃 없이 즉시 실패한다.
 let blockedHits = 0;
+function markUnblocked() {
+  openOnly = false; blockedHits = 0;
+  $("browserCard").classList.add("hidden");
+  clearInterval(refreshTimer); refreshTimer = setInterval(refreshAll, 10000);
+}
 function markBlocked() {
   if (++blockedHits < 2 || openOnly) return;
   openOnly = true;
@@ -52,7 +57,7 @@ function markBlocked() {
   renderDevices();
 }
 
-async function deviceFetch(ip, path, { method = "GET", timeout = 2500 } = {}) {
+async function deviceFetch(ip, path, { method = "GET", timeout = 2500, detectBlock = false } = {}) {
   const url = `http://${ip}${path}`;
   const candidates = lnaOption ? [lnaOption] : [{ targetAddressSpace: "local" }, { targetAddressSpace: "private" }, {}];
   const started = Date.now();
@@ -63,17 +68,18 @@ async function deviceFetch(ip, path, { method = "GET", timeout = 2500 } = {}) {
       const r = await fetch(url, { method, cache: "no-store", signal: ac.signal, ...opt });
       clearTimeout(t);
       if (!lnaOption) { lnaOption = opt; try { localStorage.setItem(KEY_LNA, JSON.stringify(opt)); } catch (e) {} }
+      if (openOnly) markUnblocked();   // 한 번이라도 통신이 됐으면 "막힘" 이 아니다
       return await r.json();
     } catch (e) {
       clearTimeout(t);
       if (e.name === "AbortError") return null;   // 타임아웃: 옵션 문제가 아니라 기기가 안 닿는 것
     }
   }
-  if (Date.now() - started < 400) markBlocked();  // 모든 시도가 즉시 실패 = 브라우저가 막음
+  if (detectBlock && !lnaOption && Date.now() - started < 400) markBlocked();  // 등록 기기도 즉시 실패 = 브라우저가 막음
   return null;
 }
 
-async function probe(ip, timeout) { return deviceFetch(ip, "/api/state", { timeout }); }
+async function probe(ip, timeout, detectBlock) { return deviceFetch(ip, "/api/state", { timeout, detectBlock }); }
 
 // ------------------------------------------------------------
 // 화면
@@ -151,7 +157,7 @@ async function refreshDevice(d) {
   const el = cardOf(d); if (!el) return;
   if (openOnly) { setDot(el, ""); el.querySelector('[data-r="msg"]').textContent = "이 브라우저에서는 상태를 볼 수 없어요. 「기기 설정 열기」로 바로 여세요."; return; }
   setDot(el, d.lastSeen ? "on" : "wait");
-  const s = await probe(d.ip, 3000);
+  const s = await probe(d.ip, 3000, true);
   if (s && s.version) { applyState(d, s); return; }
   if (openOnly) { refreshDevice(d); return; }   // 방금 "막힘" 으로 판정됐으면 안내로 바꿈
   setDot(el, "off");
@@ -305,7 +311,7 @@ let toastTimer; function toast(t) { const el = $("toast"); el.textContent = t; e
     if (d) toast("기기를 추가했어요");
     try { localStorage.removeItem(KEY_INSTALL); } catch (e) {}   // 새 기기 등록 땐 설치 안내 다시
   }
-  openOnly = !lnaLikely;
+  openOnly = !lnaLikely && !lnaOption;
   $("browserCard").classList.toggle("hidden", !openOnly);
   renderDevices();
   refreshAll();
