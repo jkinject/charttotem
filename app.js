@@ -2,7 +2,7 @@
 // - 기기 목록은 localStorage. 온보딩 성공 페이지/기기 QR 이 ?add=1&id=&ip=&host=&ssid= 로 넘겨주면 자동 등록.
 // - 기기 통신은 HTTP(사설 IP) 라서 HTTPS 페이지에서는 원래 막히지만, Chrome 141+ 의 Local Network Access
 //   (fetch 에 targetAddressSpace 옵션) 로 허용된다 (권한 창 1회). 안 되는 브라우저는 "열기만" 모드.
-const APP_VERSION = "0.1.1";
+const APP_VERSION = "0.1.2";
 const KEY_DEVICES = "ct.devices";
 const KEY_INSTALL = "ct.installDone";
 const KEY_LNA = "ct.lnaOption";
@@ -88,7 +88,7 @@ function renderDevices() {
     const el = document.createElement("div");
     el.className = "card dev";
     el.dataset.key = d.id || d.ip;
-    const sub = [d.ip, d.host].filter(Boolean).join(" · ");
+    const sub = [d.ssid ? "Wi-Fi 「" + d.ssid + "」" : "", d.ip, d.host].filter(Boolean).join(" · ");
     el.innerHTML = `
       <div class="menu"><button title="더보기">⋯</button></div>
       <div class="dev-head"><span class="dot" data-r="dot"></span><div class="dev-name" data-r="name">${esc(fmtName(d))}</div></div>
@@ -132,10 +132,12 @@ function applyState(d, s) {
   d.symbolKeyValue = s.variant === "kstock" ? s.code : s.base;
   d.priceText = s.price > 0 ? s.priceText + (s.variant === "kstock" ? " 원" : "") : "";
   d.change = s.change; d.lastSeen = Date.now();
+  if (s.ssid) d.ssid = s.ssid;   // 공유기를 바꿨어도 기기가 알려 주는 최신 이름
   saveDevices();
   const el = cardOf(d); if (!el) return;
   setDot(el, "on");
   el.querySelector('[data-r="name"]').textContent = fmtName(d);
+  el.querySelector('[data-r="sub"]').textContent = [d.ssid ? "Wi-Fi 「" + d.ssid + "」" : "", d.ip, d.host].filter(Boolean).join(" · ");
   el.querySelector('[data-r="sym"]').textContent = s.variant === "kstock" ? (s.name || s.code) : d.symbol;
   el.querySelector('[data-r="price"]').textContent = d.priceText || "–";
   const c = el.querySelector('[data-r="chg"]');
@@ -276,8 +278,6 @@ let toastTimer; function toast(t) { const el = $("toast"); el.textContent = t; e
   }
   openOnly = !lnaLikely;
   $("browserCard").classList.toggle("hidden", !openOnly);
-  const ssid = (devices.find((d) => d.ssid) || {}).ssid;
-  $("guideSsid").textContent = ssid ? `기기는 「${ssid}」에 연결돼 있어요.` : "";
   renderDevices();
   refreshAll();
   if (!openOnly) refreshTimer = setInterval(refreshAll, 10000);
