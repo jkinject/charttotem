@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=4c1dba17">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=b053e159">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -137,13 +137,9 @@
  <div class="caption">저장된 Wi-Fi <span class="cnt" id="wifiKnownCount"></span></div>
  <div class="list" id="wifiKnown"></div>
  <div class="msg" id="wifiKnownMsg">기기는 여기 있는 Wi-Fi 중 보이는 것에 스스로 붙어요. 집·회사처럼 장소를 옮겨도 다시 설정하지 않아도 돼요.</div>
- <div>
-  <div class="caption">Wi-Fi 추가 · 변경</div>
-  <div class="formrow"><input class="text" id="wifiAddSsid" placeholder="Wi-Fi 이름 (2.4GHz)" maxlength="32" autocomplete="off"></div>
-  <div class="formrow"><input class="text" id="wifiAddPass" type="password" placeholder="비밀번호 (8자 이상, 없으면 비움)" maxlength="63" autocomplete="off"></div>
-  <div class="formrow"><label class="chk"><input type="checkbox" id="wifiAddNow" checked> 저장하고 지금 바로 이 Wi-Fi 로 바꾸기</label><button class="textbtn" id="wifiAddBtn"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>저장</button></div>
-  <div class="msg" id="wifiAddMsg">저장된 Wi-Fi 는 5개까지예요. 「지금 바꾸기」를 끄면 저장만 하고, 그 장소에서 켜면 알아서 붙어요.</div>
- </div>
+ <nav class="list">
+  <button class="menu" data-go="/wifi/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span class="mtext"><span class="mlbl">Wi-Fi 추가 · 변경</span><span class="msub">주변 Wi-Fi 를 골라 지금 바꾸거나 미리 저장해요</span></span></button>
+ </nav>
  <div class="band"></div>
  <div class="caption">관리</div>
  <nav class="list local-only">
@@ -151,6 +147,30 @@
   <button class="menu danger" id="wifiReset"><svg class="ic" aria-hidden="true"><use href="#i-rotate-ccw"/></svg><span class="mtext"><span class="mlbl">초기 설정으로</span><span class="msub">저장된 Wi-Fi 를 지우고 기기 화면에 QR 을 다시 띄워요</span></span></button>
  </nav>
   <div class="msg cloud-only">비밀번호는 기기 전용 키로 암호화해서 보내요. 바꾸기에 실패하면(안 보이거나 비밀번호가 틀리면) 기기는 이전 Wi-Fi 로 스스로 돌아가요. 아이디·비밀번호 로그인 방식이나 5GHz 전용 Wi-Fi 에는 붙을 수 없어요.</div>
+</section>
+
+<section class="page" data-page="/wifi/add">
+ <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">Wi-Fi 추가</h1></header>
+ <div id="waPick">
+  <div class="caption">주변 Wi-Fi <span class="cnt" id="waScanState"></span></div>
+  <ul class="list netlist" id="waList"><li class="msg">검색 중…</li></ul>
+  <div class="formrow" style="justify-content:space-between"><button class="textbtn" id="waRescan" style="margin:0"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>다시 검색</button><button class="textbtn" id="waManual" style="margin:0">목록에 없나요?</button></div>
+  <div class="msg">기기가 있는 곳의 Wi-Fi 를 찾아요. 2.4GHz 만 보여요.</div>
+  <div class="band"></div>
+  <div id="waForm" class="hidden">
+   <div class="caption" id="waTitle">비밀번호</div>
+   <div class="formrow hidden" id="waSsidRow"><input class="text" id="waSsid" placeholder="Wi-Fi 이름 (SSID)" maxlength="32" autocomplete="off"></div>
+   <div class="formrow" id="waPassRow"><input class="text" id="waPass" type="password" placeholder="Wi-Fi 비밀번호" maxlength="63" autocomplete="off"><button class="textbtn" id="waEye" style="margin:0">보기</button></div>
+   <div class="formrow"><label class="chk"><input type="checkbox" id="waNow" checked> 지금 바로 이 Wi-Fi 로 바꾸기</label></div>
+   <div class="formrow"><button class="sbtn wide" id="waConnect">연결</button></div>
+   <div class="msg" id="waMsg">「지금 바꾸기」를 끄면 저장만 해요. 그 장소에서 기기를 켜면 알아서 붙어요.</div>
+  </div>
+ </div>
+ <div id="waStatus" class="hidden">
+  <div class="status"><div class="sicon wait" id="waIcon"><i class="spin"></i></div><div><div class="stitle" id="waSTitle">연결 중…</div><div class="msg" id="waSText" style="padding:0"></div></div></div>
+  <div class="formrow"><button class="sbtn wide hidden" id="waDone" data-go="/wifi">Wi-Fi 설정으로</button></div>
+  <div class="formrow"><button class="textbtn hidden" id="waRetry" style="margin:0 auto">다른 Wi-Fi 선택</button></div>
+ </div>
 </section>
 
 <section class="page" data-page="/system">
@@ -435,10 +455,13 @@ const L={
   const n=S.slots.length,t=Date.now()/1000;S.slots.forEach((sl,i)=>{const w=sl.ok?Math.min(Math.abs(sl.change),10)/10*12:0;const a=(-90+360*i/n+w*t%360)*Math.PI/180;dot(x,120+80*Math.cos(a),104+80*Math.sin(a),6,sl.color);});columns(x,S,192,48);},
  C02(x,S){const cx=120,cy=104,R=86;for(let i=0;i<12;i++){const a=i*30*Math.PI/180,inn=i%3?R-7:R-12;x.strokeStyle=i%3?C.dim:C.text;x.lineWidth=1;x.beginPath();
     x.moveTo(cx+inn*Math.cos(a),cy+inn*Math.sin(a));x.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));x.stroke();}
-  // HANDS: 시침·분침·초침 색 = 1·2·3번째 종목 등락색 (초침은 초 표시 때만). 종목이 없으면 기본색
-  const hc=(i,fb)=>(!S.show.symbols||!S.slots[i])?fb:S.slots[i].color;
-  if(S.synced){const [h,m,sec]=S.hms;const hand=(deg,len,w,col)=>{const a=(deg-90)*Math.PI/180;x.strokeStyle=col;x.lineWidth=w;x.lineCap="round";x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+len*Math.cos(a),cy+len*Math.sin(a));x.stroke();};
-    if(S.show.seconds)hand((sec||0)*6,70,1.5,hc(2,C.text));hand((h%12)*30+m*0.5,44,3.5,hc(0,C.title));hand(m*6,66,2.5,hc(1,C.text));}else text(x,"--:--",cx,cy+28,"f2",C.dim,"center");
+  // HANDS: 시침·분침·초침 색 = 1·2·3번째 종목 등락색 (초침은 초 표시 때만). 나머지 종목(최대 3개)은 서브다이얼: 바늘 각도 = 등락률(±5% → ±135°), 1개면 6시, 2개면 9시·3시, 3개면 9시·3시·6시. 펌웨어와 같은 규칙
+  const hc=(i,fb)=>(!S.show.symbols||!S.slots[i])?fb:S.slots[i].color;const ray=(px,py,deg,len,w,col)=>{const a=(deg-90)*Math.PI/180;x.strokeStyle=col;x.lineWidth=w;x.lineCap="round";x.beginPath();x.moveTo(px,py);x.lineTo(px+len*Math.cos(a),py+len*Math.sin(a));x.stroke();};
+  const hands=S.show.seconds?3:2,nd=S.show.symbols?Math.min(Math.max(S.slots.length-hands,0),3):0;
+  for(let i=0;i<nd;i++){const sl=S.slots[hands+i],cd=nd===1?180:(i===0?270:i===1?90:180),a=(cd-90)*Math.PI/180,dx=cx+48*Math.cos(a),dy=cy+48*Math.sin(a);
+    x.strokeStyle="#404040";x.lineWidth=1;x.beginPath();x.arc(dx,dy,17,0,Math.PI*2);x.stroke();x.fillStyle=C.dim;x.fillRect(dx,dy-16,1,3);
+    const deg=sl.ok?Math.max(-5,Math.min(5,sl.change))/5*135:0;ray(dx,dy,deg,12,1.5,sl.color);dot(x,dx,dy,2,sl.color);}
+  if(S.synced){const [h,m,sec]=S.hms;if(S.show.seconds)ray(cx,cy,(sec||0)*6,70,1.5,hc(2,C.text));ray(cx,cy,(h%12)*30+m*0.5,44,3.5,hc(0,C.title));ray(cx,cy,m*6,66,2.5,hc(1,C.text));}else text(x,"--:--",cx,cy+12,"f2",C.dim,"center");
   dot(x,cx,cy,4,C.text);const sl=S.slots[S.active];if(sl&&S.show.symbols){text(x,sl.label,4,218,"f2",C.title);const c=S.show.change?pct(sl):"";text(x,c,236,218,"f2",sl.color,"right");
     if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",236-measure(x,c,"f2")-10,218,"f2",sl.color,"right");}},
  C03(x,S){bigTime(x,S,8,C.white);bigDate(x,S,62,C.dim);x.fillStyle=C.rule;x.fillRect(0,86,240,1);x.fillStyle=C.bar;x.fillRect(0,87,240,1);if(!S.show.symbols)return;
@@ -477,8 +500,9 @@ const $=id=>document.getElementById(id);
 const I=n=>`<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;  // Lucide 아이콘 (settings_head 의 스프라이트)
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let state=null, pollTimer=null, failCount=0, toastTimer=null;
-const PAGES=["/","/screen","/screen/add","/screen/layout","/wifi","/system","/privacy","/licenses"];
-const PARENT={"/screen":"/","/screen/add":"/screen","/screen/layout":"/screen","/wifi":"/","/system":"/","/privacy":"/","/licenses":"/"};
+let pendingName=null;   // {v, until}: 방금 바꾼 기기 이름. 기기가 반영하기 전 폴링이 옛 이름으로 덮지 않게
+const PAGES=["/","/screen","/screen/add","/screen/layout","/wifi","/wifi/add","/system","/privacy","/licenses"];
+const PARENT={"/screen":"/","/screen/add":"/screen","/screen/layout":"/screen","/wifi":"/","/wifi/add":"/wifi","/system":"/","/privacy":"/","/licenses":"/"};
 const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"],["showSeconds","seconds"],["show12h","h12"]];   // 기기 ID 배지는 항상 켜 둔다 (토글 없음)   // symbols 비트는 UI 에서 뺐다 (항상 켬)
 let prevPage=null, curPage=null;
 const TZ_PRESETS=[["KST-9","서울 (KST)"],["JST-9","도쿄 (JST)"],["HKT-8","홍콩 (HKT)"],["CST-8","상하이 · 싱가포르"],["IST-5:30","뭄바이 (IST)"],
@@ -567,10 +591,13 @@ function checkApplied(s){
 
 // ---- 라우팅 ----
 function go(p){location.hash="#"+p;}
+function waEnter(){WA.sel=null;WA.manual=false;WA.sent=null;WA.seenSeq=-1;$("waStatus").classList.add("hidden");$("waPick").classList.remove("hidden");$("waForm").classList.add("hidden");$("waPass").value="";$("waSsid").value="";$("waNow").checked=true;if(state)waScan();else WA.waitSeq=-2;}
 function page(){let p=location.hash.slice(1)||"/";if(p==="/symbols")p="/screen";return PAGES.includes(p)?p:null;}
 function route(){
   let p=page();if(!p){history.replaceState(null,"",location.pathname+"#/");p="/";}
-  if(p!==curPage){prevPage=curPage;curPage=p;}
+  const changed=p!==curPage;
+  if(changed){prevPage=curPage;curPage=p;}
+  if(changed&&p==="/wifi/add")waEnter();
   document.querySelectorAll(".page").forEach(x=>x.classList.toggle("on",x.dataset.page===p));
   const h=document.querySelector(`[data-page="${p}"] h1`);
   document.title=p==="/"?"차트토템 설정":h.textContent+" · 차트토템";
@@ -596,7 +623,9 @@ function renderHome(s){
     ["wifi","Wi-Fi",s.ssid||"연결 안 됨","/wifi"],
     ["settings","시스템","v"+s.version,"/system"]];
   $("homeMenu").innerHTML=items.map(x=>`<button class="menu" data-go="${x[3]}">${I(x[0])}<span class="mtext"><span class="mlbl">${x[1]}</span><span class="msub">${esc(x[2])}</span></span></button>`).join("");
-  $("devTitle").textContent=s.name||"차트토템 "+(s.id||"").slice(-4);
+  if(pendingName&&(s.name===pendingName.v||Date.now()>pendingName.until))pendingName=null;
+  const nm=pendingName?pendingName.v:s.name;
+  $("devTitle").textContent=nm||"차트토템 "+(s.id||"").slice(-4);
   $("devSub").textContent="ID "+(s.id||"")+(!CLOUD&&s.host?" · "+s.host:"");
   MARKET.render(s);
 }
@@ -741,12 +770,52 @@ function renderWifiKnown(s){
       post("/api/settings?wforget="+encodeURIComponent(n)).then(()=>{toast(n+" 을(를) 지웠어요");wifiKnownKey="";pollSoon(CLOUD?20000:300);}).catch(e=>setMsg("wifiKnownMsg","지우지 못했어요: "+e.message,"err"));};
     box.appendChild(row);});
 }
-const wifiAddBtn=$("wifiAddBtn");if(wifiAddBtn)wifiAddBtn.onclick=()=>{const ssid=$("wifiAddSsid").value.trim(),pass=$("wifiAddPass").value,now=$("wifiAddNow").checked;
-  if(!ssid){setMsg("wifiAddMsg","Wi-Fi 이름을 입력해 주세요.","err");return;}if(pass&&pass.length<8){setMsg("wifiAddMsg","비밀번호는 8자 이상이에요.","err");return;}
-  if(now&&!confirm(ssid+" 으로 지금 바꿀까요?\n연결되지 않으면 기기가 이전 Wi-Fi 로 돌아가요."))return;
-  post("/api/settings?wssid="+encodeURIComponent(ssid)+"&wpass="+encodeURIComponent(pass)+(now?"&wconnect="+encodeURIComponent(ssid):"")).then(()=>{$("wifiAddSsid").value="";$("wifiAddPass").value="";
-      setMsg("wifiAddMsg",now?(CLOUD?"기기에 보냈어요. 바뀌면 1분쯤 뒤 위 목록에 보여요.":"저장하고 바꾸는 중이에요."):(CLOUD?"기기에 보냈어요. 곧 위 목록에 보여요.":"저장했어요. 그 장소에서 기기를 켜면 바로 붙어요."),"ok");wifiKnownKey="";pollSoon(CLOUD?20000:(now?4000:300));})
-    .catch(e=>setMsg("wifiAddMsg",e.message==="wifi full"||e.message==="full"?"5개까지 저장할 수 있어요. 하나를 지우고 등록해 주세요.":"저장하지 못했어요: "+e.message,"err"));};
+// ---- Wi-Fi 추가 (#/wifi/add): 온보딩 페이지와 같은 흐름 — 주변 목록(기기가 스캔해 state.wifiScan 으로 올림) → 비밀번호 → 연결/저장 → 상태 ----
+const WA={sel:null,secure:true,manual:false,waitSeq:-1,seenSeq:-1,sent:null};
+function bars(rssi){const n=rssi>-55?4:rssi>-65?3:rssi>-75?2:1;let h="";for(let i=1;i<=4;i++)h+=`<i class="${i<=n?"f":""}" style="height:${4+i*3}px"></i>`;return `<span class="bars">${h}</span>`;}
+function waScan(){const seq=state?state.wifiScanSeq||0:0;WA.waitSeq=seq;$("waList").innerHTML='<li class="msg">검색 중…</li>';$("waScanState").textContent="";
+  post("/api/settings?wscan=1").then(()=>pollSoon(CLOUD?3000:1500)).catch(e=>{$("waList").innerHTML='<li class="msg">검색을 시작하지 못했어요: '+esc(e.message)+'</li>';});}
+function renderWifiAdd(s){
+  if(WA.waitSeq===-2){waScan();return;}   // 상태가 없을 때 들어왔다 (딥링크): 이제 스캔 요청
+  const seq=s.wifiScanSeq||0;
+  if(WA.waitSeq>=0&&seq<=WA.waitSeq){pollSoon(CLOUD?3000:1500);return;}   // 새 결과를 기다리는 중
+  if(seq===WA.seenSeq)return;WA.seenSeq=seq;WA.waitSeq=-1;
+  const nets=(s.wifiScan||[]).slice().sort((a,b)=>b.rssi-a.rssi),box=$("waList");box.innerHTML="";
+  $("waScanState").textContent=nets.length?nets.length+"개":"";
+  if(!nets.length){box.innerHTML='<li class="msg">Wi-Fi 를 찾지 못했어요. 다시 검색해 보세요.</li>';return;}
+  nets.forEach(n=>{const li=document.createElement("li");li.className="net"+(WA.sel===n.ssid?" on":"");
+    li.innerHTML=`${bars(n.rssi)}<span class="name"></span><span class="lock">${n.secure?I("lock"):""}</span>`;
+    li.querySelector(".name").textContent=n.ssid+(n.ssid===s.ssid?" (지금 연결됨)":"");li.onclick=()=>waChoose(n.ssid,n.secure);box.appendChild(li);});
+}
+function waChoose(ssid,sec){WA.sel=ssid;WA.secure=sec;WA.manual=false;
+  document.querySelectorAll("#waList .net").forEach(el=>el.classList.toggle("on",el.querySelector(".name").textContent.replace(" (지금 연결됨)","")===ssid));
+  $("waSsidRow").classList.add("hidden");$("waPassRow").classList.toggle("hidden",!sec);$("waTitle").textContent=sec?ssid+" 비밀번호":ssid;
+  $("waForm").classList.remove("hidden");$("waPass").value="";setMsg("waMsg","「지금 바꾸기」를 끄면 저장만 해요. 그 장소에서 기기를 켜면 알아서 붙어요.");
+  if(sec)setTimeout(()=>$("waPass").focus(),50);$("waForm").scrollIntoView({behavior:"smooth",block:"nearest"});}
+$("waManual").onclick=()=>{WA.manual=true;WA.sel=null;WA.secure=true;document.querySelectorAll("#waList .net").forEach(el=>el.classList.remove("on"));
+  $("waTitle").textContent="직접 입력";$("waSsidRow").classList.remove("hidden");$("waPassRow").classList.remove("hidden");$("waForm").classList.remove("hidden");$("waSsid").focus();};
+$("waRescan").onclick=waScan;
+$("waEye").onclick=()=>{const p=$("waPass");p.type=p.type==="password"?"text":"password";$("waEye").textContent=p.type==="password"?"보기":"숨기기";};
+function waShow(kind,title,text){$("waPick").classList.add("hidden");$("waStatus").classList.remove("hidden");const ic=$("waIcon");ic.className="sicon "+kind;
+  ic.innerHTML=kind==="wait"?'<i class="spin"></i>':kind==="ok"?I("check"):"!";$("waSTitle").textContent=title;$("waSText").textContent=text;
+  $("waDone").classList.toggle("hidden",kind!=="ok");$("waRetry").classList.toggle("hidden",kind!=="bad");}
+function waConnect(){const ssid=WA.manual?$("waSsid").value.trim():WA.sel,pass=$("waPass").value,now=$("waNow").checked;
+  if(!ssid){setMsg("waMsg","Wi-Fi 이름을 입력해 주세요.","err");return;}if(WA.secure&&pass.length<8){setMsg("waMsg","비밀번호는 8자 이상이에요.","err");return;}
+  $("waConnect").disabled=true;
+  post("/api/settings?wssid="+encodeURIComponent(ssid)+"&wpass="+encodeURIComponent(pass)+(now?"&wconnect="+encodeURIComponent(ssid):"")).then(()=>{
+    WA.sent={ssid,now,at:Date.now()};wifiKnownKey="";waShow("wait",now?"연결 중…":"저장 중…",now?(CLOUD?ssid+" 에 연결하고 있어요. 1분쯤 걸릴 수 있어요.":ssid+" 에 연결하고 있어요."):"기기에 저장하고 있어요.");pollSoon(CLOUD?3000:1500);})
+    .catch(e=>{setMsg("waMsg",(e.message==="wifi full"||e.message==="full")?"5개까지 저장할 수 있어요. 하나를 지우고 등록해 주세요.":"보내지 못했어요: "+e.message,"err");})
+    .finally(()=>{$("waConnect").disabled=false;});}
+$("waConnect").onclick=waConnect;$("waPass").onkeydown=e=>{if(e.key==="Enter")waConnect();};
+$("waRetry").onclick=()=>{WA.sent=null;$("waStatus").classList.add("hidden");$("waPick").classList.remove("hidden");$("waForm").classList.add("hidden");waScan();};
+// 보낸 뒤 결과 판정: 지금 바꾸기 → 기기 ssid 가 바뀌면 성공, 저장만 → 목록에 들어오면 성공. 시간이 지나도 안 바뀌면 실패(기기는 이전 Wi-Fi 로 돌아간다)
+function waTrack(s){const w=WA.sent;if(!w)return;const known=(s.wifiKnown||[]).includes(w.ssid),limit=CLOUD?120000:40000,el=Date.now()-w.at;
+  if(w.now&&s.ssid===w.ssid){waShow("ok","연결됐어요",w.ssid+" 에 연결됐어요.");WA.sent=null;return;}
+  if(!w.now&&known){waShow("ok","저장했어요",w.ssid+" 을(를) 저장했어요. 그 장소에서 켜면 알아서 붙어요.");WA.sent=null;return;}
+  const cerr=(s.cloud&&s.cloud.error)||"";
+  if(/cmd wifi/.test(cerr)&&el>5000){waShow("bad","저장하지 못했어요",/full/.test(cerr)?"저장된 Wi-Fi 가 5개라 더 넣을 수 없어요.":"기기가 거부했어요: "+cerr.replace("cmd wifi ",""));WA.sent=null;return;}
+  if(el>limit){waShow("bad",w.now?"연결하지 못했어요":"확인하지 못했어요",w.now?"비밀번호가 틀리거나 신호가 약할 수 있어요. 기기는 이전 Wi-Fi 로 돌아갔어요.":"기기 응답이 없어요. Wi-Fi 설정에서 목록을 확인해 주세요.");WA.sent=null;return;}
+  pollSoon(CLOUD?4000:2000);}
 
 // ---- 페이지 그리기 / 상태 폴링 ----
 function renderPage(p){
@@ -755,6 +824,7 @@ function renderPage(p){
   else if(p==="/screen"){renderScreen(s);renderList(s);}
   else if(p==="/screen/add")renderList(s);
   else if(p==="/screen/layout")renderLayouts(s);
+  else if(p==="/wifi/add"){if(WA.sent)waTrack(s);else renderWifiAdd(s);}
   else if(p==="/wifi"){$("wifiState").innerHTML=s.ssid?'<span class="ok">연결됨</span>':"연결 안 됨";$("wifiSsid").textContent=s.ssid||"-";$("wifiIp").textContent=s.ip||"-";renderWifiKnown(s);}
   else if(p==="/system"){$("sysVer").textContent="v"+s.version;$("sysHeap").textContent=(s.heap/1024).toFixed(1)+" KB";$("sysInterval").textContent=Math.round(s.interval/1000)+"초";
     const m=Math.floor(s.uptime/60),h=Math.floor(m/60),d=Math.floor(h/24);$("sysUptime").textContent=d?d+"일 "+(h%24)+"시간":h?h+"시간 "+(m%60)+"분":m+"분";$("sysErr").textContent=s.error||"없음"}
@@ -804,7 +874,8 @@ function startNameEdit(){const title=$("devTitle"),btn=$("devEdit"),wrap=title.p
   let done=false;
   const finish=commit=>{if(done)return;done=true;const n=inp.value.trim().slice(0,24);inp.remove();title.classList.remove("hidden");
     btn.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg>';btn.classList.remove("on");btn.onclick=startNameEdit;
-    if(!commit||n===cur)return;title.textContent=n||"차트토템 "+((state&&state.id)||"").slice(-4);if(state)state.name=n;
+    if(!commit||n===cur)return;pendingName={v:n,until:Date.now()+(CLOUD?120000:20000)};title.textContent=n||"차트토템 "+((state&&state.id)||"").slice(-4);if(state)state.name=n;
+    if(CLOUD&&state&&state.id){try{const k="ct.cloudDevices",arr=JSON.parse(localStorage.getItem(k)||"[]");arr.forEach(d=>{if(d.id===state.id)d.name=n;});localStorage.setItem(k,JSON.stringify(arr));}catch(e){}}   // 런처 목록의 이름도 바로
     post("/api/settings?name="+encodeURIComponent(n)).then(()=>{toast(n?(CLOUD?"이름을 저장했어요 · 기기에 곧 반영돼요":"이름을 저장했어요"):"이름을 지웠어요 · ID 로 표시돼요");pollSoon(300);}).catch(e=>toast(e.message));};
   btn.onclick=()=>finish(true);inp.onkeydown=e=>{if(e.key==="Enter")finish(true);else if(e.key==="Escape")finish(false);};inp.onblur=()=>setTimeout(()=>finish(true),150);
   inp.focus();inp.select();}

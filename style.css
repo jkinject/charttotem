@@ -183,6 +183,25 @@ body.has-savebar .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 .tip{position:absolute;right:20px;top:calc(100% + 8px);background:var(--tx);color:#fff;font-size:13px;line-height:1.45;padding:9px 12px;border-radius:10px;max-width:min(80vw,320px);z-index:5;box-shadow:0 4px 14px #0003;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .15s,transform .15s}
 .tip.on{opacity:1;transform:none}
 .tip:after{content:"";position:absolute;right:12px;top:-5px;border:5px solid transparent;border-top:0;border-bottom-color:var(--tx)}
+.netlist{margin:0;padding:0 8px;list-style:none}
+.net{display:flex;align-items:center;gap:12px;padding:13px 12px;border-radius:12px;cursor:pointer;font-size:16px}
+.net+.net{border-top:1px solid var(--ln)}
+.net:active{background:var(--bg2)}
+.net.on{background:var(--ac2)}
+.net .name{flex:1;font-weight:500;word-break:break-all}
+.net .lock{color:var(--mut);display:grid;place-items:center}
+.net .lock .ic{width:16px;height:16px}
+.bars{display:inline-flex;align-items:flex-end;gap:2px;height:14px;width:18px}
+.bars i{width:3px;background:#d8d4cc;border-radius:2px}
+.bars i.f{background:var(--ac)}
+.sbtn.wide{flex:1;justify-content:center;padding:12px}
+.status{display:flex;align-items:center;gap:14px;padding:22px 20px 10px}
+.sicon{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--bg2)}
+.sicon.wait .spin{width:20px;height:20px;border-width:3px}
+.sicon.ok{background:var(--ac);color:#fff}
+.sicon.bad{background:var(--danger);color:#fff;font-weight:800;font-size:20px}
+.sicon .ic{width:22px;height:22px;stroke-width:2.5}
+.stitle{font-weight:700;font-size:17px;margin-bottom:2px}
 
 /* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */
