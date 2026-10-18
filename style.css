@@ -125,7 +125,7 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 .lay canvas{display:block;width:100%;aspect-ratio:1;background:var(--screen);border-radius:10px;border:2px solid transparent}
 .lay.on canvas{border-color:var(--ac)}
 .lay b{display:block;font-size:14px;font-weight:700;margin:8px 2px 0}
-.lay .desc{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:1px 2px 0}
+.lay .desc{font-size:12px;color:var(--mut);line-height:1.4;margin:2px 2px 0;word-break:keep-all}
 .tag{display:inline-block;margin:6px 2px 0;background:var(--bg2);border-radius:5px;font-size:11px;padding:2px 6px;color:var(--mut);font-weight:600}
 .check{display:none;position:absolute;right:12px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--ac);color:#fff;place-items:center;z-index:2}
 .check .ic{width:13px;height:13px;stroke-width:3}
@@ -176,6 +176,13 @@ body.has-savebar .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 .scount{display:inline-flex;align-items:center;gap:8px}
 .spin{width:14px;height:14px;border-radius:50%;border:2px solid #0002;border-top-color:var(--ac);animation:spin .8s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
+.segrow{display:flex;align-items:center;gap:4px;padding:0 20px;position:relative}
+.segrow .seg.wide{flex:1;margin:4px 0 0}
+.info{width:36px;height:36px;display:grid;place-items:center;color:var(--mut);border-radius:50%;flex:none;margin-top:4px}
+.info .ic{width:20px;height:20px}
+.tip{position:absolute;right:20px;top:calc(100% + 8px);background:var(--tx);color:#fff;font-size:13px;line-height:1.45;padding:9px 12px;border-radius:10px;max-width:min(80vw,320px);z-index:5;box-shadow:0 4px 14px #0003;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .15s,transform .15s}
+.tip.on{opacity:1;transform:none}
+.tip:after{content:"";position:absolute;right:12px;top:-5px;border:5px solid transparent;border-top:0;border-bottom-color:var(--tx)}
 
 /* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */

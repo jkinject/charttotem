@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=e30bca38">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=4c1dba17">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -120,8 +120,7 @@
 
 <section class="page" data-page="/screen/layout">
  <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">레이아웃 선택</h1></header>
- <div class="seg wide" id="themeSeg" role="radiogroup" aria-label="테마"><button role="radio" data-value="stock">주식</button><button role="radio" data-value="clock">시계</button></div>
- <div class="caption" id="layoutGroupTitle"></div>
+ <div class="segrow"><div class="seg wide" id="themeSeg" role="radiogroup" aria-label="테마"><button role="radio" data-value="stock">주식</button><button role="radio" data-value="clock">시계</button></div><button class="info" id="themeInfo" aria-label="테마 설명"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg></button><div class="tip" id="themeTip" role="tooltip"></div></div>
  <div class="grid" id="layoutGrid"></div>
  <div class="hint" id="layoutMsg"></div>
 </section>
@@ -377,10 +376,17 @@ function norm(s){
 function spark(x,px,py,w,h,series,color){x.strokeStyle=color;x.lineWidth=1.5;x.beginPath();const lo=Math.min(...series),hi=Math.max(...series),r=(hi-lo)||1;
   series.forEach((v,i)=>{const sx=px+i*(w-1)/(series.length-1),sy=py+h-1-(v-lo)/r*(h-1);i?x.lineTo(sx,sy):x.moveTo(sx,sy);});x.stroke();}
 // 큰 시각: [AM/PM 작게(왼쪽, 아래선 맞춤)] [HH:MM 또는 HH:MM:SS]. 펌웨어처럼 7세그 간격을 조여 HH:MM:SS 200px. compact(ORBIT)+초 는 작은 폰트
-function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,font=sec&&compact?"b18":"f7t";   // 펌웨어 drawBigTime 과 같은 배치
-  const wS=measure(x,S.time,font),apW=S.show.h12?28:0,xc=Math.round(120-(apW+wS)/2),ty=sec&&compact?cy+7:cy;
-  if(S.show.h12)text(x,S.ampm,xc,cy+28,"f2",color);   // 숫자 아래선(cy+44)에 맞춘 Font2 (16px)
-  text(x,S.time,xc+apW,ty,font,color,"left");}
+// compact(ORBIT)+초: 펌웨어 seg7Draw 와 같은 작은 7세그 (20x34, 획 4, 숫자 23·콜론 9)
+const S7={w:20,h:34,t:4,adv:23,colon:9,map:[0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F]};
+function seg7W(s){let w=0;for(const c of String(s))w+=c===":"?S7.colon:S7.adv;return w;}
+function seg7(x,s,px,py,color){const {w,h,t}=S7,L=(h-3*t)/2;x.fillStyle=color;
+  for(const c of String(s)){if(c===":"){const cx=px+Math.floor((S7.colon-t)/2);x.fillRect(cx,py+t+L/2-t/2,t,t);x.fillRect(cx,py+2*t+L+L/2-t/2,t,t);px+=S7.colon;continue;}
+    const m=c>="0"&&c<="9"?S7.map[+c]:0,R=(a,b,c2,d)=>x.fillRect(px+1+a,py+b,c2,d);
+    if(m&1)R(t+1,0,w-2*t-2,t);if(m&2)R(w-t,t+1,t,L-2);if(m&4)R(w-t,2*t+L+1,t,L-2);if(m&8)R(t+1,h-t,w-2*t-2,t);if(m&16)R(0,2*t+L+1,t,L-2);if(m&32)R(0,t+1,t,L-2);if(m&64)R(t+1,t+L,w-2*t-2,t);px+=S7.adv;}}
+function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,small=sec&&compact;   // 펌웨어 drawBigTime 과 같은 배치
+  const wS=small?seg7W(S.time):measure(x,S.time,"f7t"),apW=S.show.h12?28:0,xc=Math.round(120-(apW+wS)/2),ty=small?cy+7:cy;
+  if(S.show.h12)text(x,S.ampm,xc,small?ty+34-16:cy+28,"f2",color);   // 숫자 아래선에 맞춘 Font2 (16px)
+  if(small)seg7(x,S.time,xc+apW,ty,color);else text(x,S.time,xc+apW,ty,"f7t",color,"left");}
 function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,"f2",color,"center");}
 function label(x,sl,px,py,h,maxW,color,S){text(x,fitEll(x,sl.label,"f2",maxW),px,py+(h-14)/2,"f2",color);}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
@@ -700,7 +706,7 @@ function renderLayouts(s,force){
   if(!layouts){loadLayouts();return;}
   const t=themeTab||s.theme||"stock";
   $("themeSeg").querySelectorAll("button").forEach(b=>{const on=b.dataset.value===t;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
-  $("layoutGroupTitle").textContent=t==="stock"?"주식 · 시세가 전면에 나와요":"시계 · 겉보기엔 탁상시계예요";
+  $("themeTip").textContent=t==="stock"?"주식 테마: 시세가 전면에 나와요.":"시계 테마: 겉보기엔 탁상시계예요. 종목은 작게 들어가요.";
   const key=t+"|"+s.layout+"|"+layouts.length;
   const grid=$("layoutGrid");
   if(key!==layoutKey||force){
@@ -780,6 +786,9 @@ SHOW_KEYS.forEach(([id,k])=>{$(id).onchange=e=>{draft.show[k]=e.target.checked;m
 $("chart").onchange=e=>{draft.chart=e.target.checked;markDirty();};
 $("blSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.bl=+b.dataset.value;markDirty();};
 $("colorsSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.colors=b.dataset.value;document.body.classList.toggle("kr",draft.colors==="kr");markDirty();};
+// 테마 설명은 (i) 를 누를 때만 말풍선으로
+$("themeInfo").onclick=e=>{e.stopPropagation();const tip=$("themeTip");tip.classList.toggle("on");clearTimeout(tip._t);if(tip.classList.contains("on"))tip._t=setTimeout(()=>tip.classList.remove("on"),4000);};
+document.addEventListener("click",()=>{const tip=$("themeTip");if(tip)tip.classList.remove("on");});
 $("themeSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!state)return;themeTab=b.dataset.value;renderLayouts(view());};
 $("tz").onchange=e=>{if(e.target.value==="custom"){$("tzCustomRow").classList.remove("hidden");$("tzCustom").focus();return;}$("tzCustomRow").classList.add("hidden");setTz(e.target.value);};
 $("tzSave").onclick=()=>setTz($("tzCustom").value);
