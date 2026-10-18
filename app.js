@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt}].
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.7";
+const APP_VERSION = "0.7.8";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -73,7 +73,7 @@ function renderDevices() {
     el.dataset.key = d.id;
     el.innerHTML = `
       <div class="profile"><span class="dot wait" data-r="dot"></span><div class="ptext"><div class="pname" data-r="name">${esc(fmtName(d))}</div><div class="psub"><span>ID ${esc(d.id)}</span>${d.variant ? `<span class="badge">${esc(variantLabel(d.variant))}</span>` : ""}</div></div><button class="more" data-r="more" title="이름 바꾸기 · 연결 해제" aria-label="더보기">${I("more")}</button></div>
-      <div class="msg" data-r="msg">연결을 확인하는 중...</div>
+      <div class="msg hidden" data-r="msg"></div>
       <nav class="list">
         <a class="menu" data-r="open" href="${settingsUrl(d)}">${I("settings")}<span class="mtext"><span class="mlbl">기기 설정 열기</span><span class="msub" data-r="openSub">종목 · 화면 · 시스템 설정 (어디서든)</span></span></a>
       </nav>
@@ -89,7 +89,7 @@ async function refreshDevice(d) {
   const info = await api(`/p/${d.id}/info`, { token: d.token });
   const dot = el.querySelector('[data-r="dot"]'), m = el.querySelector('[data-r="msg"]'), a = el.querySelector('[data-r="open"]');
   if (info._status === 401) {   // 토큰이 폐기됐다 (기기 초기화 등)
-    dot.className = "dot off"; m.className = "msg err"; m.textContent = "이 기기와의 연결이 해제됐어요. 「기기 연결」에서 다시 연결해 주세요.";
+    dot.className = "dot off"; m.className = "msg err"; m.textContent = "연결이 해제됐어요. 「기기 연결」에서 다시 연결해 주세요.";
     a.classList.add("disabled"); a.setAttribute("aria-disabled", "true"); d.lost = true; save(KEY_CLOUD, cloudDevices); return;
   }
   if (!info.ok) { dot.className = "dot wait"; m.className = "msg"; m.textContent = "서버에 닿지 않아요. 인터넷 연결을 확인해 주세요."; return; }
@@ -100,8 +100,9 @@ async function refreshDevice(d) {
   save(KEY_CLOUD, cloudDevices);
   el.querySelector('[data-r="name"]').textContent = fmtName(d);
   a.classList.remove("disabled"); a.removeAttribute("aria-disabled");
-  if (info.online) { dot.className = "dot on"; m.className = "msg"; m.textContent = ["온라인", info.fw ? "v" + info.fw : ""].filter(Boolean).join(" · "); }
-  else { dot.className = "dot off"; m.className = "msg err"; m.textContent = "오프라인" + (info.age != null ? " · 마지막 연결 " + agoText(info.age) : " · 아직 한 번도 연결되지 않았어요") + ". 아래 도움말을 확인해 보세요."; }
+  // 온라인이면 점만. 문제가 있을 때만 한 줄 (정보 과잉 방지)
+  if (info.online) { dot.className = "dot on"; m.className = "msg hidden"; m.textContent = ""; }
+  else { dot.className = "dot off"; m.className = "msg err"; m.textContent = "오프라인" + (info.age != null ? " · 마지막 연결 " + agoText(info.age) : "") + " · 아래 도움말 참고"; }
 }
 function refreshAll() { for (const d of cloudDevices) refreshDevice(d); }
 
