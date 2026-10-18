@@ -93,7 +93,7 @@
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg><span class="mtext"><span class="mlbl">상승·하락 색</span></span><div class="seg" id="colorsSeg" role="radiogroup" aria-label="상승·하락 색"><button role="radio" data-value="kr">한국식</button><button role="radio" data-value="global">글로벌</button></div></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span class="mtext"><span class="mlbl">시간대</span></span><select id="tz" class="val" aria-label="시간대"></select></div>
   <div class="setrow hidden" id="tzCustomRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><input class="text" id="tzCustom" placeholder="POSIX TZ (예: KST-9)" maxlength="47" aria-label="직접 시간대"><button class="textbtn" id="tzSave"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>저장</button></div>
-  <div class="setrow col"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">밝기</span></span><b class="mval" id="blVal"></b><input id="bl" type="range" min="0" max="100" aria-label="밝기"></div>
+  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">밝기</span></span><div class="seg" id="blSeg" role="radiogroup" aria-label="밝기"><button role="radio" data-value="1">어둡게</button><button role="radio" data-value="50">보통</button><button role="radio" data-value="75">밝게</button></div></div>
  </div>
  <div class="hint" id="screenMsg"></div>
 </section>
@@ -702,7 +702,9 @@ function renderScreen(s){
   const lay=(layouts||[]).find(l=>l.id===s.layout);const single=lay?lay.single:["S00","S01","C02","C05"].includes(s.layout);  // 목록이 오기 전엔 알려진 ID 로 판단 (깜빡임 방지)
   $("rotateRow").classList.toggle("hidden",!single);
   $("showSecondsRow").classList.toggle("hidden",!clock);$("show12hRow").classList.toggle("hidden",!clock||s.layout==="C02");  // HANDS(아날로그)는 초침만 해당, 12시간제 없음
-  const bl=$("bl");if(document.activeElement!==bl){bl.value=s.brightness;$("blVal").textContent=s.brightness+"%";}
+  // 밝기: 어둡게 1 · 보통 50 · 밝게 75. 다른 값(옛 슬라이더로 맞춘 값)은 가장 가까운 단계로 표시
+  const BL=[1,50,75],blNear=BL.reduce((a,b)=>Math.abs(b-(s.brightness||0))<Math.abs(a-(s.brightness||0))?b:a,BL[0]);
+  $("blSeg").querySelectorAll("button").forEach(b=>{const on=+b.dataset.value===blNear;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
   const sel=$("tz");
   if(!sel.options.length){TZ_PRESETS.forEach(([v,l])=>sel.add(new Option(l,v)));sel.add(new Option("직접 입력...","custom"));}
   if(document.activeElement!==sel){const preset=TZ_PRESETS.find(([v])=>v===s.tz);sel.value=preset?s.tz:"custom";$("tzCustomRow").classList.toggle("hidden",!!preset);
@@ -791,8 +793,7 @@ $(MARKET.inputId).onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();if(MARKET
 $("rotate").onchange=e=>{draft.rotate=+e.target.value;markDirty();};
 SHOW_KEYS.forEach(([id,k])=>{$(id).onchange=e=>{draft.show[k]=e.target.checked;markDirty();};});
 $("chart").onchange=e=>{draft.chart=e.target.checked;markDirty();};
-$("bl").oninput=e=>{$("blVal").textContent=e.target.value+"%";};
-$("bl").onchange=e=>{draft.bl=+e.target.value;markDirty();};
+$("blSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.bl=+b.dataset.value;markDirty();};
 $("colorsSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.colors=b.dataset.value;document.body.classList.toggle("kr",draft.colors==="kr");markDirty();};
 $("themeSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!state)return;themeTab=b.dataset.value;renderLayouts(view());};
 $("tz").onchange=e=>{if(e.target.value==="custom"){$("tzCustomRow").classList.remove("hidden");$("tzCustom").focus();return;}$("tzCustomRow").classList.add("hidden");setTz(e.target.value);};
