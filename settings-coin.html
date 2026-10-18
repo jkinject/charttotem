@@ -426,8 +426,9 @@ function row(x,S,sl,px,py,w,h,f){if(!sl)return;if(f.rule){x.fillStyle=C.bar;x.fi
   if(f.spark&&S.show.spark&&right-56>px+44){spark(x,right-50,py+(h-22)/2,50,22,fakeSeries(sl.code,sl.up,24),sl.color);right-=56;}
   if(f.name)text(x,fitEll(x,sl.name,"ko24",right-px-4),px+4,py+(h-20)/2,"ko24",C.white);else label(x,sl,px+4,py,h,right-px-4,C.text,S);}
 function columns(x,S,py,h){const n=S.slots.length;if(!n)return;const cw=240/n;S.slots.forEach((sl,i)=>{const px=i*cw;
-  text(x,fitEll(x,sl.label,"f2",cw-4),px+2,py+1,"f2",C.text);const f=cw>=56?"f2":"f1";let p=S.show.price?(sl.ok?money(sl,S.v):"-"):"";if(measure(x,p,f)>cw-4)p=compact(sl,S.v);
-  text(x,p,px+2,py+18,f,sl.color);if(h>=46&&S.show.change)text(x,pct(sl),px+2,py+(cw>=56?36:28),"f1",sl.color);});}
+  text(x,fitEll(x,sl.label,"f2",cw-4),px+2,py+1,"f2",C.text);const f=cw>=56?"f2":"f1";
+  if(S.show.price){let p=sl.ok?money(sl,S.v):"-";if(measure(x,p,f)>cw-4)p=compact(sl,S.v);text(x,p,px+2,py+18,f,sl.color);if(h>=46&&S.show.change)text(x,pct(sl),px+2,py+(cw>=56?36:28),"f1",sl.color);}
+  else if(S.show.change)text(x,pct(sl),px+2,py+18,f,sl.color);});}   // 가격 숨김: 등락률이 가격 자리로 (펌웨어 drawSlotColumn 과 동일)
 function countdown(x,py){x.fillStyle=C.accent;x.fillRect(6,py,150,2);x.fillStyle=C.bar;x.fillRect(156,py,78,2);}
 
 const L={
