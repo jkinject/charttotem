@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=53597ebf">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=c269c04a">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -26,6 +26,7 @@
 <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
 <symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
 <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
 <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
 <symbol id="i-fingerprint" viewBox="0 0 24 24"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></symbol>
 <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
@@ -429,7 +430,7 @@ const L={
   if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,216,"f1",C.dim,"right");countdown(x,236);},
  S02(x,S){text(x,"WATCHLIST",6,6,"f2",C.title);text(x,S.slots.length+" symbols",96,6,"f2",C.dim);text(x,S.time,234,11,"f2",C.dim,"right");
   x.fillStyle=C.frame;x.fillRect(4,27,232,1);S.slots.forEach((sl,i)=>row(x,S,sl,0,30+i*42,240,42,{spark:1,name:1,rule:1}));},
- C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,104,80,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white,true);bigDate(x,S,138,C.dim);if(!S.show.symbols)return;
+ C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,101,84,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white,true);bigDate(x,S,138,C.dim);if(!S.show.symbols)return;
   // 점은 |등락률| 에 비례해 시계 방향으로 돈다 (10% 이상 = 한 바퀴 30초). 펌웨어와 같은 법칙, 시간 기반이라 다시 그릴 때마다 조금씩 움직인다
   const n=S.slots.length,t=Date.now()/1000;S.slots.forEach((sl,i)=>{const w=sl.ok?Math.min(Math.abs(sl.change),10)/10*12:0;const a=(-90+360*i/n+w*t%360)*Math.PI/180;dot(x,120+80*Math.cos(a),104+80*Math.sin(a),6,sl.color);});columns(x,S,192,48);},
  C02(x,S){const cx=120,cy=104,R=86;for(let i=0;i<12;i++){const a=i*30*Math.PI/180,inn=i%3?R-7:R-12;x.strokeStyle=i%3?C.dim:C.text;x.lineWidth=1;x.beginPath();
@@ -789,8 +790,18 @@ $("tzCustom").onkeydown=e=>{if(e.key==="Enter")setTz(e.target.value);};
 $("saveBtn").onclick=save;
 $("revertBtn").onclick=revert;
 // 즉시 반영되는 것들
-$("devEdit").onclick=()=>{const cur=(state&&state.name)||"";const v=prompt("기기 이름 (최대 24자, 비우면 ID 로 표시)",cur);if(v==null)return;const n=v.trim().slice(0,24);if(n===cur)return;
-  post("/api/settings?name="+encodeURIComponent(n)).then(()=>{toast(n?(CLOUD?"이름을 저장했어요 · 기기에 곧 반영돼요":"이름을 저장했어요"):"이름을 지웠어요 · ID 로 표시돼요");pollSoon(300);}).catch(e=>toast(e.message));};
+// 기기 이름: 연필을 누르면 같은 자리에서 글자만 고친다 (Enter/✓ 저장, Esc 취소, 포커스 빠져도 저장)
+function startNameEdit(){const title=$("devTitle"),btn=$("devEdit"),wrap=title.parentNode;if(wrap.querySelector("input"))return;const cur=(state&&state.name)||"";
+  const inp=document.createElement("input");inp.className="pname-edit";inp.maxLength=24;inp.value=cur;inp.placeholder="기기 이름";inp.setAttribute("aria-label","기기 이름");
+  title.classList.add("hidden");wrap.insertBefore(inp,title);btn.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>';btn.classList.add("on");
+  let done=false;
+  const finish=commit=>{if(done)return;done=true;const n=inp.value.trim().slice(0,24);inp.remove();title.classList.remove("hidden");
+    btn.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg>';btn.classList.remove("on");btn.onclick=startNameEdit;
+    if(!commit||n===cur)return;title.textContent=n||"차트토템 "+((state&&state.id)||"").slice(-4);if(state)state.name=n;
+    post("/api/settings?name="+encodeURIComponent(n)).then(()=>{toast(n?(CLOUD?"이름을 저장했어요 · 기기에 곧 반영돼요":"이름을 저장했어요"):"이름을 지웠어요 · ID 로 표시돼요");pollSoon(300);}).catch(e=>toast(e.message));};
+  btn.onclick=()=>finish(true);inp.onkeydown=e=>{if(e.key==="Enter")finish(true);else if(e.key==="Escape")finish(false);};inp.onblur=()=>setTimeout(()=>finish(true),150);
+  inp.focus();inp.select();}
+$("devEdit").onclick=startNameEdit;
 $("restart").onclick=()=>{if(confirm("기기를 재시작할까요?")){fetch("/restart").catch(()=>{});toast(CLOUD?"재시작 명령을 보냈어요 · 최대 30초 뒤 재시작해요":"기기를 재시작하고 있어요");if(!CLOUD)setTimeout(()=>setConn(false),1500);}};
 const wifiReset=$("wifiReset");if(wifiReset)wifiReset.onclick=()=>{if(confirm("저장된 Wi-Fi를 지우고 초기 설정 화면으로 돌아갈까요? 기기 화면에 QR이 다시 떠요."))fetch("/api/wifi/reset",{method:"POST"}).then(()=>toast("초기 설정 모드로 전환해요")).catch(()=>{});};
 $("retry").onclick=()=>{failCount=0;loadState();};

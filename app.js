@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt}].
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.16";
+const APP_VERSION = "0.7.17";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -72,7 +72,7 @@ function renderDevices() {
     el.className = "dev";
     el.dataset.key = d.id;
     el.innerHTML = `
-      <div class="profile"><span class="dot wait" data-r="dot"></span><div class="ptext"><div class="pname" data-r="name">${esc(fmtName(d))}</div><div class="psub"><span>ID ${esc(d.id)}</span>${d.variant ? `<span class="badge">${esc(variantLabel(d.variant))}</span>` : ""}</div></div><button class="more" data-r="more" title="이름 바꾸기 · 연결 해제" aria-label="더보기">${I("more")}</button></div>
+      <div class="profile"><span class="dot wait" data-r="dot"></span><div class="ptext"><div class="pname" data-r="name">${esc(fmtName(d))}</div><div class="psub"><span>ID ${esc(d.id)}</span>${d.variant ? `<span class="badge">${esc(variantLabel(d.variant))}</span>` : ""}</div></div><button class="more" data-r="more" title="이름 바꾸기 · 기기 삭제" aria-label="더보기">${I("more")}</button></div>
       <div class="msg hidden" data-r="msg"></div>
       <nav class="list">
         <a class="menu" data-r="open" href="${settingsUrl(d)}">${I("settings")}<span class="mtext"><span class="mlbl">기기 설정 열기</span><span class="msub" data-r="openSub">종목 · 화면 · 시스템 설정 (어디서든)</span></span></a>
@@ -107,16 +107,49 @@ async function refreshDevice(d) {
 function refreshAll() { for (const d of cloudDevices) refreshDevice(d); }
 
 function deviceMenu(d) {
-  const name = prompt("기기 이름 (비우면 이름만 지워요)\n이 폰에서 연결을 해제하려면 '해제' 라고 입력", d.name || "");
-  if (name === null) return;
-  if (name.trim() === "해제") {
-    api(`/p/${d.id}/token`, { method: "DELETE", token: d.token });
-    cloudDevices = cloudDevices.filter((x) => x !== d); save(KEY_CLOUD, cloudDevices); renderDevices(); toast("연결을 해제했어요"); return;
-  }
-  const v = name.trim().slice(0, 24);
-  d.name = v; save(KEY_CLOUD, cloudDevices); renderDevices();
-  api(`/p/${d.id}/settings?name=${encodeURIComponent(v)}`, { method: "POST", token: d.token }).then((r) => { if (r.ok) toast("이름을 바꿨어요. 기기에 곧 반영돼요"); });
-  refreshAll();
+  // ⋯ 메뉴: 이름 바꾸기 / 기기 삭제 (삭제는 confirm 뒤에만). 바닥 시트 하나를 재사용한다.
+  let sh = $("sheet");
+  if (!sh) { sh = document.createElement("div"); sh.id = "sheet"; sh.className = "sheet-bd"; document.body.appendChild(sh); }
+  sh.innerHTML = `<div class="sheet" role="menu"><div class="sheet-title">${esc(fmtName(d))} · ID ${esc(d.id)}</div>
+    <button role="menuitem" data-a="rename">${I("pencil")}이름 바꾸기</button>
+    <button role="menuitem" class="danger" data-a="remove">${I("trash")}기기 삭제</button>
+    <button role="menuitem" class="cancel" data-a="cancel">취소</button></div>`;
+  const close = () => { sh.classList.remove("on"); setTimeout(() => { sh.innerHTML = ""; }, 200); };
+  sh.onclick = (e) => {
+    const a = e.target.closest("[data-a]")?.dataset.a || (e.target === sh ? "cancel" : null);
+    if (!a) return;
+    close();
+    if (a === "rename") renameDevice(d);
+    else if (a === "remove") removeDevice(d);
+  };
+  requestAnimationFrame(() => sh.classList.add("on"));
+}
+function renameDevice(d) {
+  // 카드의 이름 글자가 그 자리에서 입력칸으로 바뀐다 (Enter/✓ 저장, Esc 취소, 포커스 빠져도 저장)
+  const el = document.querySelector(`.dev[data-key="${d.id}"] [data-r="name"]`);
+  if (!el || el.querySelector("input")) return;
+  const cur = d.name || "";
+  el.innerHTML = `<input class="pname-edit" maxlength="24" placeholder="기기 이름" aria-label="기기 이름"><button class="editbtn on" aria-label="저장">${I("check")}</button>`;
+  const inp = el.querySelector("input"), btn = el.querySelector("button");
+  inp.value = cur;
+  let done = false;
+  const finish = (commit) => {
+    if (done) return; done = true;
+    const v = inp.value.trim().slice(0, 24);
+    if (!commit || v === cur) { el.textContent = fmtName(d); return; }
+    d.name = v; save(KEY_CLOUD, cloudDevices); renderDevices();
+    api(`/p/${d.id}/settings?name=${encodeURIComponent(v)}`, { method: "POST", token: d.token }).then((r) => { if (r.ok) toast("이름을 바꿨어요. 기기에 곧 반영돼요"); });
+    refreshAll();
+  };
+  btn.onclick = () => finish(true);
+  inp.onkeydown = (e) => { if (e.key === "Enter") finish(true); else if (e.key === "Escape") finish(false); };
+  inp.onblur = () => setTimeout(() => finish(true), 150);
+  inp.focus(); inp.select();
+}
+function removeDevice(d) {
+  if (!confirm(`'${fmtName(d)}' 기기를 이 폰에서 삭제할까요?\n기기 자체 설정은 그대로예요. 「기기 연결」로 다시 연결할 수 있어요.`)) return;
+  api(`/p/${d.id}/token`, { method: "DELETE", token: d.token });
+  cloudDevices = cloudDevices.filter((x) => x !== d); save(KEY_CLOUD, cloudDevices); renderDevices(); toast("기기를 삭제했어요");
 }
 
 // ------------------------------------------------------------
@@ -270,7 +303,7 @@ const FAQ = [
   ["연결 코드가 기기 화면에 안 떠요", `<p>「기기 연결」에서 ID 를 넣고 다음을 누르면 기기가 최대 30초 안에 화면에 숫자 6자리를 띄워요. 기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았으면 뜨지 않아요.</p><p>숫자는 10분 동안만 유효해요. 지나면 「처음부터」를 눌러 다시 받으세요.</p>`],
   ["설정을 저장했는데 기기가 안 바뀌어요", `<p>기기는 30초마다 새 설정을 확인해요. 저장 뒤 최대 30초 기다려 보세요. 설정 화면 아래 바가 "기기에 반영됐어요" 로 바뀌면 끝이에요.</p><p>계속 "반영 중" 이면 기기가 오프라인일 가능성이 커요. 위의 오프라인 항목을 확인해 주세요.</p>`],
   ["다른 폰에서도 이 기기를 설정하고 싶어요", `<p>그 폰에서 이 앱을 열고 「기기 연결」로 같은 ID 와 기기 화면의 숫자 코드로 연결하면 돼요. 한 기기에 여러 폰을 연결할 수 있어요.</p>`],
-  ["앱에서 기기를 빼고 싶어요", `<p>기기 항목 오른쪽 ⋯ 을 누르고 <b>해제</b> 라고 입력하면 이 폰에서 연결이 끊겨요. 기기 자체 설정은 그대로예요.</p>`],
+  ["앱에서 기기를 빼고 싶어요", `<p>기기 항목 오른쪽 ⋯ 을 누르고 <b>기기 삭제</b>를 고르면 이 폰에서 연결이 끊겨요. 기기 자체 설정은 그대로예요.</p>`],
 ];
 function renderFaq() {
   const box = $("faq"); box.innerHTML = "";

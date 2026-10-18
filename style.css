@@ -168,6 +168,8 @@ body.has-savebar .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 .editbtn .ic{width:18px;height:18px}
 .seg .updn{display:inline-flex;gap:1px;margin-right:5px;font-size:10px;line-height:1}
 .seg .updn b{font-weight:900}
+.pname-edit{font:inherit;font-size:22px;font-weight:700;color:var(--tx);border:0;border-bottom:2px solid var(--ac);border-radius:0;background:none;padding:0 2px;width:min(56vw,220px);outline:none;vertical-align:baseline}
+.editbtn.on{color:var(--ac)}
 
 /* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */
@@ -231,3 +233,15 @@ body.has-savebar .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 .faq-a.doc p{margin:0 0 6px}
 .faq-a.doc ol{margin:0;padding-left:18px}
 .faq-a.doc li{margin-bottom:6px}
+
+/* ⋯ 바닥 시트 메뉴 */
+.sheet-bd{position:fixed;inset:0;background:#0000;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;transition:background .2s;z-index:50}
+.sheet-bd.on{background:#0006;pointer-events:auto}
+.sheet{width:100%;max-width:480px;background:var(--bg);border-radius:18px 18px 0 0;padding:8px 8px calc(10px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .2s}
+.sheet-bd.on .sheet{transform:none}
+.sheet-title{font-size:13px;color:var(--mut);text-align:center;padding:8px 12px 6px}
+.sheet button{width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;font-size:16px;color:var(--tx)}
+.sheet button:active{background:var(--bg2)}
+.sheet button .ic{width:20px;height:20px}
+.sheet button.danger{color:var(--danger)}
+.sheet button.cancel{justify-content:center;font-weight:700;color:var(--mut);margin-top:4px;border-top:1px solid var(--ln);border-radius:0}
