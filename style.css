@@ -157,9 +157,9 @@ body.cloud .local-only{display:none !important}
 .savebar{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:480px;box-sizing:border-box;bottom:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--ln);box-shadow:0 -4px 16px #0000000d}
 .savebar .scount{font-size:14px;font-weight:600;color:var(--tx);flex:1}
 .savebar .textbtn{color:var(--mut);margin:0}
-.savebar .sbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ac);color:#fff;font-weight:700;font-size:15px;padding:11px 20px;border-radius:999px}
-.savebar .sbtn:disabled{opacity:.6}
-.savebar .sbtn .ic{width:18px;height:18px}
+.sbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ac);color:#fff;font-weight:700;font-size:15px;padding:11px 20px;border-radius:999px}
+.sbtn:disabled{opacity:.6}
+.sbtn .ic{width:18px;height:18px}
 .savebar.applying .scount{color:var(--ac)}
 body.has-savebar .page{padding-bottom:96px}
 body.has-savebar .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
