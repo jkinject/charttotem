@@ -3,7 +3,7 @@
 // - 기기 통신은 HTTP(사설 IP) 라서 HTTPS 페이지에서는 원래 막히지만, Chrome 141+ 의 Local Network Access
 //   (fetch 에 targetAddressSpace 옵션) 로 허용된다 (권한 창 1회). 안 되는 브라우저는 "열기만" 모드.
 // - 종목·화면 설정은 기기 설정 페이지(http://<기기IP>/)에서 한다. 런처는 연결 상태 확인, 이름, 추가/삭제, 설정 페이지 열기만.
-const APP_VERSION = "0.5.0";
+const APP_VERSION = "0.5.1";
 const KEY_DEVICES = "ct.devices";
 const KEY_INSTALL = "ct.installDone";
 const KEY_LNA = "ct.lnaOption";
@@ -96,8 +96,7 @@ function renderDevices() {
       <div class="profile"><span class="dot" data-r="dot"></span><div class="ptext"><div class="pname" data-r="name">${esc(fmtName(d))}</div><div class="psub" data-r="sub">${esc(subOf(d))}</div></div><button class="more" data-r="more" title="이름 바꾸기 · 삭제" aria-label="더보기">${I("more")}</button></div>
       <div class="msg" data-r="msg">${esc(summaryOf(d))}</div>
       <nav class="list">
-        <a class="menu" href="http://${esc(d.ip)}/" target="_blank" rel="noopener">${I("settings")}<span class="mtext"><span class="mlbl">기기 설정 열기</span><span class="msub">종목 · 화면 · Wi-Fi · 시스템 설정은 기기 페이지에서</span></span></a>
-        ${d.host ? `<a class="menu" href="http://${esc(d.host)}/" target="_blank" rel="noopener">${I("external-link")}<span class="mtext"><span class="mlbl">${esc(d.host)}</span><span class="msub">아이폰 · 맥에서는 이 주소로도 열려요</span></span></a>` : ""}
+        <a class="menu${openOnly ? "" : " disabled"}" data-r="open" href="http://${esc(d.ip)}/" target="_blank" rel="noopener" ${openOnly ? "" : 'aria-disabled="true" tabindex="-1"'}>${I("settings")}<span class="mtext"><span class="mlbl">기기 설정 열기</span><span class="msub" data-r="openSub">${openOnly ? "종목 · 화면 · Wi-Fi · 시스템 설정은 기기 페이지에서" : "연결을 확인하는 중..."}</span></span></a>
       </nav>
       <div class="band"></div>`;
     el.querySelector('[data-r="more"]').onclick = () => deviceMenu(d);
@@ -117,6 +116,13 @@ function summaryOf(d) {
 }
 
 function cardOf(d) { return document.querySelector(`.dev[data-key="${CSS.escape(d.id || d.ip)}"]`); }
+// 기기에 닿을 때만 「기기 설정 열기」를 누를 수 있게 (안 닿는데 빈 페이지만 뜨지 않도록)
+function setOpenable(el, ok, sub) {
+  const a = el.querySelector('[data-r="open"]'); if (!a) return;
+  a.classList.toggle("disabled", !ok);
+  if (ok) { a.removeAttribute("aria-disabled"); a.removeAttribute("tabindex"); } else { a.setAttribute("aria-disabled", "true"); a.setAttribute("tabindex", "-1"); }
+  el.querySelector('[data-r="openSub"]').textContent = sub;
+}
 function setDot(el, s) { const dot = el.querySelector('[data-r="dot"]'); dot.className = "dot " + s; }
 
 function applyState(d, s) {
@@ -130,6 +136,7 @@ function applyState(d, s) {
   let el = cardOf(d);
   if (!el) { renderDevices(); el = cardOf(d); if (!el) return; }
   setDot(el, "on");
+  setOpenable(el, true, "종목 · 화면 · Wi-Fi · 시스템 설정은 기기 페이지에서");
   el.querySelector('[data-r="name"]').textContent = fmtName(d);
   el.querySelector('[data-r="sub"]').textContent = subOf(d);
   const m = el.querySelector('[data-r="msg"]'); m.className = "msg"; m.textContent = summaryOf(d);
@@ -137,12 +144,13 @@ function applyState(d, s) {
 
 async function refreshDevice(d) {
   const el = cardOf(d); if (!el) return;
-  if (openOnly) { setDot(el, ""); el.querySelector('[data-r="msg"]').textContent = "이 브라우저에서는 상태를 볼 수 없어요. 「기기 설정 열기」로 바로 여세요."; return; }
+  if (openOnly) { setDot(el, ""); setOpenable(el, true, "이 브라우저에서는 연결 상태를 알 수 없어요"); el.querySelector('[data-r="msg"]').textContent = "이 브라우저에서는 상태를 볼 수 없어요. 「기기 설정 열기」로 바로 여세요."; return; }
   setDot(el, d.lastSeen ? "on" : "wait");
   const s = await probe(d.ip, 3000, true);
   if (s && s.version) { applyState(d, s); return; }
   if (openOnly) { refreshDevice(d); return; }   // 방금 "막힘" 으로 판정됐으면 안내로 바꿈
   setDot(el, "off");
+  setOpenable(el, false, "기기에 닿으면 열 수 있어요");
   const m = el.querySelector('[data-r="msg"]'); m.className = "msg err"; m.textContent = "지금은 기기에 닿지 않아요. 아래 '기기가 안 열릴 때'를 확인해 보세요.";
 }
 
@@ -255,7 +263,7 @@ function setMsg(id, t, cls) { const m = $(id); m.textContent = t; m.className = 
 let toastTimer; function toast(t) { const el = $("toast"); el.textContent = t; el.classList.remove("hidden"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.add("hidden"), 2500); }
 
 (function init() {
-  $("ver").textContent = "v" + APP_VERSION; $("ver2").textContent = "v" + APP_VERSION;
+  $("ver").textContent = "v" + APP_VERSION;
   // 온보딩/QR 핸드오프
   const p = new URLSearchParams(location.search);
   if (p.get("add") || p.get("ip")) {

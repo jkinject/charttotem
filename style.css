@@ -147,6 +147,8 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 .top h1:focus{outline:none}
 
 /* ---- 런처 전용 ---- */
+.menu.disabled{pointer-events:none;color:#b5b2ad}
+.menu.disabled .mlbl,.menu.disabled .msub,.menu.disabled .ic{color:#b5b2ad}
 .top.home{padding:0 20px;gap:10px;height:60px}
 .top .logo{border-radius:8px;flex:none}
 .top .ver{font-size:12px;color:var(--mut);font-weight:600}
