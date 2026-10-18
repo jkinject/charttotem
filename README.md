@@ -17,3 +17,12 @@ GitHub Pages 로 호스팅: https://jkinject.github.io/charttotem/
 
 펌웨어 쪽 연동: 기기의 `src/brand.h` `LAUNCHER_URL` 이 이 주소. 도메인을 바꾸면 거기도 바꿔서 OTA.
 `sw.js` 의 `CACHE` 이름을 올리면 설치된 앱이 새 파일을 받는다.
+
+
+## 0.6.0 — 클라우드 페어링 (고객용 기본 경로)
+
+- 고객은 기기 IP 를 모른다. **기기 연결** 에서 기기 화면의 Device ID 6자리를 넣으면 서버가 기기 화면에 6자리 숫자 코드를 띄우고, 그 숫자를 입력하면 토큰을 받아 어디서든(집 밖에서도) 기기를 설정한다. 중계 서버는 `cloud/`(Cloudflare Worker + Durable Object, `cloud/API.md`).
+- 기기 설정 화면은 `settings-kstock.html` / `settings-coin.html`(`?id=<기기ID>`)로, 펌웨어 설정 페이지와 같은 소스(`firmware/tools/web/`)에서 `firmware/tools/gen_launcher.py` 가 만든다. `cloud_shim.js` 가 `/api/*` 를 Worker 로 돌린다. **직접 고치지 말고 소스를 고친 뒤 생성기를 돌린다** (`style.css` 도 `settings.css + launcher.css` 에서 생성).
+- Wi-Fi 비밀번호는 클라우드로 보내지 않는다. Wi-Fi 변경·추가·초기화, OTA, 코인 로고 업로드는 기기 옆(IP 접속)에서만 보인다 (`.local-only`).
+- IP 직접 연결(LNA 스캔, `http://<ip>/`)은 **개발자 모드** 에서만: 버전 글자를 7번 탭하거나 `?dev=1`.
+- 기기 QR(`?add=1&id=`)은 기기 연결 화면으로 바로 이어진다 (ID 자동 입력).

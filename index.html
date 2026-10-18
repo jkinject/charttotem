@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>차트토템</title>
-<meta name="description" content="책상에 세워두는 투자자의 작은 토템 — 차트토템 기기 관리">
+<meta name="description" content="책상에 세워두는 투자자의 작은 토템 — 어디서든 차트토템 기기 설정">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -60,6 +60,7 @@
 <symbol id="i-house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
 </svg>
 <main class="app">
+<section class="page home on" data-page="/">
   <header class="top home"><img class="logo" src="icons/icon-192.png" alt="" width="28" height="28"><h1>차트토템</h1><span class="ver" id="ver"></span></header>
 
   <div class="hintbox hidden" id="installCard">
@@ -68,36 +69,65 @@
     <div class="row"><button id="installBtn" class="primary"><svg class="ic" aria-hidden="true"><use href="#i-house"/></svg>홈 화면에 추가</button><button id="installLater">나중에</button></div>
   </div>
 
-  <div class="hintbox warn hidden" id="browserCard">
-    <b><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg>이 브라우저에서는 기기 상태를 볼 수 없어요</b>
-    <div class="msg">기기 설정 페이지는 열 수 있지만, 연결 상태 확인은 <b>Chrome</b>(안드로이드)에서만 돼요. Chrome으로 열면 더 편해요.</div>
-  </div>
-
   <section id="devices"></section>
 
   <div class="empty" id="emptyCard">
-    <b>아직 등록된 기기가 없어요</b>
-    <div class="hint">기기 화면의 QR을 폰 카메라로 찍으면 여기에 자동으로 추가돼요.<br>처음 설정(Wi-Fi 연결)을 아직 안 했다면 기기 화면의 Wi-Fi QR부터 찍어 주세요.</div>
+    <b>아직 연결된 기기가 없어요</b>
+    <div class="hint">기기 화면의 QR 을 폰 카메라로 찍거나,<br>아래 「기기 연결」에서 기기 화면에 적힌 ID 를 입력하세요.</div>
+    <button class="textbtn" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>기기 연결</button>
   </div>
 
   <div class="band"></div>
-  <div class="caption">기기 추가</div>
-  <div class="formrow"><input type="text" class="text" id="manualIp" placeholder="기기 화면의 주소 (예: 192.168.0.23)" inputmode="decimal"><button class="textbtn" id="manualAdd"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>추가</button></div>
-  <nav class="list"><button class="menu" id="scanBtn"><svg class="ic" aria-hidden="true"><use href="#i-radar"/></svg><span class="mtext"><span class="mlbl" id="scanLabel">같은 Wi-Fi에서 기기 찾기</span><span class="msub">폰과 같은 대역을 훑어요 (최대 2분)</span></span></button></nav>
-  <div class="msg" id="addMsg"></div>
+  <nav class="list">
+    <button class="menu" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span class="mtext"><span class="mlbl">기기 연결</span><span class="msub">기기 화면의 ID 6자리와 숫자 코드로 연결해요</span></span></button>
+  </nav>
 
   <div class="band"></div>
-  <div class="caption">기기가 안 열릴 때</div>
-  <div class="doc" id="guideCard">
+  <div class="caption">도움말</div>
+  <div class="doc">
+    <h2>기기가 "오프라인" 으로 보여요</h2>
     <ol>
-      <li><b>폰 Wi-Fi</b>가 기기와 같은 Wi-Fi인지 확인하세요. 기기가 쓰는 Wi-Fi 이름은 위 기기 항목에 적혀 있어요. (5GHz가 아닌 2.4GHz 이름)</li>
-      <li><b>기기 화면</b>이 켜져 있는지, 가격이 움직이는지 보세요.</li>
-      <li>기기 <b>전원을 뽑았다가 10초 뒤 다시</b> 꽂으세요. 켜질 때 화면에 주소가 잠깐 떠요.</li>
-      <li>기기 화면에 <b>QR</b>이 떠 있으면 폰 카메라로 다시 찍으세요. 가장 확실한 방법이에요. 주소가 바뀌어도 자동으로 맞춰져요.</li>
-      <li>QR이 없으면 <b>같은 Wi-Fi에서 기기 찾기</b>를 눌러 보세요. 기기 화면에 주소가 보이면 <b>기기 추가</b>에 직접 입력해도 돼요.</li>
-      <li>기기 화면에 <b>Wi-Fi 설정 QR</b>(1/2)이 떠 있으면 Wi-Fi 정보가 지워진 거예요. 그 QR을 찍어 처음 설정을 다시 하세요.</li>
+      <li>기기 <b>전원</b>이 켜져 있고 화면에 시세나 시계가 움직이는지 보세요.</li>
+      <li>기기 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 이 떠 있으면, 기기가 있는 곳의 Wi-Fi 에 아직 연결되지 않은 거예요. 폰 카메라로 그 QR 을 찍고 Wi-Fi 를 골라 비밀번호를 넣어 주세요.</li>
+      <li>공유기를 껐다 켠 직후라면 1~2분 기다려 보세요. 기기가 스스로 다시 붙어요.</li>
     </ol>
+    <h2>기기를 다른 곳으로 옮겼어요</h2>
+    <p>새 장소에서 켜면 30초쯤 뒤 기기 화면에 QR 이 떠요. 그 QR 을 찍어 그곳 Wi-Fi 에 한 번만 연결하면 돼요. 이전 Wi-Fi 도 그대로 기억하니 돌아가면 알아서 붙어요. 이 앱은 다시 연결할 필요가 없어요.</p>
+    <h2>회사 Wi-Fi 에 안 붙어요</h2>
+    <p>아이디·비밀번호 로그인 방식(기업용)이나 웹 로그인이 뜨는 Wi-Fi, 5GHz 전용 Wi-Fi 에는 기기가 붙을 수 없어요. 폰 핫스팟이나 소형 공유기를 쓰세요.</p>
   </div>
+
+  <div class="band"></div>
+  <div id="devSection" class="hidden">
+    <div class="caption">개발자 · IP 로 직접 연결</div>
+    <div class="msg">같은 Wi-Fi 에서 기기 IP 로 바로 여는 개발용 경로예요. 고객용은 위의 「기기 연결」(클라우드) 이에요.</div>
+    <div class="formrow"><input type="text" class="text" id="manualIp" placeholder="기기 IP (예: 192.168.0.23)" inputmode="decimal"><button class="textbtn" id="manualAdd"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>추가</button></div>
+    <nav class="list"><button class="menu" id="scanBtn"><svg class="ic" aria-hidden="true"><use href="#i-radar"/></svg><span class="mtext"><span class="mlbl" id="scanLabel">같은 Wi-Fi에서 기기 찾기</span><span class="msub">폰과 같은 대역을 훑어요 (최대 2분)</span></span></button></nav>
+    <div class="msg" id="addMsg"></div>
+    <nav class="list" id="ipDevices"></nav>
+    <nav class="list"><button class="menu danger" id="devOff"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span class="mtext"><span class="mlbl">개발자 모드 끄기</span></span></button></nav>
+  </div>
+</section>
+
+<section class="page" data-page="/add">
+  <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">기기 연결</h1></header>
+  <div id="stepId">
+    <div class="caption">1단계 · 기기 ID</div>
+    <div class="doc"><p>기기 화면 <b>아래쪽에 적힌 Device ID 6자리</b>를 입력하세요. 기기 화면의 QR 을 찍었다면 자동으로 채워져요.</p></div>
+    <div class="formrow"><svg class="ic" aria-hidden="true"><use href="#i-fingerprint"/></svg><input type="text" class="text code" id="pairId" placeholder="예: A75E1F" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></div>
+    <div class="msg" id="pairMsg1"></div>
+    <button class="btn primary" id="pairNext"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>다음</button>
+    <div class="doc"><p class="dim">기기가 켜져 있고 Wi-Fi 에 연결돼 있어야 해요. ID 가 안 보이면 기기 전원을 뽑았다 꽂으면 켜질 때 화면에 떠요.</p></div>
+  </div>
+  <div id="stepPin" class="hidden">
+    <div class="caption">2단계 · 기기 화면의 숫자</div>
+    <div class="doc"><p id="pinStatus">기기 화면에 숫자 6자리가 뜨길 기다리는 중이에요... (최대 30초)</p><p>기기 <b>화면에 뜬 숫자 6자리</b>를 그대로 입력하세요. 기기 옆에 있는 사람만 연결할 수 있게 하는 확인 절차예요.</p></div>
+    <div class="formrow"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><input type="text" class="text code" id="pairPin" placeholder="000000" maxlength="6" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*"></div>
+    <div class="msg" id="pairMsg2"></div>
+    <button class="btn primary" id="pairConfirm"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>연결</button>
+    <button class="btn" id="pairRestart">처음부터</button>
+  </div>
+</section>
 
 </main>
 <div class="toast hidden" id="toast"></div>

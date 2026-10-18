@@ -1,7 +1,7 @@
 {
   "name": "차트토템",
   "short_name": "차트토템",
-  "description": "책상에 세워두는 투자자의 작은 토템 — 기기 관리",
+  "description": "책상에 세워두는 투자자의 작은 토템 — 어디서든 기기 설정",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

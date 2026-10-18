@@ -1,5 +1,5 @@
-/* 차트토템 런처 PWA. 펌웨어 설정 페이지(firmware/tools/web/settings.css)와 같은 디자인 시스템 (firmware/docs/settings-redesign/design-system.md).
-   앞부분은 settings.css 와 동일하게 유지하고, 끝의 "런처 전용" 만 다르다. */
+/* 차트토템 기기 설정 페이지 (GET /settings.css). 디자인 시스템: docs/settings-redesign/design-system.md (카드 없는 플랫 리스트).
+   Wi-Fi 설정 페이지는 /style.css 를 쓴다. */
 :root{--bg:#fff;--bg2:#f6f5f2;--tx:#1e1e23;--mut:#8a8a94;--ln:#ecebe7;--ac:#4fbf9a;--ac2:#ddf3eb;--danger:#d64545;--up:#2fa36b;--down:#d64545;--screen:#0b0b0e;
  --font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",sans-serif}
 *{box-sizing:border-box}
@@ -146,6 +146,14 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 .top h1:focus{outline:none}
 
+/* 클라우드 모드(런처에서 연 설정 페이지, cloud_shim.js 가 body.cloud 를 붙인다): 기기 옆에서만 되는 항목은 숨긴다 */
+.cloud-only{display:none}
+body.cloud .cloud-only{display:block}
+body.cloud a.cloud-only{display:flex}
+body.cloud .local-only{display:none !important}
+.offline .sub{font-weight:400;opacity:.8;margin-left:6px}
+
+/* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */
 .menu.disabled{pointer-events:none;color:#b5b2ad}
 .menu.disabled .mlbl,.menu.disabled .msub,.menu.disabled .ic{color:#b5b2ad}
@@ -188,3 +196,11 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 .toast:not(.hidden){opacity:1;transform:translate(-50%,0)}
 .doc ol{margin:0;padding-left:20px}
 .doc ol li{margin-bottom:8px}
+/* ---- 런처 0.6: 클라우드 페어링 ---- */
+.text.code{font-size:26px;font-weight:700;letter-spacing:.18em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase}
+.formrow>.ic{width:22px;height:22px;color:var(--mut);flex:none}
+.doc .dim{color:var(--mut);font-size:14px}
+.btn+.btn{margin-top:10px}
+.dev .psub{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dev .badge{font-size:11px;background:var(--bg2);color:var(--mut);border-radius:5px;padding:1px 6px;font-weight:600}
+.dot.wait{background:#d9b74a}

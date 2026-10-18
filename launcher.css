@@ -1,0 +1,51 @@
+/* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
+/* ---- 런처 전용 ---- */
+.menu.disabled{pointer-events:none;color:#b5b2ad}
+.menu.disabled .mlbl,.menu.disabled .msub,.menu.disabled .ic{color:#b5b2ad}
+.top.home{padding:0 20px;gap:10px;height:60px}
+.top .logo{border-radius:8px;flex:none}
+.top .ver{font-size:12px;color:var(--mut);font-weight:600}
+.hintbox.warn{background:#fdf3e4}
+.hintbox .row button.primary{background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px}
+.hintbox .msg{padding:0}
+.dev{padding-bottom:4px}
+.dev .profile{padding:18px 20px 6px}
+.dev .pname{font-size:20px}
+.dev .more{margin-left:auto;width:40px;height:40px;display:grid;place-items:center;color:var(--mut);border-radius:10px;flex:none}
+.dev .hero{display:flex;align-items:baseline;gap:10px;padding:4px 20px 10px;flex-wrap:wrap}
+.dev .sym{font-weight:600;font-size:15px}
+.dev .price{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.dev .chg{font-weight:600;font-size:14px}
+.slist{list-style:none;margin:0;padding:0}
+.srow .l{min-width:0}
+.srow .nm{font-size:17px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .cd{font-size:13px;color:var(--mut);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.srow .px .p{font-weight:600;font-size:15px;color:var(--tx)}
+.srow .px .c{font-size:13px;font-weight:600}
+.srow .pend{opacity:.6}
+.dev .seg .tab{border-radius:999px;padding:9px;color:var(--mut);font-weight:600;font-size:13px;flex:1;text-align:center}
+.dev .seg .tab.on{background:#fff;color:var(--tx);box-shadow:0 1px 3px #0002}
+.llist{list-style:none;margin:0;padding:0}
+.lrow{display:flex;align-items:center;gap:14px;padding:12px 20px;cursor:pointer;position:relative}
+.lrow+.lrow:before{content:"";position:absolute;left:20px;right:20px;top:0;border-top:1px solid var(--ln)}
+.lrow .rd{width:18px;height:18px;border-radius:50%;border:2px solid #cfcac2;flex:none;display:grid;place-items:center;color:#fff}
+.lrow.on .rd{border-color:var(--ac);background:var(--ac)}
+.lrow .rd .ic{width:11px;height:11px;stroke-width:3;display:none}
+.lrow.on .rd .ic{display:block}
+.lrow .nm{font-weight:600;font-size:15px}
+.lrow .ds{font-size:12px;color:var(--mut)}
+.lrow .tg{margin-left:auto;font-size:11px;color:var(--mut);flex:none;background:var(--bg2);border-radius:5px;padding:2px 6px}
+.lrow li.msg{padding:12px 20px}
+.foot{text-align:center;font-size:12px;color:var(--mut);padding:24px 20px 32px;line-height:1.6}
+.toast.hidden{display:block!important;opacity:0}
+.toast:not(.hidden){opacity:1;transform:translate(-50%,0)}
+.doc ol{margin:0;padding-left:20px}
+.doc ol li{margin-bottom:8px}
+/* ---- 런처 0.6: 클라우드 페어링 ---- */
+.text.code{font-size:26px;font-weight:700;letter-spacing:.18em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase}
+.formrow>.ic{width:22px;height:22px;color:var(--mut);flex:none}
+.doc .dim{color:var(--mut);font-size:14px}
+.btn+.btn{margin-top:10px}
+.dev .psub{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dev .badge{font-size:11px;background:var(--bg2);color:var(--mut);border-radius:5px;padding:1px 6px;font-weight:600}
+.dot.wait{background:#d9b74a}
