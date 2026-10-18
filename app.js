@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt}].
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.21";
+const APP_VERSION = "0.7.26";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -60,24 +60,40 @@ async function api(path, { method = "GET", body, token, timeout = 8000 } = {}) {
 // ------------------------------------------------------------
 function fmtName(d) { return d.name || `차트토템 ${(d.id || "").slice(-4)}`; }
 function variantLabel(v) { return v === "coin" ? "코인" : v === "kstock" ? "주식" : ""; }
-function settingsUrl(d) { return `settings-${d.variant === "coin" ? "coin" : "kstock"}.html?id=${encodeURIComponent(d.id)}`; }
+function settingsUrl(d, hash) { return `settings-${d.variant === "coin" ? "coin" : "kstock"}.html?id=${encodeURIComponent(d.id)}${hash ? "#" + hash : ""}`; }
+// 기기 섬네일: 기기 모양(둥근 검은 정사각) 안에 ORBIT 느낌의 고리와 점. 실제 화면이 아니라 상징이다 (실제 미리보기는 설정 페이지에)
+const THUMB = `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="2" y="2" width="68" height="68" rx="14" fill="#0b0b0e"/><rect x="8" y="8" width="56" height="56" rx="9" fill="#141418"/>
+  <circle cx="36" cy="33" r="17" fill="none" stroke="#3a3d3a" stroke-width="1.2"/><circle cx="36" cy="16" r="2.6" fill="#e34f55"/><circle cx="51" cy="41" r="2.6" fill="#3978d4"/><circle cx="21" cy="41" r="2.6" fill="#4fbf9a"/>
+  <rect x="26" y="30" width="20" height="6" rx="1.5" fill="#e8e8ec"/><rect x="14" y="54" width="44" height="3" rx="1.5" fill="#3a3d3a"/></svg>`;
+// 3개 빠른 메뉴: 기기 설정(홈) · 화면 관리(#/screen 종목·레이아웃) · 네트워크(#/wifi)
+const TILES = [["settings", "기기 설정", "종목 · 화면 · 시스템", ""], ["monitor", "화면 관리", "종목 · 레이아웃", "/screen"], ["wifi", "네트워크", "Wi-Fi 설정", "/wifi"]];
+function setTileLinks(el, d) { el.querySelectorAll(".tile").forEach((a, i) => { a.href = settingsUrl(d, TILES[i][3]); }); }
+function setStatus(el, kind, text) { const st = el.querySelector('[data-r="st"]'); st.className = "st " + kind; st.textContent = text; }
 function agoText(sec) { if (sec == null) return ""; return sec < 90 ? sec + "초 전" : sec < 5400 ? Math.round(sec / 60) + "분 전" : sec < 172800 ? Math.round(sec / 3600) + "시간 전" : Math.round(sec / 86400) + "일 전"; }
 
 function renderDevices() {
   const box = $("devices");
   box.innerHTML = "";
-  $("emptyCard").classList.toggle("hidden", cloudDevices.length > 0);
+  const none = cloudDevices.length === 0;
+  $("emptyCard").classList.toggle("hidden", !none);
+  $("addNav").classList.toggle("hidden", none);   // 연결 전엔 큰 「기기 연결하기」 버튼이 있으니 행은 숨긴다
   for (const d of cloudDevices) {
     const el = document.createElement("section");
     el.className = "dev";
     el.dataset.key = d.id;
     el.innerHTML = `
-      <div class="profile"><span class="dot wait" data-r="dot"></span><div class="ptext"><div class="pname" data-r="name">${esc(fmtName(d))}</div><div class="psub"><span>ID ${esc(d.id)}</span>${d.variant ? `<span class="badge">${esc(variantLabel(d.variant))}</span>` : ""}</div></div><button class="more" data-r="more" title="이름 바꾸기 · 기기 삭제" aria-label="더보기">${I("more")}</button></div>
+      <div class="devhead">
+        <div class="thumb">${THUMB}</div>
+        <div class="dtext">
+          <div class="drow"><span class="pname" data-r="name">${esc(fmtName(d))}</span><span class="st wait" data-r="st">확인 중</span></div>
+          <div class="psub"><span>ID ${esc(d.id)}</span>${d.variant ? `<span class="badge">${esc(variantLabel(d.variant))}</span>` : ""}</div>
+        </div>
+        <button class="more" data-r="more" title="이름 바꾸기 · 기기 삭제" aria-label="더보기">${I("more")}</button>
+      </div>
       <div class="msg hidden" data-r="msg"></div>
-      <nav class="list">
-        <a class="menu" data-r="open" href="${settingsUrl(d)}">${I("settings")}<span class="mtext"><span class="mlbl">기기 설정 열기</span><span class="msub" data-r="openSub">종목 · 화면 · 시스템 설정 (어디서든)</span></span></a>
-      </nav>
+      <div class="tiles" data-r="tiles">${TILES.map(([ic, l, s]) => `<a class="tile">${I(ic)}<b>${l}</b><span>${s}</span></a>`).join("")}</div>
       <div class="band"></div>`;
+    setTileLinks(el, d);
     el.querySelector('[data-r="more"]').onclick = () => deviceMenu(d);
     box.appendChild(el);
   }
@@ -87,22 +103,22 @@ function cardOf(d) { return document.querySelector(`.dev[data-key="${CSS.escape(
 async function refreshDevice(d) {
   const el = cardOf(d); if (!el) return;
   const info = await api(`/p/${d.id}/info`, { token: d.token });
-  const dot = el.querySelector('[data-r="dot"]'), m = el.querySelector('[data-r="msg"]'), a = el.querySelector('[data-r="open"]');
+  const m = el.querySelector('[data-r="msg"]'), tiles = el.querySelector('[data-r="tiles"]');
   if (info._status === 401) {   // 토큰이 폐기됐다 (기기 초기화 등)
-    dot.className = "dot off"; m.className = "msg err"; m.textContent = "연결이 해제됐어요. 「기기 연결」에서 다시 연결해 주세요.";
-    a.classList.add("disabled"); a.setAttribute("aria-disabled", "true"); d.lost = true; save(KEY_CLOUD, cloudDevices); return;
+    setStatus(el, "off", "연결 해제"); m.className = "msg err"; m.textContent = "연결이 해제됐어요. 「기기 연결」에서 다시 연결해 주세요.";
+    tiles.classList.add("disabled"); d.lost = true; save(KEY_CLOUD, cloudDevices); return;
   }
-  if (!info.ok) { dot.className = "dot wait"; m.className = "msg"; m.textContent = "서버에 닿지 않아요. 인터넷 연결을 확인해 주세요."; return; }
+  if (!info.ok) { setStatus(el, "wait", "확인 중"); m.className = "msg"; m.textContent = "서버에 닿지 않아요. 인터넷 연결을 확인해 주세요."; return; }
   d.lost = false;
   if (info.name !== undefined && info.name !== d.name) d.name = info.name;
-  if (info.variant && info.variant !== d.variant) { d.variant = info.variant; a.href = settingsUrl(d); }
+  if (info.variant && info.variant !== d.variant) { d.variant = info.variant; setTileLinks(el, d); }
   d.fw = info.fw; d.online = info.online; d.age = info.age; d.lastSeen = Date.now();
   save(KEY_CLOUD, cloudDevices);
   el.querySelector('[data-r="name"]').textContent = fmtName(d);
-  a.classList.remove("disabled"); a.removeAttribute("aria-disabled");
-  // 온라인이면 점만. 문제가 있을 때만 한 줄 (정보 과잉 방지)
-  if (info.online) { dot.className = "dot on"; m.className = "msg hidden"; m.textContent = ""; }
-  else { dot.className = "dot off"; m.className = "msg err"; m.textContent = "오프라인" + (info.age != null ? " · 마지막 연결 " + agoText(info.age) : "") + " · 아래 도움말 참고"; }
+  tiles.classList.remove("disabled");
+  // 상태는 이름 옆 알약 글자로. 문제가 있을 때만 한 줄 더 (정보 과잉 방지)
+  if (info.online) { setStatus(el, "on", "연결됨"); m.className = "msg hidden"; m.textContent = ""; }
+  else { setStatus(el, "off", "오프라인"); m.className = "msg err"; m.textContent = "오프라인" + (info.age != null ? " · 마지막 연결 " + agoText(info.age) : "") + " · 아래 도움말 참고"; }
 }
 function refreshAll() { for (const d of cloudDevices) refreshDevice(d); }
 
@@ -301,7 +317,7 @@ const FAQ = [
   ["회사 Wi-Fi 에 안 붙어요", `<p>아이디·비밀번호 로그인 방식(기업용)이나 웹 로그인이 뜨는 Wi-Fi, 5GHz 전용 Wi-Fi 에는 기기가 붙을 수 없어요.</p><p>폰 핫스팟이나 소형 공유기를 쓰세요.</p>`],
   ["기기 ID 가 어디 있나요?", `<p>기기 화면 <b>오른쪽 위 구석</b>에 항상 작은 회색 글자로 적혀 있어요 (예: A75E1F). 기기를 켤 때 나오는 시작 화면 아래에도 나와요.</p><p>설정에서 숨길 수 있지만, 숨기면 새 폰을 연결할 때 기기를 껐다 켜서 시작 화면에서 확인해야 해요.</p>`],
   ["연결 코드가 기기 화면에 안 떠요", `<p>「기기 연결」에서 ID 를 넣고 다음을 누르면 기기가 최대 30초 안에 화면에 숫자 6자리를 띄워요. 기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았으면 뜨지 않아요.</p><p>숫자는 10분 동안만 유효해요. 지나면 「처음부터」를 눌러 다시 받으세요.</p>`],
-  ["설정을 저장했는데 기기가 안 바뀌어요", `<p>기기는 30초마다 새 설정을 확인해요. 저장 뒤 최대 30초 기다려 보세요. 설정 화면 아래 바가 "기기에 반영됐어요" 로 바뀌면 끝이에요.</p><p>계속 "반영 중" 이면 기기가 오프라인일 가능성이 커요. 위의 오프라인 항목을 확인해 주세요.</p>`],
+  ["설정을 바꿨는데 기기가 안 바뀌어요", `<p>설정은 바꾸는 즉시 기기로 가고 보통 1~2초 안에 반영돼요. 설정 화면 아래 "기기에 반영됐어요" 가 뜨면 끝이에요.</p><p>계속 "반영 중" 이거나 "(최대 30초)" 가 붙어 있으면 기기가 오프라인이거나 예전 펌웨어예요. 기기가 켜지면 바뀐 설정이 그때 반영돼요. 위의 오프라인 항목도 확인해 주세요.</p>`],
   ["다른 폰에서도 이 기기를 설정하고 싶어요", `<p>그 폰에서 이 앱을 열고 「기기 연결」로 같은 ID 와 기기 화면의 숫자 코드로 연결하면 돼요. 한 기기에 여러 폰을 연결할 수 있어요.</p>`],
   ["앱에서 기기를 빼고 싶어요", `<p>기기 항목 오른쪽 ⋯ 을 누르고 <b>기기 삭제</b>를 고르면 이 폰에서 연결이 끊겨요. 기기 자체 설정은 그대로예요.</p>`],
 ];

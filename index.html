@@ -64,24 +64,36 @@
 <section class="page home on" data-page="/">
   <header class="top home"><img class="logo" src="icons/icon-192.png" alt="" width="28" height="28"><h1>차트토템</h1><span class="ver" id="ver"></span></header>
 
+  <section id="devices"></section>
+
+  <div class="hero-empty" id="emptyCard">
+    <svg class="illus" viewBox="0 0 220 120" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="62" y="8" width="60" height="104" rx="12" stroke="var(--tx)" stroke-width="2.2"/>
+      <path d="M84 16h16" stroke="var(--tx)" stroke-width="2.2"/>
+      <path d="M76 46v-6a4 4 0 0 1 4-4h6M98 36h6a4 4 0 0 1 4 4v6M108 70v6a4 4 0 0 1-4 4h-6M86 80h-6a4 4 0 0 1-4-4v-6" stroke="var(--ac)" stroke-width="2.4"/>
+      <circle cx="92" cy="58" r="7" stroke="var(--tx)" stroke-width="2"/>
+      <circle cx="160" cy="46" r="34" fill="var(--bg2)"/>
+      <g stroke="var(--tx)" stroke-width="2"><rect x="142" y="28" width="12" height="12" rx="2"/><rect x="166" y="28" width="12" height="12" rx="2"/><rect x="142" y="52" width="12" height="12" rx="2"/></g>
+      <g fill="var(--tx)"><rect x="146" y="32" width="4" height="4"/><rect x="170" y="32" width="4" height="4"/><rect x="146" y="56" width="4" height="4"/><rect x="166" y="52" width="4" height="4"/><rect x="174" y="52" width="4" height="4"/><rect x="170" y="58" width="4" height="4"/><rect x="166" y="62" width="4" height="4"/><rect x="176" y="60" width="4" height="4"/></g>
+      <path d="M30 40l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5zM196 86l1.8 4.2 4.2 1.8-4.2 1.8-1.8 4.2-1.8-4.2-4.2-1.8 4.2-1.8z" fill="var(--ac)"/>
+    </svg>
+    <b>아직 연결된 기기가 없어요</b>
+    <div class="hint">기기 화면의 QR 을 폰 카메라로 찍거나,<br>아래 「기기 연결하기」에서 기기 화면에 적힌 ID 를 입력하세요.</div>
+    <button class="btn primary pill" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>기기 연결하기</button>
+  </div>
+
   <div class="hintbox hidden" id="installCard">
-    <b><svg class="ic" aria-hidden="true"><use href="#i-smartphone"/></svg>홈 화면에 추가해 두세요</b>
+    <b><svg class="ic" aria-hidden="true"><use href="#i-smartphone"/></svg>홈 화면에 추가해 주세요</b>
     <div id="installText">다음에 기기를 바로 열 수 있어요.</div>
     <div class="row"><button id="installBtn" class="primary"><svg class="ic" aria-hidden="true"><use href="#i-house"/></svg>홈 화면에 추가</button><button id="installLater">나중에</button></div>
   </div>
 
-  <section id="devices"></section>
-
-  <div class="empty" id="emptyCard">
-    <b>아직 연결된 기기가 없어요</b>
-    <div class="hint">기기 화면의 QR 을 폰 카메라로 찍거나,<br>아래 「기기 연결」에서 기기 화면 오른쪽 위의 ID 를 입력하세요.</div>
-    <button class="textbtn" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>기기 연결</button>
-  </div>
-
+  <div id="addNav">
   <div class="band"></div>
   <nav class="list">
-    <button class="menu" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span class="mtext"><span class="mlbl">기기 연결</span><span class="msub">기기 화면의 ID 6자리와 숫자 코드로 연결해요</span></span></button>
+    <button class="menu" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span class="mtext"><span class="mlbl">기기 연결</span><span class="msub">기기 화면의 ID 6자리와 숫자 코드로 연결해요</span></span><span class="chev"><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></button>
   </nav>
+  </div>
 
   <div class="band"></div>
   <div class="caption">도움말</div>
