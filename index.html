@@ -73,7 +73,7 @@
 
   <div class="empty" id="emptyCard">
     <b>아직 연결된 기기가 없어요</b>
-    <div class="hint">기기 화면의 QR 을 폰 카메라로 찍거나,<br>아래 「기기 연결」에서 기기 화면에 적힌 ID 를 입력하세요.</div>
+    <div class="hint">기기 화면의 QR 을 폰 카메라로 찍거나,<br>아래 「기기 연결」에서 기기 화면 오른쪽 위의 ID 를 입력하세요.</div>
     <button class="textbtn" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>기기 연결</button>
   </div>
 
@@ -102,11 +102,11 @@
   <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">기기 연결</h1></header>
   <div id="stepId">
     <div class="caption">1단계 · 기기 ID</div>
-    <div class="doc"><p>기기 화면 <b>아래쪽에 적힌 Device ID 6자리</b>를 입력하세요. 기기 화면의 QR 을 찍었다면 자동으로 채워져요.</p></div>
+    <div class="doc"><p>기기 화면 <b>오른쪽 위 구석에 적힌 ID 6자리</b>를 입력하세요. 기기 화면의 QR 을 찍었다면 자동으로 채워져요.</p></div>
     <div class="formrow"><svg class="ic" aria-hidden="true"><use href="#i-fingerprint"/></svg><input type="text" class="text code" id="pairId" placeholder="예: A75E1F" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></div>
     <div class="msg" id="pairMsg1"></div>
     <button class="btn primary" id="pairNext"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>다음</button>
-    <div class="doc"><p class="dim">기기가 켜져 있고 Wi-Fi 에 연결돼 있어야 해요. ID 가 안 보이면 기기 전원을 뽑았다 꽂으면 켜질 때 화면에 떠요.</p></div>
+    <div class="doc"><p class="dim">기기가 켜져 있고 Wi-Fi 에 연결돼 있어야 해요. 구석의 ID 를 꺼 두었다면 기기 전원을 뽑았다 꽂으면 시작 화면 아래에 떠요.</p></div>
   </div>
   <div id="stepPin" class="hidden">
     <div class="caption">2단계 · 기기 화면의 숫자</div>

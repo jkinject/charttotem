@@ -83,6 +83,7 @@
  <div class="setrow" id="showSecondsRow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">초 표시</span><span class="msub">시:분:초 를 같은 크기로</span></span><label class="switch"><input id="showSeconds" type="checkbox"><i></i></label></div>
  <div class="setrow" id="show12hRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">12시간제</span><span class="msub">AM · PM 을 작게 표시해요</span></span><label class="switch"><input id="show12h" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showDateRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">날짜</span><span class="msub">시계 테마의 날짜 줄</span></span><label class="switch"><input id="showDate" type="checkbox"><i></i></label></div>
+ <div class="setrow" id="showIdRow"><svg class="ic" aria-hidden="true"><use href="#i-fingerprint"/></svg><span class="mtext"><span class="mlbl">기기 ID 표시</span><span class="msub">오른쪽 위 작은 글자 · 앱에서 기기를 연결할 때 필요해요</span></span><label class="switch"><input id="showId" type="checkbox"><i></i></label></div>
  <div class="setrow hidden" id="chartLine"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">1분봉 차트 표시</span><span class="msub">CLASSIC 레이아웃에서만</span></span><label class="switch"><input id="chart" type="checkbox"><i></i></label></div>
  </div>
  <div class="band"></div>
@@ -357,8 +358,8 @@ function norm(s){
   if(sh0.h12&&synced){const [hh,mm]=t.split(":").map(Number);ampm=hh<12?"AM":"PM";t=((hh%12)||12)+":"+String(mm).padStart(2,"0");}
   if(sh0.seconds)t+=":"+secs;
   if(s.date){const m=/(\d+)-(\d+)-(\d+)/.exec(s.date);if(m)d=new Date(+m[1],+m[2]-1,+m[3]);}
-  const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false},s.show||{});
-  return {v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
+  const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false,id:true},s.show||{});
+  return {id:s.id||"",v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
     date:synced?MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]:"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
 }
 function text(x,t,px,py,font,color,align){x.font=font;x.fillStyle=color;x.textAlign=align||"left";x.textBaseline="top";x.fillText(t,px,py);}
@@ -446,7 +447,8 @@ const L={
   S.slots.forEach((sl,i)=>{const col=i<3?0:1,r=i<3?i:i-3;row(x,S,sl,col?122:4,98+r*44,114,44,{colorPrice:1,stack:1});});},
 };
 function draw(canvas,layoutId,state){const px=canvas.width;const x=canvas.getContext("2d");x.setTransform(1,0,0,1,0,0);x.fillStyle=C.bg;x.fillRect(0,0,px,canvas.height);
-  x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S00)(x,S);}catch(e){text(x,"preview error",120,110,F2,C.dim,"center");}}
+  x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S00)(x,S);}catch(e){text(x,"preview error",120,110,F2,C.dim,"center");}
+  if(S.show.id&&S.id)text(x,S.id,238,1,'500 7px "Menlo","Consolas",monospace',C.dim,"right");}  // 오른쪽 위 기기 ID 배지 (펌웨어 Font1 6x8)
 return {draw,ids:Object.keys(L)};
 })();
 // 차트토템 기기 설정 페이지 동작 (window.MARKET 과 PREVIEW 가 정의된 뒤 실행). 원본: tools/web/settings.js → gen_launcher.py → launcher/settings-*.html
@@ -461,7 +463,7 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 let state=null, pollTimer=null, failCount=0, toastTimer=null;
 const PAGES=["/","/screen","/screen/add","/screen/layout","/wifi","/device","/system","/privacy","/licenses"];
 const PARENT={"/screen":"/","/screen/add":"/screen","/screen/layout":"/screen","/wifi":"/","/device":"/","/system":"/","/privacy":"/","/licenses":"/"};
-const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"],["showSeconds","seconds"],["show12h","h12"]];   // symbols 비트는 UI 에서 뺐다 (항상 켬)
+const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"],["showSeconds","seconds"],["show12h","h12"],["showId","id"]];   // symbols 비트는 UI 에서 뺐다 (항상 켬)
 let prevPage=null, curPage=null;
 const TZ_PRESETS=[["KST-9","서울 (KST)"],["JST-9","도쿄 (JST)"],["HKT-8","홍콩 (HKT)"],["CST-8","상하이 · 싱가포르"],["IST-5:30","뭄바이 (IST)"],
   ["GMT0BST,M3.5.0/1,M10.5.0","런던 (GMT/BST)"],["CET-1CEST,M3.5.0,M10.5.0/3","파리 · 베를린 (CET)"],["EST5EDT,M3.2.0,M11.1.0","뉴욕 (EST/EDT)"],
@@ -480,7 +482,7 @@ const codesOf=s=>s&&s.codes?s.codes:(s?[s[MARKET.key]]:[]);
 // ---- 초안(draft): 기기 상태에서 뽑은 설정 묶음. UI 는 초안을 보여 주고 고치며, 「저장」이 차이만 기기에 보낸다 ----
 let draft=null, applying=null;   // applying: {since, target} 저장을 보냈고 기기 상태에 반영되길 기다리는 중
 function extract(s){return {codes:codesOf(s).slice(),layout:s.layout||"S00",theme:s.theme||"stock",colors:s.colors||"",tz:s.tz||"",rotate:s.rotate==null?5:s.rotate,
-  chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true,seconds:false,h12:false},s.show||{})};}
+  chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true,seconds:false,h12:false,id:true},s.show||{})};}
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 // 기기 상태와 다른 초안 항목 → /api/settings 쿼리 조각. 보내지 않는 키는 바뀌지 않는다
 function diffParams(){
@@ -493,7 +495,7 @@ function diffParams(){
   if(draft.rotate!==base.rotate)p.push("rotate="+draft.rotate);
   if(draft.chart!==base.chart)p.push("chart="+(draft.chart?1:0));
   if(draft.bl!==base.bl)p.push("bl="+draft.bl);
-  for(const k of ["price","change","spark","date","seconds","h12"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
+  for(const k of ["price","change","spark","date","seconds","h12","id"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
   return p;
 }
 const dirty=()=>diffParams().length>0;
