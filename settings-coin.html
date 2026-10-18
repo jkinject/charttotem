@@ -368,7 +368,7 @@ const F7S='700 28px "Menlo","Consolas","Courier New",monospace';
 function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,side=!compact&&!sec&&S.show.h12,font=sec&&compact?F7S:F7;x.font=font;
   const wT=x.measureText(sec?"88:88:88":"88:88").width,total=wT+(side?32:0),x0=120-total/2,ty=sec&&compact?cy+9:cy;
   text(x,S.time,x0+wT,ty,font,color,"right");if(side)text(x,S.ampm,x0+wT+6,cy+2,F2,color);}
-function timeExtras(x,S,cx,cy,color){if(!S.show.h12)return;text(x,S.ampm,cx,cy,F2,color,"center");}
+function timeExtras(x,S,cx,cy,color){if(!S.show.h12||S.show.seconds)return;text(x,S.ampm,cx,cy,F2,color,"center");}  // 초 표시면 AM/PM 은 날짜 줄 앞
 function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,F2,color,"center");else if(S.show.h12&&S.show.seconds)text(x,S.ampm,120,cy,F2,color,"center");}
 function label(x,sl,px,py,h,maxW,color,S){text(x,fitEll(x,sl.label,F2,maxW),px,py+(h-14)/2,F2,color);}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
