@@ -69,7 +69,6 @@
 <section class="page" data-page="/screen">
  <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">화면</h1></header>
  <div class="preview"><canvas id="mainPreview" width="480" height="480" role="img" aria-label="현재 기기 화면 미리보기"></canvas></div>
- <div class="layout-label" id="layoutLabel">-</div>
  <nav class="list"><button class="setrow" data-go="/screen/layout"><svg class="ic" aria-hidden="true"><use href="#i-layout-grid"/></svg><span class="mtext"><span class="mlbl">레이아웃</span><span class="msub" id="layoutValue">-</span></span><span class="chev"><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></button></nav>
  <div class="band"></div>
  <div class="caption">종목 <span class="cnt" id="listCount"></span><button class="textbtn" id="addBtn" data-go="/screen/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>추가</button></div>
@@ -685,7 +684,7 @@ function applySymbol(v){addSymbol(v);}
 let layouts=null, themeTab=null, layoutKey="";
 async function loadLayouts(){try{layouts=(await (await fetch("/api/layouts",{cache:"no-store"})).json()).layouts||[];}catch(e){layouts=[];}if(state){renderLayouts(view(),true);renderAll();}}   // 목록이 오면 화면 페이지(전환 간격 행 등)도 바로 갱신
 function renderScreen(s){
-  $("layoutLabel").textContent=$("layoutValue").textContent=s.layoutName||"-";
+  $("layoutValue").textContent=s.layoutName||"-";
   if(window.PREVIEW)PREVIEW.draw($("mainPreview"),s.layout||"S00",s);
   const colors=s.colors||"kr";
   $("colorsSeg").querySelectorAll("button").forEach(b=>{const on=b.dataset.value===colors;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
