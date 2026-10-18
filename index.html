@@ -70,7 +70,7 @@
 
   <div class="hintbox warn hidden" id="browserCard">
     <b><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg>이 브라우저에서는 기기 상태를 볼 수 없어요</b>
-    <div class="msg">기기 설정 페이지는 열 수 있지만, 가격·연결 상태 확인은 <b>Chrome</b>(안드로이드)에서만 돼요. Chrome으로 열면 더 편해요.</div>
+    <div class="msg">기기 설정 페이지는 열 수 있지만, 연결 상태 확인은 <b>Chrome</b>(안드로이드)에서만 돼요. Chrome으로 열면 더 편해요.</div>
   </div>
 
   <section id="devices"></section>
@@ -83,7 +83,7 @@
   <div class="band"></div>
   <div class="caption">기기 추가</div>
   <div class="formrow"><input type="text" class="text" id="manualIp" placeholder="기기 화면의 주소 (예: 192.168.0.23)" inputmode="decimal"><button class="textbtn" id="manualAdd"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>추가</button></div>
-  <nav class="list"><button class="menu" id="scanBtn"><svg class="ic" aria-hidden="true"><use href="#i-radar"/></svg><span class="mtext"><span class="mlbl">같은 Wi-Fi에서 기기 찾기</span><span class="msub">폰과 같은 대역을 훑어요 (최대 2분)</span></span></button></nav>
+  <nav class="list"><button class="menu" id="scanBtn"><svg class="ic" aria-hidden="true"><use href="#i-radar"/></svg><span class="mtext"><span class="mlbl" id="scanLabel">같은 Wi-Fi에서 기기 찾기</span><span class="msub">폰과 같은 대역을 훑어요 (최대 2분)</span></span></button></nav>
   <div class="msg" id="addMsg"></div>
 
   <div class="band"></div>
@@ -99,11 +99,6 @@
     </ol>
   </div>
 
-  <div class="band"></div>
-  <div class="caption">정보</div>
-  <nav class="list">
-    <a class="menu" href="https://github.com/jkinject/charttotem" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-file-text"/></svg><span class="mtext"><span class="mlbl">오픈소스 · 저장소</span><span class="msub">github.com/jkinject/charttotem</span></span></a>
-  </nav>
   <footer class="foot">차트토템 앱 <span id="ver2"></span> · 오프라인에서도 열려요 · 기기 목록은 이 브라우저에만 저장돼요</footer>
 </main>
 <div class="toast hidden" id="toast"></div>
