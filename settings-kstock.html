@@ -387,12 +387,13 @@ function norm(s){
       name:s.variant==="kstock"?(sl.stockName||sl.code):sl.code+"USDT",ok:!!sl.ok,price:sl.price,currency:sl.currency,change:sl.change||0,
       up:(sl.change||0)>=0,color:sl.ok?((sl.change||0)>=0?tone.up:tone.down):C.dim,exchange:sl.exchange||"",market:sl.market||"",diff:sl.diff};});
   const sh0=s.show||{};let t=(s.time||"").slice(0,5);const synced=!!s.timeSynced;let d=new Date();
+  const hms=(s.time||"").split(":").map(Number);
   const secs=(s.time||"").slice(6,8)||"--";let ampm="";
   if(sh0.h12&&synced){const [hh,mm]=t.split(":").map(Number);ampm=hh<12?"AM":"PM";t=((hh%12)||12)+":"+String(mm).padStart(2,"0");}
   if(sh0.seconds)t+=":"+secs;
   if(s.date){const m=/(\d+)-(\d+)-(\d+)/.exec(s.date);if(m)d=new Date(+m[1],+m[2]-1,+m[3]);}
   const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false,id:true},s.show||{});
-  return {id:s.id||"",v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
+  return {id:s.id||"",hms,v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
     date:synced?MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]:"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
 }
 function spark(x,px,py,w,h,series,color){x.strokeStyle=color;x.lineWidth=1.5;x.beginPath();const lo=Math.min(...series),hi=Math.max(...series),r=(hi-lo)||1;
@@ -450,10 +451,11 @@ const L={
   const n=S.slots.length,t=Date.now()/1000;S.slots.forEach((sl,i)=>{const w=sl.ok?Math.min(Math.abs(sl.change),10)/10*12:0;const a=(-90+360*i/n+w*t%360)*Math.PI/180;dot(x,120+80*Math.cos(a),104+80*Math.sin(a),6,sl.color);});columns(x,S,192,48);},
  C02(x,S){const cx=120,cy=104,R=86;for(let i=0;i<12;i++){const a=i*30*Math.PI/180,inn=i%3?R-7:R-12;x.strokeStyle=i%3?C.dim:C.text;x.lineWidth=1;x.beginPath();
     x.moveTo(cx+inn*Math.cos(a),cy+inn*Math.sin(a));x.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));x.stroke();}
-  const n=S.slots.length;if(S.show.symbols)S.slots.forEach((sl,i)=>{const a=(-90+360*i/n)*Math.PI/180;dot(x,cx+58*Math.cos(a),cy+58*Math.sin(a),6,sl.color);});
-  if(S.synced){const [h,m]=S.time.split(":").map(Number);const hand=(deg,len,w)=>{const a=(deg-90)*Math.PI/180;x.strokeStyle=C.title;x.lineWidth=w;x.lineCap="round";x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+len*Math.cos(a),cy+len*Math.sin(a));x.stroke();};
-    hand((h%12)*30+m*0.5,44,3.5);hand(m*6,66,2.5);}else text(x,"--:--",cx,cy+28,"f2",C.dim,"center");
-  dot(x,cx,cy,4,C.title);const sl=S.slots[S.active];if(sl&&S.show.symbols){text(x,sl.label,4,218,"f2",C.title);const c=S.show.change?pct(sl):"";text(x,c,236,218,"f2",sl.color,"right");
+  // HANDS: 시침·분침·초침 색 = 1·2·3번째 종목 등락색 (초침은 초 표시 때만). 종목이 없으면 기본색
+  const hc=(i,fb)=>(!S.show.symbols||!S.slots[i])?fb:S.slots[i].color;
+  if(S.synced){const [h,m,sec]=S.hms;const hand=(deg,len,w,col)=>{const a=(deg-90)*Math.PI/180;x.strokeStyle=col;x.lineWidth=w;x.lineCap="round";x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+len*Math.cos(a),cy+len*Math.sin(a));x.stroke();};
+    if(S.show.seconds)hand((sec||0)*6,70,1.5,hc(2,C.text));hand((h%12)*30+m*0.5,44,3.5,hc(0,C.title));hand(m*6,66,2.5,hc(1,C.text));}else text(x,"--:--",cx,cy+28,"f2",C.dim,"center");
+  dot(x,cx,cy,4,C.text);const sl=S.slots[S.active];if(sl&&S.show.symbols){text(x,sl.label,4,218,"f2",C.title);const c=S.show.change?pct(sl):"";text(x,c,236,218,"f2",sl.color,"right");
     if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",236-measure(x,c,"f2")-10,218,"f2",sl.color,"right");}},
  C03(x,S){bigTime(x,S,8,C.white);bigDate(x,S,62,C.dim);x.fillStyle=C.rule;x.fillRect(0,86,240,1);x.fillStyle=C.bar;x.fillRect(0,87,240,1);if(!S.show.symbols)return;
   S.slots.forEach((sl,i)=>row(x,S,sl,0,92+i*29,240,29,{colorPrice:1,rule:1}));},
@@ -696,7 +698,7 @@ function renderScreen(s){
   SHOW_KEYS.forEach(([id,k])=>{const el=$(id);if(document.activeElement!==el)el.checked=show[k]!==false;});
   $("showPriceRow").classList.toggle("hidden",classic);$("showChangeRow").classList.toggle("hidden",classic);
   $("showSparkRow").classList.toggle("hidden",clock||classic);$("showDateRow").classList.toggle("hidden",!clock);
-  $("showSecondsRow").classList.toggle("hidden",!clock||s.layout==="C02");$("show12hRow").classList.toggle("hidden",!clock||s.layout==="C02");  // FIVE DOTS 는 아날로그
+  $("showSecondsRow").classList.toggle("hidden",!clock);$("show12hRow").classList.toggle("hidden",!clock||s.layout==="C02");  // HANDS(아날로그)는 초침만 해당, 12시간제 없음
   const bl=$("bl");if(document.activeElement!==bl){bl.value=s.brightness;$("blVal").textContent=s.brightness+"%";}
   const sel=$("tz");
   if(!sel.options.length){TZ_PRESETS.forEach(([v,l])=>sel.add(new Option(l,v)));sel.add(new Option("직접 입력...","custom"));}
