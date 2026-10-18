@@ -153,6 +153,17 @@ body.cloud a.cloud-only{display:flex}
 body.cloud .local-only{display:none !important}
 .offline .sub{font-weight:400;opacity:.8;margin-left:6px}
 
+/* 저장 바 (v2.5.0): 초안에 변경이 있으면 하단에 고정. 저장을 눌러야 기기에 반영된다 */
+.savebar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--ln);box-shadow:0 -4px 16px #0000000d}
+.savebar .scount{font-size:14px;font-weight:600;color:var(--tx);flex:1}
+.savebar .textbtn{color:var(--mut);margin:0}
+.savebar .sbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ac);color:#fff;font-weight:700;font-size:15px;padding:11px 20px;border-radius:999px}
+.savebar .sbtn:disabled{opacity:.6}
+.savebar .sbtn .ic{width:18px;height:18px}
+.savebar.applying .scount{color:var(--ac)}
+body.has-savebar .page{padding-bottom:96px}
+.toast.on{bottom:calc(84px + env(safe-area-inset-bottom))}
+
 /* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */
 .menu.disabled{pointer-events:none;color:#b5b2ad}
@@ -204,3 +215,19 @@ body.cloud .local-only{display:none !important}
 .dev .psub{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .dev .badge{font-size:11px;background:var(--bg2);color:var(--mut);border-radius:5px;padding:1px 6px;font-weight:600}
 .dot.wait{background:#d9b74a}
+
+/* ---- 도움말 카드 (가로 스크롤, 하나만 펼침) ---- */
+.helps{display:flex;gap:10px;padding:4px 20px 12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.helps::-webkit-scrollbar{display:none}
+.help{flex:0 0 150px;scroll-snap-align:start;text-align:left;background:var(--bg2);border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:4px;min-height:96px}
+.help .ic{width:20px;height:20px;color:var(--mut);margin-bottom:4px}
+.help b{font-size:14px;font-weight:700;line-height:1.3}
+.help span{font-size:12px;color:var(--mut)}
+.help[aria-selected="true"]{background:var(--ac2)}
+.help[aria-selected="true"] .ic{color:var(--ac)}
+.helpbody{position:relative;margin:0 20px 8px;background:var(--bg2);border-radius:14px;padding:4px 44px 4px 0}
+.helpbody .doc{padding:12px 16px 14px;font-size:14px;line-height:1.6}
+.helpbody .doc p{margin:0 0 6px}
+.helpbody .doc ol{margin:0;padding-left:18px}
+.helpbody .doc li{margin-bottom:6px}
+.helpbody .hclose{position:absolute;right:6px;top:6px;width:36px;height:36px;display:grid;place-items:center;color:var(--mut);border-radius:10px}

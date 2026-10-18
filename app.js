@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt}].
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.6.0";
+const APP_VERSION = "0.7.0";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -255,6 +255,28 @@ function setDevMode(on) { devMode = on; try { localStorage.setItem(KEY_DEV, on ?
 $("devOff").onclick = () => { setDevMode(false); toast("개발자 모드를 껐어요"); };
 let verTaps = 0, verTapAt = 0;
 $("ver").onclick = () => { const now = Date.now(); verTaps = now - verTapAt < 1500 ? verTaps + 1 : 1; verTapAt = now; if (verTaps >= 7) { verTaps = 0; setDevMode(!devMode); toast(devMode ? "개발자 모드를 켰어요 (IP 직접 연결)" : "개발자 모드를 껐어요"); } };
+
+// ------------------------------------------------------------
+// 도움말: 가로 카드 중 하나를 누르면 그 내용만 아래에 펼친다
+// ------------------------------------------------------------
+const HELP = {
+  offline: `<ol><li>기기 <b>전원</b>이 켜져 있고 화면에 시세나 시계가 움직이는지 보세요.</li>
+<li>기기 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 이 떠 있으면, 기기가 있는 곳의 Wi-Fi 에 아직 연결되지 않은 거예요. 폰 카메라로 그 QR 을 찍고 Wi-Fi 를 골라 비밀번호를 넣어 주세요.</li>
+<li>공유기를 껐다 켠 직후라면 1~2분 기다려 보세요. 기기가 스스로 다시 붙어요.</li></ol>`,
+  moved: `<p>새 장소에서 켜면 30초쯤 뒤 기기 화면에 QR 이 떠요. 그 QR 을 찍어 그곳 Wi-Fi 에 한 번만 연결하면 돼요.</p><p>이전 Wi-Fi 도 그대로 기억하니 돌아가면 알아서 붙고, 이 앱은 다시 연결할 필요가 없어요.</p>`,
+  office: `<p>아이디·비밀번호 로그인 방식(기업용)이나 웹 로그인이 뜨는 Wi-Fi, 5GHz 전용 Wi-Fi 에는 기기가 붙을 수 없어요.</p><p>폰 핫스팟이나 소형 공유기를 쓰세요.</p>`,
+  pair: `<p>「기기 연결」에서 ID 를 넣고 다음을 누르면 기기가 최대 30초 안에 화면에 숫자 6자리를 띄워요. 기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았으면 뜨지 않아요.</p><p>숫자는 10분 동안만 유효해요. 지나면 「처음부터」를 눌러 다시 받으세요.</p>`,
+};
+let helpOpen = null;
+function showHelp(key) {
+  const body = $("helpBody");
+  if (!key || key === helpOpen) { helpOpen = null; body.classList.add("hidden"); document.querySelectorAll(".help").forEach((b) => b.setAttribute("aria-selected", "false")); return; }
+  helpOpen = key; $("helpText").innerHTML = HELP[key] || ""; body.classList.remove("hidden");
+  document.querySelectorAll(".help").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.help === key)));
+  body.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+$("helps").addEventListener("click", (e) => { const b = e.target.closest(".help"); if (b) showHelp(b.dataset.help); });
+$("helpClose").onclick = () => showHelp(null);
 
 // ------------------------------------------------------------
 // 설치 안내

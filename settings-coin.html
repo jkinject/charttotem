@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=ea70a7c3">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=3cf52e0f">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -223,6 +223,7 @@
  </div>
 </section>
 
+<div class="savebar hidden" id="savebar"><span class="scount" id="saveCount">변경 0개</span><button class="textbtn" id="revertBtn">되돌리기</button><button class="sbtn" id="saveBtn"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg>저장</button></div>
 <div class="toast" role="status" aria-live="polite" id="toast"></div>
 </main>
 <script>
@@ -434,27 +435,98 @@ function draw(canvas,layoutId,state){const px=canvas.width;const x=canvas.getCon
   x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S00)(x,S);}catch(e){text(x,"preview error",120,110,F2,C.dim,"center");}}
 return {draw,ids:Object.keys(L)};
 })();
-// 차트토템 기기 설정 페이지 동작 (window.MARKET 과 PREVIEW 가 정의된 뒤 실행). 원본: tools/web/settings.js → gen_webpage.py → webpage_settings.h
-// 구조: 해시 라우팅 (#/ 홈, #/screen(종목 + 화면 설정), #/screen/add(종목 추가·검색), #/screen/layout, #/wifi, #/device, #/system). 상태는 /api/state 3초 폴링.
+// 차트토템 기기 설정 페이지 동작 (window.MARKET 과 PREVIEW 가 정의된 뒤 실행). 원본: tools/web/settings.js → gen_launcher.py → launcher/settings-*.html
+// 구조: 해시 라우팅 (#/ 홈, #/screen(종목 + 화면 설정), #/screen/add(종목 추가·검색), #/screen/layout, #/wifi, #/device, #/system). 상태는 /api/state 폴링.
+// v2.5.0 저장 방식: 화면 설정은 초안(draft)에 모았다가 하단 「저장」을 눌러야 명령 하나(/api/settings?codes=..&layout=..)로 기기에 보낸다.
+//   기기는 30초마다 클라우드를 확인하므로 저장 뒤 최대 30초 안에 반영된다(LAN 은 즉시). 기기 이름·재시작·Wi-Fi 관리처럼 즉시성이 필요한 것만 바로 보낸다.
 // MARKET 이 제공하는 것 (page_kstock.h / page_coin.h): key, inputId, msgId, normalize(raw), invalidMsg, label(state), pendingLabel(v),
-//   slotLabel(slot), slotSub(slot) html, slotMoney(slot), render(state) 히어로 갱신, onApplied(v)?, onEnter(raw)?, screenHint?
+//   slotLabel(slot), slotSub(slot) html, slotMoney(slot), render(state), onApplied(v)?, onEnter(raw)?, screenHint?
 const $=id=>document.getElementById(id);
 const I=n=>`<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;  // Lucide 아이콘 (settings_head 의 스프라이트)
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let state=null, pending=null, pollTimer=null, failCount=0, toastTimer=null;
-const PAGES=["/","/screen","/screen/add","/screen/layout","/wifi","/device","/system","/privacy","/licenses"];   // 종목 목록은 #/screen 안에, 추가(검색)는 #/screen/add
+let state=null, pollTimer=null, failCount=0, toastTimer=null;
+const PAGES=["/","/screen","/screen/add","/screen/layout","/wifi","/device","/system","/privacy","/licenses"];
 const PARENT={"/screen":"/","/screen/add":"/screen","/screen/layout":"/screen","/wifi":"/","/device":"/","/system":"/","/privacy":"/","/licenses":"/"};
 const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"]];   // symbols 비트는 UI 에서 뺐다 (항상 켬)
-let prevPage=null, curPage=null;   // 헤더 뒤로 가기: 직전 페이지가 상위면 history.back(), 아니면(직접 진입) 상위 해시로
+let prevPage=null, curPage=null;
 const TZ_PRESETS=[["KST-9","서울 (KST)"],["JST-9","도쿄 (JST)"],["HKT-8","홍콩 (HKT)"],["CST-8","상하이 · 싱가포르"],["IST-5:30","뭄바이 (IST)"],
   ["GMT0BST,M3.5.0/1,M10.5.0","런던 (GMT/BST)"],["CET-1CEST,M3.5.0,M10.5.0/3","파리 · 베를린 (CET)"],["EST5EDT,M3.2.0,M11.1.0","뉴욕 (EST/EDT)"],
   ["CST6CDT,M3.2.0,M11.1.0","시카고 (CST/CDT)"],["PST8PDT,M3.2.0,M11.1.0","로스앤젤레스 (PST/PDT)"],["AEST-10AEDT,M10.1.0,M4.1.0/3","시드니 (AEST/AEDT)"]];
+const CLOUD=window.CLOUD||null;   // 클라우드 모드 (런처에서 연 페이지, cloud_shim.js)
+const POLL_MS=CLOUD?5000:3000;
+const APPLY_WAIT_MS=CLOUD?75000:15000;   // 저장 뒤 기기 반영을 기다리는 최대 시간 (기기 폴링 30초 + 여유)
 
-function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("on"),2200);}
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("on"),2400);}
 function setMsg(id,text,cls){const m=$(id);if(!m)return;m.textContent=text||"";m.className=(m.className.split(" ")[0]||"msg")+(cls?" "+cls:"");}
 async function post(url){const r=await fetch(url,{method:"POST"});const j=await r.json().catch(()=>({ok:false,error:"HTTP "+r.status}));if(!j.ok)throw new Error(j.error||"failed");return j;}
 function pollSoon(ms){clearTimeout(pollTimer);pollTimer=setTimeout(loadState,ms||700);}
+function agoText(sec){if(sec==null||sec<0)return "";return sec<90?sec+"초 전":sec<5400?Math.round(sec/60)+"분 전":Math.round(sec/3600)+"시간 전";}
 const codesOf=s=>s&&s.codes?s.codes:(s?[s[MARKET.key]]:[]);
+
+// ---- 초안(draft): 기기 상태에서 뽑은 설정 묶음. UI 는 초안을 보여 주고 고치며, 「저장」이 차이만 기기에 보낸다 ----
+let draft=null, applying=null;   // applying: {since, target} 저장을 보냈고 기기 상태에 반영되길 기다리는 중
+function extract(s){return {codes:codesOf(s).slice(),layout:s.layout||"S00",theme:s.theme||"stock",colors:s.colors||"",tz:s.tz||"",rotate:s.rotate==null?5:s.rotate,
+  chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true},s.show||{})};}
+const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+// 기기 상태와 다른 초안 항목 → /api/settings 쿼리 조각. 보내지 않는 키는 바뀌지 않는다
+function diffParams(){
+  if(!state||!draft)return [];
+  const base=extract(state),p=[];
+  if(!same(draft.codes,base.codes))p.push("codes="+encodeURIComponent(draft.codes.join(",")));
+  if(draft.layout!==base.layout)p.push("layout="+encodeURIComponent(draft.layout));
+  if(draft.colors!==base.colors)p.push("colors="+encodeURIComponent(draft.colors));
+  if(draft.tz!==base.tz)p.push("tz="+encodeURIComponent(draft.tz));
+  if(draft.rotate!==base.rotate)p.push("rotate="+draft.rotate);
+  if(draft.chart!==base.chart)p.push("chart="+(draft.chart?1:0));
+  if(draft.bl!==base.bl)p.push("bl="+draft.bl);
+  for(const k of ["price","change","spark","date"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
+  return p;
+}
+const dirty=()=>diffParams().length>0;
+// 화면에 그릴 때 쓰는 상태: 기기 상태 위에 초안을 덮은 것 (아직 없는 종목은 빈 슬롯으로)
+function view(){
+  if(!state)return null;
+  if(!draft)return state;
+  const slots=(state.slots||[]);
+  const v=Object.assign({},state,{codes:draft.codes,layout:draft.layout,theme:draft.theme,colors:draft.colors,tz:draft.tz,rotate:draft.rotate,showChart:draft.chart,brightness:draft.bl,show:draft.show});
+  v.slots=draft.codes.map(c=>slots.find(x=>x.code===c)||{code:c,price:0,change:0,ok:false,validating:false,error:"",pending:true});
+  const lay=(layouts||[]).find(l=>l.id===draft.layout);if(lay){v.layoutName=lay.name;v.theme=lay.theme;}
+  v.active=Math.min(state.active||0,Math.max(0,v.slots.length-1));
+  return v;
+}
+function markDirty(){renderSaveBar();renderAll();}
+function revert(){draft=extract(state);applying=null;renderSaveBar();renderAll();toast("변경을 되돌렸어요");}
+function renderSaveBar(){
+  const bar=$("savebar"),n=diffParams().length;
+  if(applying){bar.classList.remove("hidden");bar.classList.add("applying");document.body.classList.add("has-savebar");$("saveCount").textContent=CLOUD?"기기에 반영 중… (최대 30초)":"기기에 반영 중…";$("saveBtn").disabled=true;$("revertBtn").classList.add("hidden");return;}
+  bar.classList.remove("applying");$("saveBtn").disabled=false;$("revertBtn").classList.remove("hidden");
+  bar.classList.toggle("hidden",!n);
+  $("saveCount").textContent="변경 "+n+"개";
+  document.body.classList.toggle("has-savebar",n>0);
+}
+async function save(){
+  const p=diffParams();if(!p.length)return;
+  $("saveBtn").disabled=true;
+  try{await post("/api/settings?"+p.join("&"));}
+  catch(e){$("saveBtn").disabled=false;toast("저장하지 못했어요: "+e.message);return;}
+  applying={since:Date.now(),target:JSON.parse(JSON.stringify(draft))};
+  renderSaveBar();
+  toast(CLOUD?"저장했어요 · 기기에 곧 반영돼요":"저장했어요");
+  pollSoon(CLOUD?2500:600);
+}
+// 저장 뒤: 기기 상태가 초안과 같아지면 끝. 종목이 거부되면(없는 종목) 알리고 초안에서 뺀다
+function checkApplied(s){
+  if(!applying)return;
+  if(s.rejected){const code=s.rejected.slice(0,s.rejected.indexOf(":"));
+    if(applying.target.codes.includes(code)){draft.codes=draft.codes.filter(c=>c!==code);applying.target.codes=draft.codes.slice();
+      setMsg(MARKET.msgId,"'"+MARKET.pendingLabel(code)+"' 은(는) 없는 종목이라 기기가 뺐어요: "+s.rejected.slice(s.rejected.indexOf(":")+1),"err");}}
+  const base=extract(s);
+  const validating=(s.slots||[]).some(x=>x.validating);
+  if(same(base,applying.target)&&!validating){applying=null;draft=extract(s);renderSaveBar();toast("기기에 반영됐어요");return;}
+  if(Date.now()-applying.since>APPLY_WAIT_MS){applying=null;draft=extract(s);renderSaveBar();renderAll();
+    toast(CLOUD?"아직 반영되지 않았어요. 기기가 켜져 있는지 확인해 주세요":"기기가 일부 변경을 받아들이지 않았어요");}
+  else pollSoon(CLOUD?3000:800);
+}
 
 // ---- 라우팅 ----
 function go(p){location.hash="#"+p;}
@@ -476,28 +548,25 @@ document.addEventListener("click",e=>{
   if(e.target.closest(".back")){back();}
 });
 window.addEventListener("hashchange",route);
+window.addEventListener("beforeunload",e=>{if(dirty()){e.preventDefault();e.returnValue="";}});
+const cloudBack=$("cloudBack");if(cloudBack)cloudBack.onclick=e=>{if(dirty()&&!confirm("저장하지 않은 변경이 있어요. 그냥 나갈까요?"))e.preventDefault();};
 
 // ---- 홈 ----
 function renderHome(s){
   const codes=codesOf(s),slots=s.slots||[],act=slots[s.active]||null;
   const actLabel=act?MARKET.slotLabel(act):(s.symbol||"");
-  // 카카오톡 설정처럼: 아이콘 + 제목 + 아래 줄 요약 (셰브론 없음)
   const items=[["monitor","화면",(s.layoutName||"-")+" · 종목 "+codes.length+"/"+(s.max||5)+(actLabel?" · "+actLabel:""),"/screen"],
     ["wifi","Wi-Fi",s.ssid||"연결 안 됨","/wifi"],
     ["cpu","이 기기",s.name?s.name+" · "+s.id:"ID "+s.id,"/device"],["settings","시스템","v"+s.version,"/system"]];
   $("homeMenu").innerHTML=items.map(x=>`<button class="menu" data-go="${x[3]}">${I(x[0])}<span class="mtext"><span class="mlbl">${x[1]}</span><span class="msub">${esc(x[2])}</span></span></button>`).join("");
   $("devTitle").textContent=s.name||"차트토템 "+(s.id||"").slice(-4);
   $("devSub").textContent="ID "+(s.id||"")+(CLOUD?" · 어디서든 설정":s.host?" · "+s.host:"");
-  MARKET.render(s);  // 마켓별 부수 효과 (코인: 로고 받기)
+  MARKET.render(s);
 }
 function setConn(ok,sub){$("connDot").className="dot"+(ok?"":" off");$("connText").textContent=ok?"연결됨":"끊김";const off=document.querySelector(".offline");off.classList.toggle("on",!ok);
   let t=off.querySelector(".sub");if(!t){t=document.createElement("span");t.className="sub";off.insertBefore(t,off.querySelector("button"));}t.textContent=sub||"";}
-// 클라우드 모드(런처에서 연 페이지, cloud_shim.js 가 window.CLOUD 를 만든다): 기기는 중계 서버를 통해 보인다
-const CLOUD=window.CLOUD||null;
-function agoText(sec){if(sec==null||sec<0)return "";return sec<90?sec+"초 전":sec<5400?Math.round(sec/60)+"분 전":Math.round(sec/3600)+"시간 전";}
 
-// ---- 종목 ----
-// ---- 종목 순서 바꾸기 (손잡이를 끌어서, 포인터 이벤트라 마우스·터치 공통). 놓으면 POST /api/settings?codes=A,B,C ----
+// ---- 종목 (초안) ----
 let dragging=false;
 function startDrag(e,row){
   if(dragging||e.button>0)return;
@@ -519,75 +588,57 @@ function startDrag(e,row){
     dragging=false;
     if(to===from)return;
     const order=list.map(r=>r.dataset.code);order.splice(to,0,order.splice(from,1)[0]);
-    // 낙관적: DOM 순서부터 바꾸고 기기에 보낸다
-    const ref=to>from?list[to].nextSibling:list[to];ul.insertBefore(row,ref);
-    if(state){state.codes=order;if(state.slots)state.slots.sort((a,b)=>order.indexOf(a.code)-order.indexOf(b.code));}
-    post("/api/settings?codes="+encodeURIComponent(order.join(","))).then(()=>{toast("순서를 바꿨어요");pollSoon(400);}).catch(err=>{setMsg(MARKET.msgId,"순서를 바꾸지 못했어요: "+err.message,"err");pollSoon(300);});
+    draft.codes=order;markDirty();
   };
   grip.addEventListener("pointermove",move);grip.addEventListener("pointerup",end);grip.addEventListener("pointercancel",end);
 }
 function renderList(s){
-  if(dragging)return;  // 끄는 동안은 목록을 다시 만들지 않는다
+  if(dragging)return;
   const ul=$("symList");ul.innerHTML="";
   const slots=s.slots||[],codes=codesOf(s),max=s.max||5;
-  if(!codes.length&&!pending){  // 전부 지운 상태
-    ul.innerHTML=`<div class="empty"><b>아직 종목이 없어요</b><div class="hint">종목을 추가하면 기기 화면에 시세가 나와요.</div><button class="textbtn" data-go="/screen/add">${I("plus")}종목 추가</button></div>`;
+  if(!codes.length){
+    ul.innerHTML=`<div class="empty"><b>아직 종목이 없어요</b><div class="hint">종목을 추가하고 저장하면 기기 화면에 시세가 나와요.</div><button class="textbtn" data-go="/screen/add">${I("plus")}종목 추가</button></div>`;
   }
   slots.forEach((sl,i)=>{
-    const row=document.createElement("div");row.className="srow";   // 활성 종목 강조·"표시 중" 배지 없음 (사용자 요청)
-    const sub=MARKET.slotSub(sl)+(sl.validating?' <span class="badge">확인 중</span>':sl.ok?"":sl.error?' <span class="badge fx">'+esc(sl.error)+'</span>':' <span class="badge">대기</span>');
+    const row=document.createElement("div");row.className="srow";
+    const sub=MARKET.slotSub(sl)+(sl.pending?' <span class="badge">저장 후 반영</span>':sl.validating?' <span class="badge">확인 중</span>':sl.ok?"":sl.error?' <span class="badge fx">'+esc(sl.error)+'</span>':' <span class="badge">대기</span>');
     const up=sl.change>=0;
     row.dataset.code=sl.code;
     row.innerHTML=`<span class="grip" aria-label="순서 바꾸기 (끌기)" title="끌어서 순서 바꾸기">${I("grip")}</span><div><div class="sn">${esc(MARKET.slotLabel(sl))}</div><div class="meta">${sub}</div></div>`+
       `<div class="px"><b>${sl.ok?esc(MARKET.slotMoney(sl)):"-"}</b><span class="${up?"up":"down"}">${sl.ok?(up?"+":"")+Number(sl.change).toFixed(2)+"%":""}</span></div>`+
-      `<button class="rm" title="삭제" aria-label="삭제">${I("x")}</button>`;
-    row.querySelector(".rm").onclick=()=>removeSymbol(sl.code,i===s.active&&codes.length>1,MARKET.slotLabel(sl));
+      `<button class="rm" title="목록에서 빼기" aria-label="목록에서 빼기">${I("x")}</button>`;
+    row.querySelector(".rm").onclick=()=>{draft.codes=draft.codes.filter(c=>c!==sl.code);markDirty();toast(MARKET.slotLabel(sl)+" 을(를) 뺐어요 · 저장하면 반영돼요");};
     row.querySelector(".grip").onpointerdown=e=>startDrag(e,row);
     ul.appendChild(row);
   });
-  if(pending&&!codes.includes(pending.value)){
-    const row=document.createElement("div");row.className="srow";
-    row.innerHTML=`<span></span><div><div class="sn">${esc(MARKET.pendingLabel(pending.value))}</div><div class="meta">${esc(pending.value)} <span class="badge">확인 중</span></div></div><div class="px"><b>-</b></div><span></span>`;
-    ul.appendChild(row);
-  }
   $("listCount").textContent=codes.length+"/"+max;
   const full=codes.length>=max;
-  const ab=$("addBtn");ab.disabled=full;ab.title=full?"가득 찼어요 · 하나를 지우면 추가할 수 있어요":"";
-  $("addCount").textContent=codes.length+"/"+max+" 등록됨"+(full?" · 가득 찼어요. 목록에서 하나를 지우면 추가할 수 있어요.":"");
-  renderChips(codes);
+  const ab=$("addBtn");ab.disabled=full;ab.title=full?"가득 찼어요 · 하나를 빼면 추가할 수 있어요":"";
+  $("addCount").textContent=codes.length+"/"+max+" 등록됨"+(full?" · 가득 찼어요. 목록에서 하나를 빼면 추가할 수 있어요.":"");
   const r=$("rotate");if(document.activeElement!==r)r.value=String(s.rotate==null?5:s.rotate);
   $("rotateHint").textContent=codes.length>1?(s.rotate>0?s.rotate+"초마다 다음 종목으로":"전환 꺼짐 · 첫 종목만"):"종목을 더 추가하면 차례로 넘어가요";
 }
-function renderChips(codes){
-  const box=$("chips");if(!box||!MARKET.chips||!MARKET.chips.length)return;
-  if(!box.childElementCount)MARKET.chips.forEach(([v,l])=>{const b=document.createElement("button");b.className="chip";b.textContent=l;b.title=v;b.dataset.v=v;b.onclick=()=>addSymbol(v);box.appendChild(b);});
-  box.querySelectorAll(".chip").forEach(b=>b.classList.toggle("on",codes.includes(b.dataset.v)));
-}
+// 종목 추가: 초안에만 넣는다. 실제로 있는 종목인지는 저장 뒤 기기가 확인한다 (없으면 rejected 로 알려 준다)
 function addSymbol(raw){
   const v=MARKET.normalize(raw);
   if(v===null){setMsg(MARKET.msgId,MARKET.invalidMsg,"err");return;}
-  const codes=codesOf(state);
-  if(state&&!codes.includes(v)&&codes.length>=(state.max||5)){setMsg(MARKET.msgId,"종목은 최대 "+(state.max||5)+"개까지예요. 하나를 지우고 추가해 주세요.","err");return;}
+  if(!draft)return;
+  const max=(state&&state.max)||5;
   const inp=$(MARKET.inputId);if(inp)inp.value="";
-  if(codes.includes(v)){toast(MARKET.pendingLabel(v)+" 은 이미 있어요. 기기 화면을 돌려요.");post("/api/settings?add="+encodeURIComponent(v)).then(()=>pollSoon(500)).catch(()=>{});return;}
-  pending={value:v,since:Date.now()};
-  if(state)renderList(state);
-  setMsg(MARKET.msgId,MARKET.pendingLabel(v)+" 추가 중...");
-  post("/api/settings?add="+encodeURIComponent(v))
-    .then(()=>{if(MARKET.onApplied)MARKET.onApplied(v);pollSoon(800);})
-    .catch(e=>{if(pending&&pending.value===v){pending=null;setMsg(MARKET.msgId,"추가 실패: "+(e.message.startsWith("max")?"최대 "+(state&&state.max||5)+"개까지예요.":e.message),"err");if(state)renderList(state);}});
+  if(draft.codes.includes(v)){toast(MARKET.pendingLabel(v)+" 은 이미 목록에 있어요");return;}
+  if(draft.codes.length>=max){setMsg(MARKET.msgId,"종목은 최대 "+max+"개까지예요. 하나를 빼고 추가해 주세요.","err");return;}
+  draft.codes.push(v);
+  setMsg(MARKET.msgId,"");
+  if(MARKET.onApplied)MARKET.onApplied(v);
+  markDirty();
+  toast(MARKET.pendingLabel(v)+" 을(를) 추가했어요 · 저장하면 기기에 반영돼요");
+  if(page()==="/screen/add")back();
 }
 function applySymbol(v){addSymbol(v);}
-function removeSymbol(code,isActive,label){
-  if(isActive&&!confirm("지금 기기 화면에 보이는 종목이에요. 삭제하고 다음 종목을 보여 줄까요?"))return;
-  post("/api/settings?remove="+encodeURIComponent(code))
-    .then(()=>{toast(label+" 뺐어요.");pollSoon(300);})
-    .catch(e=>setMsg(MARKET.msgId,"삭제 실패: "+e.message,"err"));
-}
 
 // ---- 화면 ----
 let layouts=null, themeTab=null, layoutKey="";
-async function loadLayouts(){try{layouts=(await (await fetch("/api/layouts",{cache:"no-store"})).json()).layouts||[];}catch(e){layouts=[];}if(state)renderLayouts(state,true);}
+async function loadLayouts(){try{layouts=(await (await fetch("/api/layouts",{cache:"no-store"})).json()).layouts||[];}catch(e){layouts=[];}if(state)renderLayouts(view(),true);}
 function renderScreen(s){
   $("layoutLabel").textContent=$("layoutValue").textContent=s.layoutName||"-";
   if(window.PREVIEW)PREVIEW.draw($("mainPreview"),s.layout||"S00",s);
@@ -595,7 +646,6 @@ function renderScreen(s){
   $("colorsSeg").querySelectorAll("button").forEach(b=>{const on=b.dataset.value===colors;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
   $("chartLine").classList.toggle("hidden",s.layout!=="S00");
   if(document.activeElement!==$("chart"))$("chart").checked=!!s.showChart;
-  // 표시 항목: 테마에 맞는 것만 보여 준다 (라인 차트는 주식, 날짜·종목 영역은 시계). CLASSIC 은 1분봉 토글만
   const show=s.show||{},clock=s.theme==="clock",classic=s.layout==="S00";
   SHOW_KEYS.forEach(([id,k])=>{const el=$(id);if(document.activeElement!==el)el.checked=show[k]!==false;});
   $("showPriceRow").classList.toggle("hidden",classic);$("showChangeRow").classList.toggle("hidden",classic);
@@ -613,7 +663,7 @@ function renderLayouts(s,force){
   $("layoutGroupTitle").textContent=t==="stock"?"주식 · 시세가 전면에 나와요":"시계 · 겉보기엔 탁상시계예요";
   const key=t+"|"+s.layout+"|"+layouts.length;
   const grid=$("layoutGrid");
-  if(key!==layoutKey||force){  // 폴링마다 카드를 다시 만들지 않는다 (누르는 중에 바뀌지 않게). 썸네일만 아래에서 갱신
+  if(key!==layoutKey||force){
     layoutKey=key;grid.innerHTML="";
     layouts.filter(l=>l.theme===t).forEach(l=>{const b=document.createElement("button");b.className="lay"+(l.id===s.layout?" on":"");b.dataset.layout=l.id;b.setAttribute("aria-pressed",l.id===s.layout);
       b.innerHTML=`<span class="check">${I("check")}</span><canvas width="240" height="240"></canvas><b>${esc(l.name)}</b><div class="desc">${esc(l.desc||"")}</div><span class="tag">${l.single?"종목 전환":"전체 표시"}</span>`;
@@ -622,16 +672,14 @@ function renderLayouts(s,force){
   if(window.PREVIEW)grid.querySelectorAll(".lay").forEach(b=>PREVIEW.draw(b.querySelector("canvas"),b.dataset.layout,s));
 }
 function setLayout(l){
-  if(!state||l.id===state.layout)return;
-  const prev={layout:state.layout,layoutName:state.layoutName,theme:state.theme};
-  state.layout=l.id;state.layoutName=l.name;state.theme=l.theme;themeTab=null;renderLayouts(state);renderScreen(state);renderHome(state);  // 낙관적
-  post("/api/settings?layout="+encodeURIComponent(l.id)).then(()=>{toast(l.name+" 레이아웃을 적용했어요"+(l.theme==="clock"?" · 시계는 Wi-Fi로 시각을 맞춰요":""));pollSoon(400);})
-    .catch(e=>{Object.assign(state,prev);renderLayouts(state);renderScreen(state);renderHome(state);setMsg("layoutMsg","바꾸지 못했어요: "+e.message,"err");});
+  if(!draft||l.id===draft.layout)return;
+  draft.layout=l.id;draft.theme=l.theme;themeTab=null;
+  markDirty();
+  toast(l.name+" 선택 · 저장하면 기기에 반영돼요");
 }
-function saveTz(v){v=(v||"").trim();if(!v){setMsg("screenMsg","시간대를 입력해 주세요.","err");return;}
-  post("/api/settings?tz="+encodeURIComponent(v)).then(()=>{toast("시간대를 "+v+" 로 바꿨어요");pollSoon(300);}).catch(e=>setMsg("screenMsg","시간대를 바꾸지 못했어요: "+e.message,"err"));}
+function setTz(v){v=(v||"").trim();if(!v){setMsg("screenMsg","시간대를 입력해 주세요.","err");return;}draft.tz=v;markDirty();}
 
-// ---- 저장된 Wi-Fi 목록 (v2.4.0). 비밀번호는 기기 밖으로 나오지 않는다. 삭제·미리 등록은 기기 옆(로컬)에서만 ----
+// ---- 저장된 Wi-Fi 목록 (즉시 반영: 기기 옆에서만) ----
 let wifiKnownKey="";
 function renderWifiKnown(s){
   const list=s.wifiKnown||[],cur=s.ssid||"";const key=list.join("|")+"|"+cur;if(key===wifiKnownKey)return;wifiKnownKey=key;
@@ -649,9 +697,9 @@ const wifiAddBtn=$("wifiAddBtn");if(wifiAddBtn)wifiAddBtn.onclick=()=>{const ssi
   post("/api/wifi/add?ssid="+encodeURIComponent(ssid)+"&pass="+encodeURIComponent(pass)).then(()=>{toast(ssid+" 을(를) 등록했어요");$("wifiAddSsid").value="";$("wifiAddPass").value="";setMsg("wifiAddMsg","등록했어요. 그 장소에서 기기를 켜면 바로 붙어요.","ok");wifiKnownKey="";pollSoon(300);})
     .catch(e=>setMsg("wifiAddMsg",e.message==="full"?"5개까지 저장할 수 있어요. 하나를 지우고 등록해 주세요.":"등록하지 못했어요: "+e.message,"err"));};
 
-// ---- 상태 폴링 ----
+// ---- 페이지 그리기 / 상태 폴링 ----
 function renderPage(p){
-  const s=state;
+  const s=view();if(!s)return;
   if(p==="/")renderHome(s);
   else if(p==="/screen"){renderScreen(s);renderList(s);}
   else if(p==="/screen/add")renderList(s);
@@ -666,50 +714,44 @@ function renderPage(p){
   else if(p==="/system"){$("sysVer").textContent="v"+s.version;$("sysHeap").textContent=(s.heap/1024).toFixed(1)+" KB";$("sysInterval").textContent=Math.round(s.interval/1000)+"초";
     const m=Math.floor(s.uptime/60),h=Math.floor(m/60),d=Math.floor(h/24);$("sysUptime").textContent=d?d+"일 "+(h%24)+"시간":h?h+"시간 "+(m%60)+"분":m+"분";$("sysErr").textContent=s.error||"없음";$("sysReset").textContent=s.reset||"-";}
 }
+function renderAll(){const s=view();if(!s)return;renderHome(s);const p=page()||"/";if(p!=="/")renderPage(p);}
 async function loadState(){
   let s;try{const r=await fetch("/api/state",{cache:"no-store"});if(r.status===401&&CLOUD){setConn(false,"이 기기와의 연결이 해제됐어요. 앱에서 다시 연결해 주세요.");return;}s=await r.json();}
-  catch(e){if(++failCount>=2)setConn(false,CLOUD?"서버에 닿지 않아요":"");if(pending)pollSoon(1000);return;}
+  catch(e){if(++failCount>=2)setConn(false,CLOUD?"서버에 닿지 않아요":"");return;}
   failCount=0;
   if(CLOUD){const c=s.cloud||{};
     if(s.ok===false){setConn(false,"기기가 아직 한 번도 연결되지 않았어요. 전원과 Wi-Fi 를 확인해 주세요.");return;}
     if(c.online===false)setConn(false,"기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았어요"+(c.age!=null?" · 마지막 연결 "+agoText(c.age):""));else setConn(true);}
   else setConn(true);
   const first=!state;state=s;
-  const codes=codesOf(s);
-  if(pending){
-    const v=pending.value,slot=(s.slots||[]).find(x=>x.code===v);
-    if(s.rejected&&s.rejected.startsWith(v+":")){pending=null;setMsg(MARKET.msgId,"추가 실패: "+s.rejected.slice(s.rejected.indexOf(":")+1),"err");}
-    else if(codes.includes(v)&&!(slot&&slot.validating)){pending=null;setMsg(MARKET.msgId,"");toast(MARKET.pendingLabel(v)+" 추가했어요");if(page()==="/screen/add")back();}  // 추가 끝나면 목록으로
-    else if(Date.now()-pending.since>20000){pending=null;setMsg(MARKET.msgId,"기기가 아직 확인하지 못했어요. 잠시 뒤 목록을 확인해 주세요.","err");if(page()!=="/")renderList(s);}
-    else pollSoon(1000);
-  }
-  if(first){loadLayouts();if(MARKET.screenHint)setMsg("screenMsg",MARKET.screenHint);maybeHomeHint(s);document.body.classList.toggle("kr",(s.colors||"")==="kr");}
-  else document.body.classList.toggle("kr",(s.colors||"")==="kr");
-  renderHome(s);  // 홈 요약은 어느 페이지에서든 최신으로
-  const p=page()||"/";if(p!=="/")renderPage(p);
+  // 초안: 처음이거나 고친 게 없으면 기기 상태를 그대로 따른다 (다른 폰에서 바꾼 것도 보이게). 고치는 중이면 초안을 지킨다
+  if(applying)checkApplied(s);
+  if(!draft||(!dirty()&&!applying))draft=extract(s);
+  if(first){loadLayouts();if(MARKET.screenHint)setMsg("screenMsg",MARKET.screenHint);maybeHomeHint(s);}
+  document.body.classList.toggle("kr",((draft&&draft.colors)||s.colors||"")==="kr");
+  renderSaveBar();
+  renderAll();
 }
 
-// ---- 이벤트 ----
+// ---- 이벤트 (초안 수정) ----
 const applyBtn=$("apply");if(applyBtn)applyBtn.onclick=()=>addSymbol($(MARKET.inputId).value);
 $(MARKET.inputId).onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();if(MARKET.onEnter)MARKET.onEnter(e.target.value);else addSymbol(e.target.value);}};
-$("rotate").onchange=e=>post("/api/settings?rotate="+e.target.value).then(()=>{toast(e.target.value>0?e.target.value+"초마다 종목을 전환해요":"종목 전환을 껐어요");pollSoon(300);}).catch(err=>toast(err.message));
-SHOW_KEYS.forEach(([id,k])=>{$(id).onchange=e=>{const on=e.target.checked;if(state&&state.show)state.show[k]=on;renderScreen(state);
-  post("/api/settings?"+k+"="+(on?1:0)).then(()=>{toast(({price:"가격",change:"등락률",spark:"라인 차트",date:"날짜",symbols:"종목 영역"})[k]+(on?" 표시":" 숨김"));pollSoon(300);})
-    .catch(err=>{e.target.checked=!on;if(state&&state.show)state.show[k]=!on;renderScreen(state);setMsg("screenMsg",err.message,"err");});};});
-$("chart").onchange=e=>post("/api/settings?chart="+(e.target.checked?1:0)).then(()=>toast(e.target.checked?"1분봉 차트를 표시해요":"1분봉 차트를 숨겼어요")).catch(err=>{toast(err.message);e.target.checked=!e.target.checked;});
-let blTimer;$("bl").oninput=e=>{$("blVal").textContent=e.target.value+"%";clearTimeout(blTimer);blTimer=setTimeout(()=>post("/api/settings?bl="+e.target.value),150);};
-$("bl").onchange=e=>toast("밝기를 "+e.target.value+"%로 맞췄어요");
-$("colorsSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!state)return;const v=b.dataset.value;if(v===state.colors)return;
-  const prev=state.colors;state.colors=v;renderScreen(state);document.body.classList.toggle("kr",v==="kr");
-  post("/api/settings?colors="+v).then(()=>{toast(v==="kr"?"한국식: 상승 빨강 · 하락 파랑":"글로벌: 상승 초록 · 하락 빨강");pollSoon(300);})
-    .catch(err=>{state.colors=prev;renderScreen(state);document.body.classList.toggle("kr",prev==="kr");setMsg("screenMsg",err.message,"err");});};
-$("themeSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!state)return;themeTab=b.dataset.value;renderLayouts(state);};
-$("tz").onchange=e=>{if(e.target.value==="custom"){$("tzCustomRow").classList.remove("hidden");$("tzCustom").focus();return;}$("tzCustomRow").classList.add("hidden");saveTz(e.target.value);};
-$("tzSave").onclick=()=>saveTz($("tzCustom").value);
-$("tzCustom").onkeydown=e=>{if(e.key==="Enter")saveTz(e.target.value);};
-$("devNameSave").onclick=()=>{const v=$("devName").value.trim();post("/api/settings?name="+encodeURIComponent(v)).then(()=>{setMsg("devMsg",v?"이름을 저장했어요.":"이름을 지웠어요. ID 로 표시돼요.","ok");pollSoon(300);}).catch(e=>setMsg("devMsg",e.message,"err"));};
-$("restart").onclick=()=>{if(confirm("기기를 재시작할까요?")){fetch("/restart").catch(()=>{});toast("기기를 재시작하고 있어요");setTimeout(()=>setConn(false),1500);}};
-$("wifiReset").onclick=()=>{if(confirm("저장된 Wi-Fi를 지우고 초기 설정 화면으로 돌아갈까요? 기기 화면에 QR이 다시 떠요."))fetch("/api/wifi/reset",{method:"POST"}).then(()=>toast("초기 설정 모드로 전환해요")).catch(()=>{});};
+$("rotate").onchange=e=>{draft.rotate=+e.target.value;markDirty();};
+SHOW_KEYS.forEach(([id,k])=>{$(id).onchange=e=>{draft.show[k]=e.target.checked;markDirty();};});
+$("chart").onchange=e=>{draft.chart=e.target.checked;markDirty();};
+$("bl").oninput=e=>{$("blVal").textContent=e.target.value+"%";};
+$("bl").onchange=e=>{draft.bl=+e.target.value;markDirty();};
+$("colorsSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.colors=b.dataset.value;document.body.classList.toggle("kr",draft.colors==="kr");markDirty();};
+$("themeSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!state)return;themeTab=b.dataset.value;renderLayouts(view());};
+$("tz").onchange=e=>{if(e.target.value==="custom"){$("tzCustomRow").classList.remove("hidden");$("tzCustom").focus();return;}$("tzCustomRow").classList.add("hidden");setTz(e.target.value);};
+$("tzSave").onclick=()=>setTz($("tzCustom").value);
+$("tzCustom").onkeydown=e=>{if(e.key==="Enter")setTz(e.target.value);};
+$("saveBtn").onclick=save;
+$("revertBtn").onclick=revert;
+// 즉시 반영되는 것들
+$("devNameSave").onclick=()=>{const v=$("devName").value.trim();post("/api/settings?name="+encodeURIComponent(v)).then(()=>{setMsg("devMsg",v?(CLOUD?"이름을 저장했어요. 기기에 곧 반영돼요.":"이름을 저장했어요."):"이름을 지웠어요. ID 로 표시돼요.","ok");pollSoon(300);}).catch(e=>setMsg("devMsg",e.message,"err"));};
+$("restart").onclick=()=>{if(confirm("기기를 재시작할까요?")){fetch("/restart").catch(()=>{});toast(CLOUD?"재시작 명령을 보냈어요 · 최대 30초 뒤 재시작해요":"기기를 재시작하고 있어요");if(!CLOUD)setTimeout(()=>setConn(false),1500);}};
+const wifiReset=$("wifiReset");if(wifiReset)wifiReset.onclick=()=>{if(confirm("저장된 Wi-Fi를 지우고 초기 설정 화면으로 돌아갈까요? 기기 화면에 QR이 다시 떠요."))fetch("/api/wifi/reset",{method:"POST"}).then(()=>toast("초기 설정 모드로 전환해요")).catch(()=>{});};
 $("retry").onclick=()=>{failCount=0;loadState();};
 
 // 홈 화면 추가 안내 — 런처(PWA)가 없을 때만
@@ -729,5 +771,5 @@ function maybeHomeHint(s){
 }
 
 route();
-loadState();setInterval(loadState,3000);
+loadState();setInterval(()=>{if(!applying)loadState();},POLL_MS);
 </script></body></html>
