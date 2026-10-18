@@ -645,8 +645,7 @@ window.addEventListener("hashchange",route);
 // ---- 홈 ----
 function renderHome(s){
   const codes=codesOf(s),slots=s.slots||[],act=slots[s.active]||null;
-  const actLabel=act?MARKET.slotLabel(act):(s.symbol||"");
-  const items=[["monitor","화면",(s.layoutName||"-")+" · 종목 "+codes.length+"/"+(s.max||5)+(actLabel?" · "+actLabel:""),"/screen"],
+  const items=[["monitor","화면",(s.layoutName||"-")+" · 종목 "+codes.length+"/"+(s.max||5),"/screen"],   // 레이아웃 이름 · 종목 수까지만 (표시 중 종목명은 뺐다, 0.7.30)
     ["wifi","Wi-Fi",s.ssid||"연결 안 됨","/wifi"],
     ["settings","시스템","v"+s.version,"/system"]];
   $("homeMenu").innerHTML=items.map(x=>`<button class="menu" data-go="${x[3]}">${I(x[0])}<span class="mtext"><span class="mlbl">${x[1]}</span><span class="msub">${esc(x[2])}</span></span></button>`).join("");
