@@ -164,6 +164,11 @@ body.cloud .local-only{display:none !important}
 body.has-savebar .page{padding-bottom:96px}
 body.has-savebar .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 
+.editbtn{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;color:var(--mut);vertical-align:-9px;margin-left:2px}
+.editbtn .ic{width:18px;height:18px}
+.seg .updn{display:inline-flex;gap:1px;margin-right:5px;font-size:10px;line-height:1}
+.seg .updn b{font-weight:900}
+
 /* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */
 .menu.disabled{pointer-events:none;color:#b5b2ad}
