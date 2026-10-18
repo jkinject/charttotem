@@ -117,7 +117,8 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 .chip{border:1px solid var(--ln);border-radius:999px;background:#fff;padding:6px 12px;font-size:13px;font-weight:600}
 .chip.on{border-color:var(--ac);background:var(--ac2)}
 .logo-row canvas{width:40px;height:40px;border-radius:50%;background:var(--bg2);flex:none}
-.preview{width:min(240px,64vw);aspect-ratio:1;margin:8px auto 10px;background:var(--screen);border-radius:18px;padding:8px}
+.pvstick{position:sticky;top:0;z-index:5;background:var(--bg);padding:4px 0 6px;box-shadow:0 8px 12px -10px #0003}   /* 화면 페이지: 아래 설정을 고치는 동안 미리보기가 위에 붙어 있게 (0.7.25) */
+.preview{width:min(240px,64vw);aspect-ratio:1;margin:4px auto 4px;background:var(--screen);border-radius:18px;padding:8px}
 .preview canvas{width:100%;height:100%;display:block;border-radius:10px}
 .layout-label{text-align:center;color:var(--mut);font-size:12px;font-weight:700;letter-spacing:.08em;margin-bottom:10px}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 12px;padding:6px 20px 0}

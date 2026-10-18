@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=faa2c821">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=50fa0785">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -69,7 +69,7 @@
 
 <section class="page" data-page="/screen">
  <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">화면</h1></header>
- <div class="preview"><canvas id="mainPreview" width="480" height="480" role="img" aria-label="현재 기기 화면 미리보기"></canvas></div>
+ <div class="pvstick"><div class="preview"><canvas id="mainPreview" width="480" height="480" role="img" aria-label="현재 기기 화면 미리보기"></canvas></div></div>
  <nav class="list"><button class="setrow" data-go="/screen/layout"><svg class="ic" aria-hidden="true"><use href="#i-layout-grid"/></svg><span class="mtext"><span class="mlbl">레이아웃</span><span class="msub" id="layoutValue">-</span></span><span class="chev"><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></button></nav>
  <div class="band"></div>
  <div class="caption">종목 <span class="cnt" id="listCount"></span><button class="textbtn" id="addBtn" data-go="/screen/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>추가</button></div>
@@ -404,9 +404,10 @@ function seg7(x,s,px,py,color){const {w,h,t}=S7,L=(h-3*t)/2;x.fillStyle=color;
   for(const c of String(s)){if(c===":"){const cx=px+Math.floor((S7.colon-t)/2);x.fillRect(cx,py+t+L/2-t/2,t,t);x.fillRect(cx,py+2*t+L+L/2-t/2,t,t);px+=S7.colon;continue;}
     const m=c>="0"&&c<="9"?S7.map[+c]:0,R=(a,b,c2,d)=>x.fillRect(px+1+a,py+b,c2,d);
     if(m&1)R(t+1,0,w-2*t-2,t);if(m&2)R(w-t,t+1,t,L-2);if(m&4)R(w-t,2*t+L+1,t,L-2);if(m&8)R(t+1,h-t,w-2*t-2,t);if(m&16)R(0,2*t+L+1,t,L-2);if(m&32)R(0,t+1,t,L-2);if(m&64)R(t+1,t+L,w-2*t-2,t);px+=S7.adv;}}
-function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,small=sec&&compact;   // 펌웨어 drawBigTime 과 같은 배치
-  const wS=small?seg7W(S.time):measure(x,S.time,"f7t"),apW=S.show.h12?28:0,xc=Math.round(120-(apW+wS)/2),ty=small?cy+7:cy;
-  if(S.show.h12)text(x,S.ampm,xc,small?ty+34-16:cy+28,"f2",color);   // 숫자 아래선에 맞춘 Font2 (16px)
+function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,small=sec&&compact,apAbove=compact&&S.show.h12;   // 펌웨어 drawBigTime 과 같은 배치
+  const wS=small?seg7W(S.time):measure(x,S.time,"f7t"),apW=S.show.h12&&!apAbove?28:0,xc=Math.round(120-(apW+wS)/2),ty=small?cy+7:cy;
+  if(S.show.h12){if(apAbove)text(x,S.ampm,120,ty-18,"f2",color,"center");   // compact(ORBIT): 고리를 덮지 않게 시각 위 가운데 (펌웨어 apAbove)
+    else text(x,S.ampm,xc,small?ty+34-16:cy+28,"f2",color);}   // 숫자 아래선에 맞춘 Font2 (16px)
   if(small)seg7(x,S.time,xc+apW,ty,color);else text(x,S.time,xc+apW,ty,"f7t",color,"left");}
 function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,"f2",color,"center");}
 function label(x,sl,px,py,h,maxW,color,S){text(x,fitEll(x,sl.label,"f2",maxW),px,py+(h-14)/2,"f2",color);}
