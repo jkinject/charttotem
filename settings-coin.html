@@ -418,7 +418,7 @@ function title(x,S){const sl=S.slots[S.active];if(!sl)return;
 // 종목 한 행 (primitives drawSlotRow 근사): flags {spark,name,colorPrice,stack,rule}
 function row(x,S,sl,px,py,w,h,f){if(!sl)return;if(f.rule){x.fillStyle=C.bar;x.fillRect(px+2,py+h-1,w-4,1);}
   const priceC=f.colorPrice?sl.color:(sl.ok?C.white:C.dim),p=S.show.price?(sl.ok?money(sl,S.v):"-"):"",c=S.show.change?pct(sl):"";
-  if(f.stack){text(x,c,px+w-4,py+4,"f2",sl.color,"right");const cw=measure(x,c,"f2");text(x,sl.ok?compact(sl,S.v):"-",px+w-4,py+h/2+3,"f2",priceC,"right");
+  if(f.stack){text(x,c,px+w-4,py+4,"f2",sl.color,"right");const cw=measure(x,c,"f2");if(S.show.price)text(x,sl.ok?compact(sl,S.v):"-",px+w-4,py+h/2+3,"f2",priceC,"right");
     text(x,fitEll(x,sl.label,"f2",w-cw-16),px+4,py+4,"f2",C.text);return;}
   const two=h>=38;text(x,p,px+w-4,two?py+4:py+(h-14)/2,"f2",priceC,"right");let used=measure(x,p,"f2");
   if(two)text(x,c,px+w-4,py+22,"f2",sl.color,"right");else{text(x,c,px+w-4-used-8,py+(h-14)/2,"f2",sl.color,"right");used+=8+measure(x,c,"f2");}
@@ -469,7 +469,7 @@ const L={
     if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",236-measure(x,c,"f2")-10,218,"f2",sl.color,"right");}},
  C03(x,S){bigTime(x,S,8,C.white);bigDate(x,S,62,C.dim);x.fillStyle=C.rule;x.fillRect(0,86,240,1);x.fillStyle=C.bar;x.fillRect(0,87,240,1);if(!S.show.symbols)return;
   S.slots.forEach((sl,i)=>row(x,S,sl,0,92+i*29,240,29,{colorPrice:1,rule:1}));},
- C04(x,S){const parts=S.synced?S.time.split(":"):["--","--","--"],sec=S.show.seconds,hy=sec?20:30,my=sec?68:86,dy=sec?170:146;
+ C04(x,S){const parts=S.synced?S.time.split(":").map(p=>p.padStart(2,"0")):["--","--","--"],sec=S.show.seconds,hy=sec?20:30,my=sec?68:86,dy=sec?170:146;   // 시는 펌웨어 drawBigDigits("%02d") 처럼 두 자리
   if(S.show.h12)text(x,S.ampm,12,hy-16,"f2",C.dim);text(x,parts[0],10,hy,"f7",C.white);text(x,parts[1],10,my,"f7",C.white);if(sec)text(x,parts[2]||"--",10,116,"f7",C.white);
   text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"--",10,dy,"f2",C.dim);text(x,S.synced?WD[S.d.getDay()]:"",10,dy+18,"f2",C.dim);
   if(!S.show.symbols)return;x.fillStyle=C.frame;x.fillRect(86,10,1,220);S.slots.forEach((sl,i)=>row(x,S,sl,92,10+i*44,148,44,{colorPrice:1,stack:1,rule:1}));},
