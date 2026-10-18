@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt}].
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.9";
+const APP_VERSION = "0.7.10";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -290,21 +290,36 @@ renderFaq();
 let installPrompt = null;
 const ua = navigator.userAgent, isIOS = /iPhone|iPad|iPod/.test(ua);
 const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; showInstall(); });
+// Chrome 은 설치 조건(HTTPS·manifest·SW)을 갖춰도 사용자가 페이지와 한 번 상호작용한 뒤에야 beforeinstallprompt 를 준다.
+// 그래서 카드엔 항상 「홈 화면에 추가」 버튼을 두고, 누르면 (1) 이미 받은 prompt 가 있으면 바로 설치 창, (2) 없으면 탭 직후 이벤트가 오길 잠깐 기다렸다가 설치 창,
+// (3) 그래도 없으면(iOS·삼성 브라우저 등 네이티브 설치 창이 없는 환경) 수동 안내를 보여 준다.
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; $("installText").textContent = "다음에 기기를 바로 열 수 있어요."; });
+window.addEventListener("appinstalled", () => { try { localStorage.setItem(KEY_INSTALL, "1"); } catch (e) {} $("installCard").classList.add("hidden"); toast("홈 화면에 추가했어요"); });
+function manualGuide() {
+  return isIOS ? "Safari 아래 공유 버튼(□↑) → 「홈 화면에 추가」를 누르세요."
+    : /SamsungBrowser/.test(ua) ? "아래 메뉴(≡) → 「현재 페이지 추가」 → 「홈 화면」을 누르세요."
+    : "오른쪽 위 메뉴(⋮) → 「홈 화면에 추가」(또는 「앱 설치」)를 누르세요.";
+}
 function showInstall() {
   if (standalone) return;
   let done = false; try { done = localStorage.getItem(KEY_INSTALL) === "1"; } catch (e) {}
   if (done) return;
   $("installCard").classList.remove("hidden");
-  if (installPrompt) { $("installText").textContent = "다음에 기기를 바로 열 수 있어요."; $("installBtn").classList.remove("hidden"); }
-  else {
-    $("installBtn").classList.add("hidden");
-    $("installText").textContent = isIOS ? "Safari 아래 공유 버튼(□↑) → 「홈 화면에 추가」를 누르세요."
-      : /SamsungBrowser/.test(ua) ? "아래 메뉴(≡) → 「현재 페이지 추가」 → 「홈 화면」을 누르세요."
-      : "오른쪽 위 메뉴(⋮) → 「홈 화면에 추가」를 누르세요.";
-  }
+  $("installBtn").classList.toggle("hidden", isIOS);   // iOS 는 네이티브 설치 창이 없다: 안내만
+  $("installText").textContent = isIOS ? manualGuide() : "다음에 기기를 바로 열 수 있어요.";
 }
-$("installBtn").onclick = async () => { if (!installPrompt) return; installPrompt.prompt(); const r = await installPrompt.userChoice; installPrompt = null; if (r.outcome === "accepted") { try { localStorage.setItem(KEY_INSTALL, "1"); } catch (e) {} $("installCard").classList.add("hidden"); } };
+async function doInstall() {
+  if (!installPrompt) {   // 방금 탭했으니 이벤트가 곧 올 수 있다: 최대 1.5초 기다린다
+    await new Promise((res) => { const t = setTimeout(res, 1500); window.addEventListener("beforeinstallprompt", () => { clearTimeout(t); res(); }, { once: true }); });
+  }
+  if (!installPrompt) { $("installText").textContent = "이 브라우저에선 직접 추가해 주세요: " + manualGuide(); return; }
+  const p = installPrompt; installPrompt = null;
+  p.prompt();
+  const r = await p.userChoice;
+  if (r.outcome === "accepted") { try { localStorage.setItem(KEY_INSTALL, "1"); } catch (e) {} $("installCard").classList.add("hidden"); }
+  else installPrompt = null;
+}
+$("installBtn").onclick = doInstall;
 $("installLater").onclick = () => $("installCard").classList.add("hidden");
 
 // ------------------------------------------------------------
