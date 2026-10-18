@@ -154,15 +154,15 @@ body.cloud .local-only{display:none !important}
 .offline .sub{font-weight:400;opacity:.8;margin-left:6px}
 
 /* 저장 바 (v2.5.0): 초안에 변경이 있으면 하단에 고정. 저장을 눌러야 기기에 반영된다 */
-.savebar{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:480px;box-sizing:border-box;bottom:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--ln);box-shadow:0 -4px 16px #0000000d}
-.savebar .scount{font-size:14px;font-weight:600;color:var(--tx);flex:1}
-.savebar .textbtn{color:var(--mut);margin:0}
 .sbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ac);color:#fff;font-weight:700;font-size:15px;padding:11px 20px;border-radius:999px}
 .sbtn:disabled{opacity:.6}
 .sbtn .ic{width:18px;height:18px}
-.savebar.applying .scount{color:var(--ac)}
-body.has-savebar .page{padding-bottom:96px}
-body.has-savebar .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+.sync{position:fixed;z-index:30;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translate(-50%,16px);display:flex;align-items:center;gap:8px;max-width:calc(100% - 40px);padding:8px 14px;border-radius:999px;background:var(--bg);border:1px solid var(--ln);box-shadow:0 4px 16px #00000014;font-size:13px;font-weight:600;color:var(--mut);opacity:0;pointer-events:none;transition:.2s}
+.sync.on{opacity:1;transform:translate(-50%,0)}
+.sync .ic{width:16px;height:16px;flex:none}
+.sync.ok{color:var(--ac)}
+.sync.err,.sync.off{color:var(--danger)}
+.sync.on~.toast.on{bottom:calc(64px + env(safe-area-inset-bottom))}
 
 .editbtn{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;color:var(--mut);vertical-align:-9px;margin-left:2px}
 .editbtn .ic{width:18px;height:18px}

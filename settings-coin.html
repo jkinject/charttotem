@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=a48ac777">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=faa2c821">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -186,6 +186,7 @@
  <nav class="list">
   <a class="menu local-only" href="/update_ota"><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg><span class="mtext"><span class="mlbl">펌웨어 업데이트</span><span class="msub">.bin 파일을 올려 OTA 로 설치해요</span></span></a>
   <button class="menu danger" id="restart"><svg class="ic" aria-hidden="true"><use href="#i-power"/></svg><span class="mtext"><span class="mlbl">재시작</span></span></button>
+  <button class="menu danger" id="factoryReset"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg><span class="mtext"><span class="mlbl">기기 초기화</span><span class="msub">종목·화면 설정·저장된 Wi-Fi·앱 연결을 모두 지우고 처음 상태로 돌아가요</span></span></button>
  </nav>
 </section>
 
@@ -227,7 +228,7 @@
  </div>
 </section>
 
-<div class="savebar hidden" id="savebar"><span class="scount" id="saveCount">변경 0개</span><button class="textbtn" id="revertBtn">되돌리기</button><button class="sbtn" id="saveBtn"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg>저장</button></div>
+<div class="sync" id="syncBar" role="status" aria-live="polite"></div>
 <div class="toast" role="status" aria-live="polite" id="toast"></div>
 </main>
 <script>
@@ -452,7 +453,7 @@ const L={
   x.fillStyle=C.frame;x.fillRect(4,27,232,1);S.slots.forEach((sl,i)=>row(x,S,sl,0,30+i*42,240,42,{spark:1,name:1,rule:1}));},
  C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,101,84,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white,true);bigDate(x,S,138,C.dim);if(!S.show.symbols)return;
   // 점은 |등락률| 에 비례해 시계 방향으로 돈다 (10% 이상 = 한 바퀴 30초). 펌웨어와 같은 법칙, 시간 기반이라 다시 그릴 때마다 조금씩 움직인다
-  const n=S.slots.length,t=Date.now()/1000;S.slots.forEach((sl,i)=>{const w=sl.ok?Math.min(Math.abs(sl.change),10)/10*12:0;const a=(-90+360*i/n+w*t%360)*Math.PI/180;dot(x,120+80*Math.cos(a),104+80*Math.sin(a),6,sl.color);});columns(x,S,192,48);},
+  const n=S.slots.length,t=Date.now()/1000;S.slots.forEach((sl,i)=>{const w=sl.ok?Math.min(Math.abs(sl.change),10)/10*12:0;const a=(-90+360*i/n+w*t%360)*Math.PI/180;dot(x,120+84*Math.cos(a),101+84*Math.sin(a),6,sl.color);});columns(x,S,192,48);},
  C02(x,S){const cx=120,cy=104,R=86;for(let i=0;i<12;i++){const a=i*30*Math.PI/180,inn=i%3?R-7:R-12;x.strokeStyle=i%3?C.dim:C.text;x.lineWidth=1;x.beginPath();
     x.moveTo(cx+inn*Math.cos(a),cy+inn*Math.sin(a));x.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));x.stroke();}
   // HANDS: 시침·분침·초침 색 = 1·2·3번째 종목 등락색 (초침은 초 표시 때만). 나머지 종목(최대 3개)은 서브다이얼: 바늘 각도 = 등락률(±5% → ±135°), 1개면 6시, 2개면 9시·3시, 3개면 9시·3시·6시. 펌웨어와 같은 규칙
@@ -492,8 +493,10 @@ return {draw,ids:Object.keys(L),onReady(cb){if(fontsReady)cb();else readyCbs.pus
 })();
 // 차트토템 기기 설정 페이지 동작 (window.MARKET 과 PREVIEW 가 정의된 뒤 실행). 원본: tools/web/settings.js → gen_launcher.py → launcher/settings-*.html
 // 구조: 해시 라우팅 (#/ 홈, #/screen(종목 + 화면 설정), #/screen/add(종목 추가·검색), #/screen/layout, #/wifi, #/system). 상태는 /api/state 폴링.
-// v2.5.0 저장 방식: 화면 설정은 초안(draft)에 모았다가 하단 「저장」을 눌러야 명령 하나(/api/settings?codes=..&layout=..)로 기기에 보낸다.
-//   기기는 30초마다 클라우드를 확인하므로 저장 뒤 최대 30초 안에 반영된다(LAN 은 즉시). 기기 이름·재시작·Wi-Fi 관리처럼 즉시성이 필요한 것만 바로 보낸다.
+// v2.6 자동 저장: 화면 설정은 초안(draft)에 반영되고, 마지막 변경 뒤 SEND_DEBOUNCE_MS 가 지나면 기기 상태(또는 직전에 보낸 목표)와의 차이만
+//   명령 하나(/api/settings?codes=..&layout=..)로 보낸다. 포크 채널(cloud/API.md /d/{id}/ws) 덕에 1~2초 안에 기기에 반영되므로 저장 버튼이 없다.
+//   하단 상태 줄(#syncBar)이 "기기에 반영 중… → 반영됐어요" 를 보여 주고, 기기가 꺼져 있으면 명령은 서버 큐에 남아 켜질 때 반영된다(상단 오프라인 배너).
+//   (v2.5.0 의 저장 바 방식은 기기 폴링이 30초라 생겼던 것. 7g/7h 절 참고)
 // MARKET 이 제공하는 것 (page_kstock.h / page_coin.h): key, inputId, msgId, normalize(raw), invalidMsg, label(state), pendingLabel(v),
 //   slotLabel(slot), slotSub(slot) html, slotMoney(slot), render(state), onApplied(v)?, onEnter(raw)?, screenHint?
 const $=id=>document.getElementById(id);
@@ -515,7 +518,12 @@ function fmtDate(n,d){const m=d.getMonth()+1,dd=d.getDate(),w=d.getDay(),p2=x=>S
 window.fmtDate=fmtDate;
 const CLOUD=window.CLOUD||null;   // 클라우드 모드 (런처에서 연 페이지, cloud_shim.js)
 const POLL_MS=CLOUD?5000:3000;
-const APPLY_WAIT_MS=CLOUD?75000:15000;   // 저장 뒤 기기 반영을 기다리는 최대 시간 (기기 폴링 30초 + 여유)
+const SEND_DEBOUNCE_MS=500;             // 마지막 변경 뒤 이만큼 조용하면 보낸다 (슬라이더·연속 토글을 명령 하나로)
+// 클라우드 모드: 기기가 포크 채널(WebSocket, cloud/API.md /d/{id}/ws)에 붙어 있으면 변경·재시작이 1초 안에 반영된다. 아니면 30초 폴링 상한
+const wsUp=()=>!!(CLOUD&&state&&state.cloud&&state.cloud.ws);
+const devOffline=()=>!!(CLOUD&&state&&state.cloud&&state.cloud.online===false);
+const applyWaitMs=()=>CLOUD?(wsUp()?20000:75000):15000;   // 보낸 뒤 기기 반영을 기다리는 최대 시간 (포크 채널 없으면 기기 폴링 30초 + 여유)
+const applyPollMs=()=>CLOUD?(wsUp()?500:3000):500;        // 반영을 기다리는 동안 상태 확인 간격
 
 function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("on"),2400);}
 function setMsg(id,text,cls){const m=$(id);if(!m)return;m.textContent=text||"";m.className=(m.className.split(" ")[0]||"msg")+(cls?" "+cls:"");}
@@ -524,15 +532,16 @@ function pollSoon(ms){clearTimeout(pollTimer);pollTimer=setTimeout(loadState,ms|
 function agoText(sec){if(sec==null||sec<0)return "";return sec<90?sec+"초 전":sec<5400?Math.round(sec/60)+"분 전":Math.round(sec/3600)+"시간 전";}
 const codesOf=s=>s&&s.codes?s.codes:(s?[s[MARKET.key]]:[]);
 
-// ---- 초안(draft): 기기 상태에서 뽑은 설정 묶음. UI 는 초안을 보여 주고 고치며, 「저장」이 차이만 기기에 보낸다 ----
-let draft=null, applying=null;   // applying: {since, target} 저장을 보냈고 기기 상태에 반영되길 기다리는 중
+// ---- 초안(draft): 기기 상태에서 뽑은 설정 묶음. UI 는 초안을 보여 주고 고치며, flush() 가 차이만 기기에 보낸다 ----
+let draft=null, applying=null;   // applying: {since, target} 명령을 보냈고 기기 상태가 target(보낸 시점의 초안)에 닿기를 기다리는 중
+let sendTimer=null, sendFails=0;
 function extract(s){return {codes:codesOf(s).slice(),layout:s.layout||"S00",theme:s.theme||"stock",colors:s.colors||"",tz:s.tz||"",dateFmt:s.dateFmt||0,rotate:s.rotate==null?5:s.rotate,
   chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true,seconds:false,h12:false,id:true},s.show||{})};}
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-// 기기 상태와 다른 초안 항목 → /api/settings 쿼리 조각. 보내지 않는 키는 바뀌지 않는다
-function diffParams(){
+// base(기기 상태 또는 직전에 보낸 목표)와 다른 초안 항목 → /api/settings 쿼리 조각. 보내지 않는 키는 바뀌지 않는다
+function diffParams(base){
   if(!state||!draft)return [];
-  const base=extract(state),p=[];
+  base=base||extract(state);const p=[];
   if(!same(draft.codes,base.codes))p.push("codes="+encodeURIComponent(draft.codes.join(",")));
   if(draft.layout!==base.layout)p.push("layout="+encodeURIComponent(draft.layout));
   if(draft.colors!==base.colors)p.push("colors="+encodeURIComponent(draft.colors));
@@ -544,7 +553,6 @@ function diffParams(){
   for(const k of ["price","change","spark","date","seconds","h12"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
   return p;
 }
-const dirty=()=>diffParams().length>0;
 // 화면에 그릴 때 쓰는 상태: 기기 상태 위에 초안을 덮은 것 (아직 없는 종목은 빈 슬롯으로)
 function view(){
   if(!state)return null;
@@ -556,26 +564,40 @@ function view(){
   v.active=Math.min(state.active||0,Math.max(0,v.slots.length-1));
   return v;
 }
-function markDirty(){renderSaveBar();renderAll();}
-function revert(){draft=extract(state);applying=null;renderSaveBar();renderAll();toast("변경을 되돌렸어요");}
-function renderSaveBar(){
-  const bar=$("savebar"),n=diffParams().length;
-  if(applying){bar.classList.remove("hidden");bar.classList.add("applying");document.body.classList.add("has-savebar");$("saveCount").innerHTML='<i class="spin" aria-hidden="true"></i>'+(CLOUD?"기기에 반영 중… (최대 30초)":"기기에 반영 중…");$("saveBtn").disabled=true;$("revertBtn").classList.add("hidden");return;}
-  bar.classList.remove("applying");$("saveBtn").disabled=false;$("revertBtn").classList.remove("hidden");
-  bar.classList.toggle("hidden",!n);
-  $("saveCount").textContent="변경 "+n+"개";
-  document.body.classList.toggle("has-savebar",n>0);
+// 초안이 바뀌었다: 화면을 다시 그리고 전송을 예약한다
+function markDirty(){renderAll();scheduleSend();}
+function scheduleSend(){clearTimeout(sendTimer);sendTimer=setTimeout(flush,SEND_DEBOUNCE_MS);renderStatus();}
+// 하단 상태 줄: 보내는 중/반영 중 → 반영됐어요(2초 뒤 사라짐) / 오류 / 기기 꺼짐
+let statusTimer=null;
+function setStatus(kind,text){const el=$("syncBar");if(!el)return;clearTimeout(statusTimer);
+  if(!kind){el.className="sync";el.innerHTML="";return;}
+  el.className="sync on "+kind;el.innerHTML=(kind==="wait"?'<i class="spin" aria-hidden="true"></i>':kind==="ok"?I("check"):I("circle-alert"))+'<span></span>';el.querySelector("span").textContent=text;
+  if(kind==="ok")statusTimer=setTimeout(()=>setStatus(null),2000);}
+function renderStatus(){
+  if(sendTimer||applying){
+    if(devOffline())setStatus("off","기기가 꺼져 있어요 · 켜지면 반영돼요");
+    else setStatus("wait",CLOUD&&!wsUp()?"기기에 반영 중… (최대 30초)":"기기에 반영 중…");
+  }
 }
-async function save(){
-  const p=diffParams();if(!p.length)return;
-  $("saveBtn").disabled=true;
+// 디바운스가 끝났다: 기기 상태(또는 아직 반영 안 된 직전 목표)와 초안의 차이만 보낸다. 연속 변경은 보낸 순서대로 기기에 쌓여 적용된다
+async function flush(){
+  sendTimer=null;
+  if(!state||!draft)return;
+  const base=applying?applying.target:extract(state);
+  const p=diffParams(base);
+  if(!p.length){if(!applying)setStatus(null);return;}
+  const target=JSON.parse(JSON.stringify(draft));
   try{await post("/api/settings?"+p.join("&"));}
-  catch(e){$("saveBtn").disabled=false;toast("저장하지 못했어요: "+e.message);return;}
-  applying={since:Date.now(),target:JSON.parse(JSON.stringify(draft))};
-  renderSaveBar();
-  pollSoon(CLOUD?2500:600);
+  catch(e){
+    if(++sendFails<3){setStatus("err","보내지 못했어요 · 다시 시도해요");clearTimeout(sendTimer);sendTimer=setTimeout(flush,3000);return;}
+    sendFails=0;applying=null;draft=extract(state);renderAll();setStatus("err","반영하지 못했어요: "+e.message);return;
+  }
+  sendFails=0;
+  applying={since:Date.now(),target};
+  renderStatus();
+  pollSoon(applyPollMs());
 }
-// 저장 뒤: 기기 상태가 초안과 같아지면 끝. 종목이 거부되면(없는 종목) 알리고 초안에서 뺀다
+// 보낸 뒤: 기기 상태가 초안과 같아지면 끝. 보낸 목표에는 닿았는데 그 뒤 변경이 더 있으면 바로 이어서 보낸다. 종목이 거부되면(없는 종목) 알리고 초안에서 뺀다
 function checkApplied(s){
   if(!applying)return;
   if(s.rejected){const code=s.rejected.slice(0,s.rejected.indexOf(":"));
@@ -583,10 +605,12 @@ function checkApplied(s){
       setMsg(MARKET.msgId,"'"+MARKET.pendingLabel(code)+"' 은(는) 없는 종목이라 기기가 뺐어요: "+s.rejected.slice(s.rejected.indexOf(":")+1),"err");}}
   const base=extract(s);
   const validating=(s.slots||[]).some(x=>x.validating);
-  if(same(base,applying.target)&&!validating){applying=null;draft=extract(s);renderSaveBar();toast("기기에 반영됐어요");return;}
-  if(Date.now()-applying.since>APPLY_WAIT_MS){applying=null;draft=extract(s);renderSaveBar();renderAll();
-    toast(CLOUD?"아직 반영되지 않았어요. 기기가 켜져 있는지 확인해 주세요":"기기가 일부 변경을 받아들이지 않았어요");}
-  else pollSoon(CLOUD?3000:800);
+  if(same(base,draft)&&!validating){applying=null;clearTimeout(sendTimer);sendTimer=null;setStatus("ok","기기에 반영됐어요");return;}
+  if(same(base,applying.target)&&!validating){applying=null;clearTimeout(sendTimer);sendTimer=null;flush();return;}   // 다음 묶음
+  if(devOffline()){renderStatus();pollSoon(5000);return;}   // 명령은 서버 큐에 남는다. 기기가 켜질 때까지 기다린다 (시간 제한 없음)
+  if(Date.now()-applying.since>applyWaitMs()){applying=null;clearTimeout(sendTimer);sendTimer=null;draft=extract(s);renderAll();
+    setStatus("err",CLOUD?"아직 반영되지 않았어요 · 기기가 켜져 있는지 확인해 주세요":"기기가 일부 변경을 받아들이지 않았어요");}
+  else pollSoon(applyPollMs());
 }
 
 // ---- 라우팅 ----
@@ -612,8 +636,6 @@ document.addEventListener("click",e=>{
   if(e.target.closest(".back")){back();}
 });
 window.addEventListener("hashchange",route);
-window.addEventListener("beforeunload",e=>{if(dirty()){e.preventDefault();e.returnValue="";}});
-const cloudBack=$("cloudBack");if(cloudBack)cloudBack.onclick=e=>{if(dirty()&&!confirm("저장하지 않은 변경이 있어요. 그냥 나갈까요?"))e.preventDefault();};
 
 // ---- 홈 ----
 function renderHome(s){
@@ -663,17 +685,17 @@ function renderList(s){
   const ul=$("symList");ul.innerHTML="";
   const slots=s.slots||[],codes=codesOf(s),max=s.max||5;
   if(!codes.length){
-    ul.innerHTML=`<div class="empty"><b>아직 종목이 없어요</b><div class="hint">종목을 추가하고 저장하면 기기 화면에 시세가 나와요.</div><button class="textbtn" data-go="/screen/add">${I("plus")}종목 추가</button></div>`;
+    ul.innerHTML=`<div class="empty"><b>아직 종목이 없어요</b><div class="hint">종목을 추가하면 기기 화면에 시세가 나와요.</div><button class="textbtn" data-go="/screen/add">${I("plus")}종목 추가</button></div>`;
   }
   slots.forEach((sl,i)=>{
     const row=document.createElement("div");row.className="srow";
-    const sub=MARKET.slotSub(sl)+(sl.pending?' <span class="badge">저장 후 반영</span>':sl.validating?' <span class="badge">확인 중</span>':sl.ok?"":sl.error?' <span class="badge fx">'+esc(sl.error)+'</span>':' <span class="badge">대기</span>');
+    const sub=MARKET.slotSub(sl)+(sl.pending?' <span class="badge">반영 중</span>':sl.validating?' <span class="badge">확인 중</span>':sl.ok?"":sl.error?' <span class="badge fx">'+esc(sl.error)+'</span>':' <span class="badge">대기</span>');
     const up=sl.change>=0;
     row.dataset.code=sl.code;
     row.innerHTML=`<span class="grip" aria-label="순서 바꾸기 (끌기)" title="끌어서 순서 바꾸기">${I("grip")}</span><div><div class="sn">${esc(MARKET.slotLabel(sl))}</div><div class="meta">${sub}</div></div>`+
       `<div class="px"><b>${sl.ok?esc(MARKET.slotMoney(sl)):"-"}</b><span class="${up?"up":"down"}">${sl.ok?(up?"+":"")+Number(sl.change).toFixed(2)+"%":""}</span></div>`+
       `<button class="rm" title="목록에서 빼기" aria-label="목록에서 빼기">${I("x")}</button>`;
-    row.querySelector(".rm").onclick=()=>{draft.codes=draft.codes.filter(c=>c!==sl.code);markDirty();toast(MARKET.slotLabel(sl)+" 을(를) 뺐어요 · 저장하면 반영돼요");};
+    row.querySelector(".rm").onclick=()=>{draft.codes=draft.codes.filter(c=>c!==sl.code);markDirty();toast(MARKET.slotLabel(sl)+" 을(를) 뺐어요");};
     row.querySelector(".grip").onpointerdown=e=>startDrag(e,row);
     ul.appendChild(row);
   });
@@ -684,7 +706,7 @@ function renderList(s){
   const r=$("rotate");if(document.activeElement!==r)r.value=String(s.rotate==null?5:s.rotate);
   $("rotateHint").textContent=codes.length>1?(s.rotate>0?s.rotate+"초마다 다음 종목으로":"전환 꺼짐 · 첫 종목만"):"종목을 더 추가하면 차례로 넘어가요";
 }
-// 종목 추가: 초안에만 넣는다. 실제로 있는 종목인지는 저장 뒤 기기가 확인한다 (없으면 rejected 로 알려 준다)
+// 종목 추가: 초안에 넣으면 곧 전송된다. 실제로 있는 종목인지는 기기가 확인한다 (없으면 rejected 로 알려 준다)
 function addSymbol(raw){
   const v=MARKET.normalize(raw);
   if(v===null){setMsg(MARKET.msgId,MARKET.invalidMsg,"err");return;}
@@ -697,7 +719,7 @@ function addSymbol(raw){
   setMsg(MARKET.msgId,"");
   if(MARKET.onApplied)MARKET.onApplied(v);
   markDirty();
-  toast(MARKET.pendingLabel(v)+" 을(를) 추가했어요 · 저장하면 기기에 반영돼요");
+  toast(MARKET.pendingLabel(v)+" 을(를) 추가했어요");
   if(page()==="/screen/add")back();
 }
 function applySymbol(v){addSymbol(v);}
@@ -749,8 +771,7 @@ function renderLayouts(s,force){
 function setLayout(l){
   if(!draft||l.id===draft.layout)return;
   draft.layout=l.id;draft.theme=l.theme;themeTab=null;
-  markDirty();
-  toast(l.name+" 선택 · 저장하면 기기에 반영돼요");
+  markDirty();  // 선택은 미리보기·저장 바에 바로 보이므로 토스트는 띄우지 않는다
 }
 function setTz(v){v=(v||"").trim();if(!v){setMsg("screenMsg","시간대를 입력해 주세요.","err");return;}draft.tz=v;markDirty();}
 
@@ -836,15 +857,15 @@ async function loadState(){
   failCount=0;
   if(CLOUD){const c=s.cloud||{};
     if(s.ok===false){setConn(false,"기기가 아직 한 번도 연결되지 않았어요. 전원과 Wi-Fi 를 확인해 주세요.");return;}
-    if(c.online===false)setConn(false,"기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았어요"+(c.age!=null?" · 마지막 연결 "+agoText(c.age):""));else setConn(true);}
+    if(c.online===false)setConn(false,"기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았어요 · 바꾼 설정은 켜지면 반영돼요"+(c.age!=null?" · 마지막 연결 "+agoText(c.age):""));else setConn(true);}
   else setConn(true);
   const first=!state;state=s;
-  // 초안: 처음이거나 고친 게 없으면 기기 상태를 그대로 따른다 (다른 폰에서 바꾼 것도 보이게). 고치는 중이면 초안을 지킨다
+  // 초안: 보내는 중(예약·대기)이 아니면 기기 상태를 그대로 따른다 (다른 폰에서 바꾼 것도 보이게). 보내는 중이면 초안을 지킨다
   if(applying)checkApplied(s);
-  if(!draft||(!dirty()&&!applying))draft=extract(s);
+  if(!draft||(!applying&&!sendTimer))draft=extract(s);
   if(first){loadLayouts();if(MARKET.screenHint)setMsg("screenMsg",MARKET.screenHint);maybeHomeHint(s);}
   document.body.classList.toggle("kr",((draft&&draft.colors)||s.colors||"")==="kr");
-  renderSaveBar();
+  renderStatus();
   renderAll();
 }
 
@@ -864,8 +885,6 @@ $("tz").onchange=e=>{if(e.target.value==="custom"){$("tzCustomRow").classList.re
 $("tzSave").onclick=()=>setTz($("tzCustom").value);
 $("dateFmt").onchange=e=>{draft.dateFmt=+e.target.value;markDirty();};
 $("tzCustom").onkeydown=e=>{if(e.key==="Enter")setTz(e.target.value);};
-$("saveBtn").onclick=save;
-$("revertBtn").onclick=revert;
 // 즉시 반영되는 것들
 // 기기 이름: 연필을 누르면 같은 자리에서 글자만 고친다 (Enter/✓ 저장, Esc 취소, 포커스 빠져도 저장)
 function startNameEdit(){const title=$("devTitle"),btn=$("devEdit"),wrap=title.parentNode;if(wrap.querySelector("input"))return;const cur=(state&&state.name)||"";
@@ -880,7 +899,16 @@ function startNameEdit(){const title=$("devTitle"),btn=$("devEdit"),wrap=title.p
   btn.onclick=()=>finish(true);inp.onkeydown=e=>{if(e.key==="Enter")finish(true);else if(e.key==="Escape")finish(false);};inp.onblur=()=>setTimeout(()=>finish(true),150);
   inp.focus();inp.select();}
 $("devEdit").onclick=startNameEdit;
-$("restart").onclick=()=>{if(confirm("기기를 재시작할까요?")){fetch("/restart").catch(()=>{});toast(CLOUD?"재시작 명령을 보냈어요 · 최대 30초 뒤 재시작해요":"기기를 재시작하고 있어요");if(!CLOUD)setTimeout(()=>setConn(false),1500);}};
+$("restart").onclick=()=>{if(confirm("기기를 재시작할까요?")){fetch("/restart").catch(()=>{});toast(CLOUD?(wsUp()?"재시작 명령을 보냈어요 · 곧 재시작해요":"재시작 명령을 보냈어요 · 최대 30초 뒤 재시작해요"):"기기를 재시작하고 있어요");if(!CLOUD)setTimeout(()=>setConn(false),1500);}};
+// 기기 초기화: 두 번 확인 → /api/settings?reset=1 (LAN·클라우드 같은 경로). 기기는 서버 기록을 지우고(앱 연결 모두 해제) 설정·Wi-Fi 를 지운 뒤 재시작한다
+const factoryReset=$("factoryReset");if(factoryReset)factoryReset.onclick=()=>{
+  if(!confirm("기기를 초기화할까요?\n\n종목·화면 설정·저장된 Wi-Fi·앱 연결이 모두 지워지고, 기기 화면에 처음 설정 QR 이 다시 떠요."))return;
+  if(!confirm("정말 초기화할까요? 되돌릴 수 없어요."))return;
+  post("/api/settings?reset=1").then(()=>{
+    if(CLOUD){try{const k="ct.cloudDevices";localStorage.setItem(k,JSON.stringify((JSON.parse(localStorage.getItem(k))||[]).filter(d=>d.id!==CLOUD.id)));}catch(e){}
+      alert("초기화 명령을 보냈어요. 기기 화면에 QR 이 뜨면 처음부터 다시 연결해 주세요.");location.href="./";}
+    else{toast("초기화하고 있어요 · 기기 화면의 QR 로 다시 설정해 주세요");setTimeout(()=>setConn(false),1500);}
+  }).catch(e=>toast("초기화하지 못했어요: "+e.message));};
 const wifiReset=$("wifiReset");if(wifiReset)wifiReset.onclick=()=>{if(confirm("저장된 Wi-Fi를 지우고 초기 설정 화면으로 돌아갈까요? 기기 화면에 QR이 다시 떠요."))fetch("/api/wifi/reset",{method:"POST"}).then(()=>toast("초기 설정 모드로 전환해요")).catch(()=>{});};
 $("retry").onclick=()=>{failCount=0;loadState();};
 
