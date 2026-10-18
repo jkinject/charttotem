@@ -683,7 +683,7 @@ function applySymbol(v){addSymbol(v);}
 
 // ---- 화면 ----
 let layouts=null, themeTab=null, layoutKey="";
-async function loadLayouts(){try{layouts=(await (await fetch("/api/layouts",{cache:"no-store"})).json()).layouts||[];}catch(e){layouts=[];}if(state)renderLayouts(view(),true);}
+async function loadLayouts(){try{layouts=(await (await fetch("/api/layouts",{cache:"no-store"})).json()).layouts||[];}catch(e){layouts=[];}if(state){renderLayouts(view(),true);renderAll();}}   // 목록이 오면 화면 페이지(전환 간격 행 등)도 바로 갱신
 function renderScreen(s){
   $("layoutLabel").textContent=$("layoutValue").textContent=s.layoutName||"-";
   if(window.PREVIEW)PREVIEW.draw($("mainPreview"),s.layout||"S00",s);
@@ -696,7 +696,8 @@ function renderScreen(s){
   $("showPriceRow").classList.toggle("hidden",classic);$("showChangeRow").classList.toggle("hidden",classic);
   $("showSparkRow").classList.toggle("hidden",clock||classic);$("showDateRow").classList.toggle("hidden",!clock);
   // 화면 전환 간격: 종목을 하나씩 돌려 보여 주는 레이아웃(single: CLASSIC·HERO·HANDS·STACK)에서만. 전체를 한 화면에 보이는 레이아웃은 숨김
-  const lay=(layouts||[]).find(l=>l.id===s.layout);$("rotateRow").classList.toggle("hidden",!!(lay&&!lay.single));
+  const lay=(layouts||[]).find(l=>l.id===s.layout);const single=lay?lay.single:["S00","S01","C02","C05"].includes(s.layout);  // 목록이 오기 전엔 알려진 ID 로 판단 (깜빡임 방지)
+  $("rotateRow").classList.toggle("hidden",!single);
   $("showSecondsRow").classList.toggle("hidden",!clock);$("show12hRow").classList.toggle("hidden",!clock||s.layout==="C02");  // HANDS(아날로그)는 초침만 해당, 12시간제 없음
   const bl=$("bl");if(document.activeElement!==bl){bl.value=s.brightness;$("blVal").textContent=s.brightness+"%";}
   const sel=$("tz");
