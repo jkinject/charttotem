@@ -321,20 +321,53 @@ window.SEARCH=(()=>{
   clr.onclick=()=>{inp.value="";inp.oninput();inp.focus();};
   return S;
 })();
-// 기기 화면 미리보기 렌더러 (설정 페이지용). 원본: firmware/tools/web/preview.js → tools/gen_webpage.py 가 src/webpage_settings.h 의 PREVIEW_JS 로 감싼다.
-// 기기는 SPI MISO 가 없어 화면을 캡처할 수 없다. 대신 /api/state 의 실제 종목·가격·등락률·시각으로 각 레이아웃을 240x240 캔버스에 근사해 그린다.
-// 펌웨어의 layout_*.cpp / primitives.cpp 좌표를 따라가되, 글꼴은 브라우저 폰트로 비슷하게만.
+// 기기 화면 미리보기 렌더러 (설정 페이지용). 원본: firmware/tools/web/preview.js → tools/gen_launcher.py 가 launcher/settings-*.html 에 넣는다.
+// 기기는 SPI MISO 가 없어 화면을 캡처할 수 없다. 대신 /api/state 의 실제 종목·가격·등락률·시각으로 각 레이아웃을 240x240 캔버스에 그린다.
+// 글꼴은 기기와 같은 비트맵 폰트를 쓴다: fonts/tft.json (TFT_eSPI Font1/2/4/7 + FreeSansBold 12/18/24, tools/gen_webfonts.py) 와
+// fonts/ko24.bin · ko14.bin (기기 LittleFS 와 같은 파일). 폰트를 받기 전에는 브라우저 폰트로 비슷하게 그리고, 받으면 PREVIEW.onReady 로 다시 그린다.
 // 사용: PREVIEW.draw(canvas, layoutId, state)  — state 는 /api/state JSON. canvas 크기는 자유(240 기준으로 scale).
 window.PREVIEW=(()=>{
-// 옛 브라우저(iOS Safari 16 미만, Chrome 99 미만)에는 roundRect 가 없다
 if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h){this.rect(x,y,w,h);};
 const C={bg:"#000",title:"#F0D420",accent:"#F09410",dim:"#686868",frame:"#386868",text:"#B8BCB8",white:"#fff",box:"#E8D830",boxTxt:"#202020",
   tag:"#28282C",bar:"#202020",amber:"#F8D800",amberDim:"#907C00",ring:"#383C38",rule:"#404040"};
 const KR={up:"#F05858",down:"#48ACF8"},GL={up:"#28FC30",down:"#F03430"};
 const MON=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"],WD=["SUN","MON","TUE","WED","THU","FRI","SAT"];
-const F7='700 46px "Menlo","Consolas","Courier New",monospace';   // Font7 (7-seg 48px) 근사
-const F2='600 13px -apple-system,"Apple SD Gothic Neo",sans-serif', F1='500 9px -apple-system,sans-serif';
-const KO='700 12px -apple-system,"Apple SD Gothic Neo",sans-serif', KOB='700 20px -apple-system,"Apple SD Gothic Neo",sans-serif';
+
+// ---- 기기 비트맵 폰트 ----
+// 키: f1(GLCD 6x8) f2(16px) f4(26px) f7(7세그 48px) f7t(f7, 숫자 30·콜론 10 조인 간격 = 펌웨어 drawBigTime) b12/b18/b24(FreeSansBold) ko24/ko14(한글)
+const BF={};            // key → {h, asc, g:{ch:{w,hh,adv,xo,yo,bits:Uint8Array}}}
+const FALLBACK={f1:'500 9px -apple-system,sans-serif',f2:'600 13px -apple-system,"Apple SD Gothic Neo",sans-serif',f4:'700 22px -apple-system,sans-serif',
+  f7:'700 46px "Menlo","Consolas","Courier New",monospace',f7t:'700 42px "Menlo","Consolas","Courier New",monospace',b12:'700 16px -apple-system,sans-serif',
+  b18:'700 24px -apple-system,sans-serif',b24:'700 32px -apple-system,sans-serif',ko24:'700 20px -apple-system,"Apple SD Gothic Neo",sans-serif',ko14:'700 12px -apple-system,"Apple SD Gothic Neo",sans-serif'};
+const readyCbs=[];let fontsReady=false;
+function b64(s){const bin=atob(s),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+function parseKo(buf,key){const d=new DataView(buf),u=new Uint8Array(buf);if(u[0]!==67||u[1]!==84||u[2]!==75||u[3]!==70)return;   // "CTKF"
+  const cell=u[5],bmpW=u[6],gb=u[7],count=d.getUint16(8,true),idx=16,bmp=16+count*4,g={};
+  for(let i=0;i<count;i++){const cp=d.getUint16(idx+i*4,true),adv=u[idx+i*4+2];g[String.fromCharCode(cp)]={w:bmpW,hh:cell,adv,xo:0,yo:0,bits:u.subarray(bmp+i*gb,bmp+(i+1)*gb)};}
+  BF[key]={h:cell,asc:0,g};}
+(async()=>{
+  try{const j=await (await fetch("fonts/tft.json",{cache:"force-cache"})).json();
+    for(const k in j){const f=j[k],g={};for(const ch in f.g){const q=f.g[ch];g[ch]={w:q.w,hh:q.hh,adv:q.adv,xo:q.xo,yo:q.yo,bits:q.b?b64(q.b):new Uint8Array(0)};}BF[k]={h:f.h,asc:f.asc||0,g};}
+    BF.f7t=BF.f7;}catch(e){}
+  try{const [a,b]=await Promise.all([fetch("fonts/ko24.bin",{cache:"force-cache"}).then(r=>r.arrayBuffer()),fetch("fonts/ko14.bin",{cache:"force-cache"}).then(r=>r.arrayBuffer())]);parseKo(a,"ko24");parseKo(b,"ko14");}catch(e){}
+  fontsReady=!!BF.f2;readyCbs.forEach(cb=>{try{cb();}catch(e){}});
+})();
+const pathCache=new Map();
+function glyphPath(font,key,q){const ck=key+"\u0001"+font;let p=pathCache.get(ck);if(p)return p;p=new Path2D();const bpr=(q.w+7)>>3;
+  for(let r=0;r<q.hh;r++){let run=-1;for(let c=0;c<=q.w;c++){const on=c<q.w&&(q.bits[r*bpr+(c>>3)]>>(7-(c&7)))&1;if(on&&run<0)run=c;else if(!on&&run>=0){p.rect(run,r,c-run,1);run=-1;}}}
+  pathCache.set(ck,p);return p;}
+const isAscii=t=>/^[\x00-\x7F]*$/.test(t);
+function pick(font,t){if(isAscii(t))return font;return (font==="f1"||font==="f2"||font==="f4"||font==="ko14")?"ko14":"ko24";}   // 한글은 기기처럼 한글 폰트로
+function adv(font,ch,q){if(font==="f7t")return ch===":"?10:30;return q.adv;}
+function tw(t,font){font=pick(font,t);const f=BF[font];if(!f)return null;let w=0;for(const ch of t){const q=f.g[ch]||f.g["?"];if(q)w+=adv(font,ch,q);else w+=f.h>>1;}return w;}
+// 기기 TL datum: 비트맵 폰트는 py 가 셀 위, GFX 는 py+asc 가 기준선, 글리프 top = py+asc+yo
+function text(x,t,px,py,font,color,align){t=String(t==null?"":t);const fk=pick(font,t),f=BF[fk];
+  if(!f){x.font=FALLBACK[fk]||FALLBACK.f2;x.fillStyle=color;x.textAlign=align||"left";x.textBaseline="top";x.fillText(t,px,py);return;}
+  const w=tw(t,fk);let cx=align==="center"?px-w/2:align==="right"?px-w:px;cx=Math.round(cx);x.fillStyle=color;
+  for(const ch of t){const q=f.g[ch]||f.g["?"];if(!q){cx+=f.h>>1;continue;}
+    if(q.bits.length){x.save();x.translate(cx+q.xo,py+f.asc+q.yo);x.fill(glyphPath(fk,ch,q));x.restore();}cx+=adv(fk,ch,q);}}
+function measure(x,t,font){const w=tw(t,font);if(w!=null)return w;x.font=FALLBACK[pick(font,t)]||FALLBACK.f2;return x.measureText(String(t)).width;}
+function fitEll(x,t,font,maxW){t=String(t);if(measure(x,t,font)<=maxW)return t;while(t.length>1&&measure(x,t+"…",font)>maxW)t=t.slice(0,-1);return t+"…";}
 
 function money(sl,variant){const p=sl.price;if(!(p>0))return "-";
   if(variant==="coin")return p>=1000?"$"+Math.round(p).toLocaleString():p>=1?"$"+p.toFixed(2):p>=0.01?"$"+p.toFixed(4):"$"+p.toFixed(8);
@@ -362,58 +395,55 @@ function norm(s){
   return {id:s.id||"",v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
     date:synced?MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]:"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
 }
-function text(x,t,px,py,font,color,align){x.font=font;x.fillStyle=color;x.textAlign=align||"left";x.textBaseline="top";x.fillText(t,px,py);}
-function fitEll(x,t,font,maxW){x.font=font;if(x.measureText(t).width<=maxW)return t;while(t.length>1&&x.measureText(t+"…").width>maxW)t=t.slice(0,-1);return t+"…";}
 function spark(x,px,py,w,h,series,color){x.strokeStyle=color;x.lineWidth=1.5;x.beginPath();const lo=Math.min(...series),hi=Math.max(...series),r=(hi-lo)||1;
   series.forEach((v,i)=>{const sx=px+i*(w-1)/(series.length-1),sy=py+h-1-(v-lo)/r*(h-1);i?x.lineTo(sx,sy):x.moveTo(sx,sy);});x.stroke();}
 // 큰 시각: [AM/PM 작게(왼쪽, 아래선 맞춤)] [HH:MM 또는 HH:MM:SS]. 펌웨어처럼 7세그 간격을 조여 HH:MM:SS 200px. compact(ORBIT)+초 는 작은 폰트
-const F7T='700 42px "Menlo","Consolas","Courier New",monospace',F7S='700 28px "Menlo","Consolas","Courier New",monospace';
-function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,font=sec&&compact?F7S:(sec?F7T:F7);x.font=font;
-  const wS=x.measureText(S.time).width,apW=S.show.h12?28:0,xc=120-(apW+wS)/2,ty=sec&&compact?cy+9:(sec?cy+3:cy);
-  if(S.show.h12){x.font=F2;x.fillStyle=color;x.textAlign="left";x.textBaseline="alphabetic";x.fillText(S.ampm,xc,cy+44);}
+function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,font=sec&&compact?"b18":"f7t";   // 펌웨어 drawBigTime 과 같은 배치
+  const wS=measure(x,S.time,font),apW=S.show.h12?28:0,xc=Math.round(120-(apW+wS)/2),ty=sec&&compact?cy+7:cy;
+  if(S.show.h12)text(x,S.ampm,xc,cy+28,"f2",color);   // 숫자 아래선(cy+44)에 맞춘 Font2 (16px)
   text(x,S.time,xc+apW,ty,font,color,"left");}
-function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,F2,color,"center");}
-function label(x,sl,px,py,h,maxW,color,S){text(x,fitEll(x,sl.label,F2,maxW),px,py+(h-14)/2,F2,color);}
+function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,"f2",color,"center");}
+function label(x,sl,px,py,h,maxW,color,S){text(x,fitEll(x,sl.label,"f2",maxW),px,py+(h-14)/2,"f2",color);}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
-  if(S.v==="kstock"){text(x,fitEll(x,sl.name,KOB,228),6,6,KOB,C.title);text(x,(sl.code)+"  "+sl.exchange,6,33,F2,C.dim);}
-  else{dot(x,26,24,19,C.accent);text(x,sl.code.slice(0,3),26,18,'700 12px sans-serif',C.bg,"center");text(x,sl.name,52,12,'700 22px sans-serif',C.title);}}
+  if(S.v==="kstock"){text(x,fitEll(x,sl.name,"ko24",S.show.id?190:228),6,4,"ko24",C.title);text(x,(sl.code)+"  "+sl.exchange,6,40,"f2",C.dim);}
+  else{dot(x,26,24,19,C.accent);text(x,sl.code.slice(0,3),26,18,"f2",C.bg,"center");text(x,sl.name,52,12,"f4",C.title);}}
 // 종목 한 행 (primitives drawSlotRow 근사): flags {spark,name,colorPrice,stack,rule}
 function row(x,S,sl,px,py,w,h,f){if(!sl)return;if(f.rule){x.fillStyle=C.bar;x.fillRect(px+2,py+h-1,w-4,1);}
   const priceC=f.colorPrice?sl.color:(sl.ok?C.white:C.dim),p=S.show.price?(sl.ok?money(sl,S.v):"-"):"",c=S.show.change?pct(sl):"";
-  if(f.stack){text(x,c,px+w-4,py+4,F2,sl.color,"right");const cw=x.measureText(c).width;text(x,sl.ok?compact(sl,S.v):"-",px+w-4,py+h/2+3,F2,priceC,"right");
-    text(x,fitEll(x,sl.label,F2,w-cw-16),px+4,py+4,F2,C.text);return;}
-  const two=h>=38;text(x,p,px+w-4,two?py+4:py+(h-14)/2,F2,priceC,"right");let used=x.measureText(p).width;
-  if(two)text(x,c,px+w-4,py+22,F2,sl.color,"right");else{text(x,c,px+w-4-used-8,py+(h-14)/2,F2,sl.color,"right");used+=8+x.measureText(c).width;}
+  if(f.stack){text(x,c,px+w-4,py+4,"f2",sl.color,"right");const cw=measure(x,c,"f2");text(x,sl.ok?compact(sl,S.v):"-",px+w-4,py+h/2+3,"f2",priceC,"right");
+    text(x,fitEll(x,sl.label,"f2",w-cw-16),px+4,py+4,"f2",C.text);return;}
+  const two=h>=38;text(x,p,px+w-4,two?py+4:py+(h-14)/2,"f2",priceC,"right");let used=measure(x,p,"f2");
+  if(two)text(x,c,px+w-4,py+22,"f2",sl.color,"right");else{text(x,c,px+w-4-used-8,py+(h-14)/2,"f2",sl.color,"right");used+=8+measure(x,c,"f2");}
   let right=px+w-4-used-6;
   if(f.spark&&S.show.spark&&right-56>px+44){spark(x,right-50,py+(h-22)/2,50,22,fakeSeries(sl.code,sl.up,24),sl.color);right-=56;}
-  if(f.name)text(x,fitEll(x,sl.name,KOB,right-px-4),px+4,py+(h-20)/2,KOB,C.white);else label(x,sl,px+4,py,h,right-px-4,C.text,S);}
+  if(f.name)text(x,fitEll(x,sl.name,"ko24",right-px-4),px+4,py+(h-20)/2,"ko24",C.white);else label(x,sl,px+4,py,h,right-px-4,C.text,S);}
 function columns(x,S,py,h){const n=S.slots.length;if(!n)return;const cw=240/n;S.slots.forEach((sl,i)=>{const px=i*cw;
-  text(x,fitEll(x,sl.label,F2,cw-4),px+2,py+1,F2,C.text);const f=cw>=56?F2:F1;x.font=f;let p=S.show.price?(sl.ok?money(sl,S.v):"-"):"";if(x.measureText(p).width>cw-4)p=compact(sl,S.v);
-  text(x,p,px+2,py+18,f,sl.color);if(h>=46&&S.show.change)text(x,pct(sl),px+2,py+(cw>=56?36:28),F1,sl.color);});}
+  text(x,fitEll(x,sl.label,"f2",cw-4),px+2,py+1,"f2",C.text);const f=cw>=56?"f2":"f1";let p=S.show.price?(sl.ok?money(sl,S.v):"-"):"";if(measure(x,p,f)>cw-4)p=compact(sl,S.v);
+  text(x,p,px+2,py+18,f,sl.color);if(h>=46&&S.show.change)text(x,pct(sl),px+2,py+(cw>=56?36:28),"f1",sl.color);});}
 function countdown(x,py){x.fillStyle=C.accent;x.fillRect(6,py,150,2);x.fillStyle=C.bar;x.fillRect(156,py,78,2);}
 
 const L={
  S00(x,S){const sl=S.slots[S.active];title(x,S);const up=sl&&sl.up,col=sl?sl.color:C.dim,price=sl&&sl.ok?money(sl,S.v):"loading...";
-  if(S.showChart){x.fillStyle=C.box;x.beginPath();x.roundRect(4,50,162,38,5);x.fill();text(x,price,85,58,'700 22px sans-serif',C.boxTxt,"center");
-    x.strokeStyle=col;x.lineWidth=1;x.beginPath();x.roundRect(170,50,66,18,3);x.stroke();text(x,pct(sl||{}),203,52,F2,col,"center");
-    x.fillStyle=C.tag;x.beginPath();x.roundRect(170,70,66,18,3);x.fill();text(x,S.candleLabel,203,72,F2,"#ccc","center");
-    x.strokeStyle=C.frame;x.lineWidth=2;x.beginPath();x.roundRect(5,95,230,140,6);x.stroke();text(x,(sl&&sl.market==="OPEN")?"market open":"market closed",120,99,F1,C.dim,"center");
-    text(x,"1/"+Math.max(1,S.slots.length)+"  next 4s",230,99,F1,C.dim,"right");
+  if(S.showChart){x.fillStyle=C.box;x.beginPath();x.roundRect(4,50,162,38,5);x.fill();text(x,price,85,58,"f4",C.boxTxt,"center");
+    x.strokeStyle=col;x.lineWidth=1;x.beginPath();x.roundRect(170,50,66,18,3);x.stroke();text(x,pct(sl||{}),203,52,"f2",col,"center");
+    x.fillStyle=C.tag;x.beginPath();x.roundRect(170,70,66,18,3);x.fill();text(x,S.candleLabel,203,72,"f2","#ccc","center");
+    x.strokeStyle=C.frame;x.lineWidth=2;x.beginPath();x.roundRect(5,95,230,140,6);x.stroke();text(x,(sl&&sl.market==="OPEN")?"market open":"market closed",120,99,"f1",C.dim,"center");
+    text(x,"1/"+Math.max(1,S.slots.length)+"  next 4s",230,99,"f1",C.dim,"right");
     const ser=fakeSeries(sl?sl.code:"x",up,36),lo=Math.min(...ser),hi=Math.max(...ser),r=(hi-lo)||1;
     ser.forEach((v,i)=>{const o=i?ser[i-1]:v,cx=8+(224-216)/2+i*6,y1=112+107-(Math.max(o,v)-lo)/r*107,y2=112+107-(Math.min(o,v)-lo)/r*107;
       x.fillStyle=v>=o?S.tone.up:S.tone.down;x.fillRect(cx,y1-4,5,Math.max(2,y2-y1+4));x.fillRect(cx+2,y1-8,1,y2-y1+14);});
     countdown(x,228);}
-  else{x.fillStyle=C.box;x.beginPath();x.roundRect(4,66,232,64,8);x.fill();text(x,price,120,80,'700 32px sans-serif',C.boxTxt,"center");
-    x.strokeStyle=col;x.lineWidth=1;x.beginPath();x.roundRect(45,146,150,30,5);x.stroke();text(x,pct(sl||{}),120,152,'700 16px sans-serif',col,"center");countdown(x,226);}},
+  else{x.fillStyle=C.box;x.beginPath();x.roundRect(4,66,232,64,8);x.fill();text(x,price,120,80,"b24",C.boxTxt,"center");
+    x.strokeStyle=col;x.lineWidth=1;x.beginPath();x.roundRect(45,146,150,30,5);x.stroke();text(x,pct(sl||{}),120,152,"f2",col,"center");countdown(x,226);}},
  S01(x,S){const sl=S.slots[S.active];title(x,S);if(!sl)return;const col=sl.color;
-  if(S.show.price)text(x,sl.ok?money(sl,S.v):"loading...",6,56,'700 34px sans-serif',sl.ok?C.white:C.dim);
-  if(S.show.change){text(x,pct(sl),6,103,F2,col);x.font=F2;text(x,sl.diff!=null?(sl.diff>=0?"+":"")+Number(sl.diff).toLocaleString():"24h",6+x.measureText(pct(sl)).width+12,103,F2,C.dim);
-    text(x,S.candleLabel,234,103,F2,C.dim,"right");}
-  if(S.show.spark){text(x,"high",6,128,F1,C.dim);text(x,"low",6,198,F1,C.dim);spark(x,6,138,228,58,fakeSeries(sl.code,sl.up,36),col);}
-  ["1D","1W","1M","3M","1Y"].forEach((t,i)=>{text(x,t,6+i*32,212,F2,i?C.dim:C.accent);if(!i){x.fillStyle=C.accent;x.fillRect(6,229,16,1);}});
-  if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,216,F1,C.dim,"right");countdown(x,236);},
- S02(x,S){text(x,"WATCHLIST",6,6,F2,C.title);text(x,S.slots.length+" symbols",96,6,F2,C.dim);text(x,S.time,234,6,F2,C.dim,"right");
+  if(S.show.price)text(x,sl.ok?money(sl,S.v):"loading...",6,56,"b24",sl.ok?C.white:C.dim);
+  if(S.show.change){text(x,pct(sl),6,103,"f2",col);text(x,sl.diff!=null?(sl.diff>=0?"+":"")+Number(sl.diff).toLocaleString():"24h",6+measure(x,pct(sl),"f2")+12,103,"f2",C.dim);
+    text(x,S.candleLabel,234,103,"f2",C.dim,"right");}
+  if(S.show.spark){text(x,"high",6,128,"f1",C.dim);text(x,"low",6,198,"f1",C.dim);spark(x,6,138,228,58,fakeSeries(sl.code,sl.up,36),col);}
+  ["1D","1W","1M","3M","1Y"].forEach((t,i)=>{text(x,t,6+i*32,212,"f2",i?C.dim:C.accent);if(!i){x.fillStyle=C.accent;x.fillRect(6,229,16,1);}});
+  if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,216,"f1",C.dim,"right");countdown(x,236);},
+ S02(x,S){text(x,"WATCHLIST",6,6,"f2",C.title);text(x,S.slots.length+" symbols",96,6,"f2",C.dim);text(x,S.time,234,11,"f2",C.dim,"right");
   x.fillStyle=C.frame;x.fillRect(4,27,232,1);S.slots.forEach((sl,i)=>row(x,S,sl,0,30+i*42,240,42,{spark:1,name:1,rule:1}));},
  C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,104,80,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white,true);bigDate(x,S,138,C.dim);if(!S.show.symbols)return;
   // 점은 |등락률| 에 비례해 시계 방향으로 돈다 (10% 이상 = 한 바퀴 30초). 펌웨어와 같은 법칙, 시간 기반이라 다시 그릴 때마다 조금씩 움직인다
@@ -422,20 +452,20 @@ const L={
     x.moveTo(cx+inn*Math.cos(a),cy+inn*Math.sin(a));x.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));x.stroke();}
   const n=S.slots.length;if(S.show.symbols)S.slots.forEach((sl,i)=>{const a=(-90+360*i/n)*Math.PI/180;dot(x,cx+58*Math.cos(a),cy+58*Math.sin(a),6,sl.color);});
   if(S.synced){const [h,m]=S.time.split(":").map(Number);const hand=(deg,len,w)=>{const a=(deg-90)*Math.PI/180;x.strokeStyle=C.title;x.lineWidth=w;x.lineCap="round";x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+len*Math.cos(a),cy+len*Math.sin(a));x.stroke();};
-    hand((h%12)*30+m*0.5,44,3.5);hand(m*6,66,2.5);}else text(x,"--:--",cx,cy+28,F2,C.dim,"center");
-  dot(x,cx,cy,4,C.title);const sl=S.slots[S.active];if(sl&&S.show.symbols){text(x,sl.label,4,218,F2,C.title);const c=S.show.change?pct(sl):"";text(x,c,236,218,F2,sl.color,"right");x.font=F2;
-    if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",236-x.measureText(c).width-10,218,F2,sl.color,"right");}},
+    hand((h%12)*30+m*0.5,44,3.5);hand(m*6,66,2.5);}else text(x,"--:--",cx,cy+28,"f2",C.dim,"center");
+  dot(x,cx,cy,4,C.title);const sl=S.slots[S.active];if(sl&&S.show.symbols){text(x,sl.label,4,218,"f2",C.title);const c=S.show.change?pct(sl):"";text(x,c,236,218,"f2",sl.color,"right");
+    if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",236-measure(x,c,"f2")-10,218,"f2",sl.color,"right");}},
  C03(x,S){bigTime(x,S,8,C.white);bigDate(x,S,62,C.dim);x.fillStyle=C.rule;x.fillRect(0,86,240,1);x.fillStyle=C.bar;x.fillRect(0,87,240,1);if(!S.show.symbols)return;
   S.slots.forEach((sl,i)=>row(x,S,sl,0,92+i*29,240,29,{colorPrice:1,rule:1}));},
  C04(x,S){const parts=S.synced?S.time.split(":"):["--","--","--"],sec=S.show.seconds,hy=sec?20:30,my=sec?68:86,dy=sec?170:146;
-  if(S.show.h12)text(x,S.ampm,12,hy-16,F2,C.dim);text(x,parts[0],10,hy,F7,C.white);text(x,parts[1],10,my,F7,C.white);if(sec)text(x,parts[2]||"--",10,116,F7,C.white);
-  text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"--",10,dy,F2,C.dim);text(x,S.synced?WD[S.d.getDay()]:"",10,dy+18,F2,C.dim);
+  if(S.show.h12)text(x,S.ampm,12,hy-16,"f2",C.dim);text(x,parts[0],10,hy,"f7",C.white);text(x,parts[1],10,my,"f7",C.white);if(sec)text(x,parts[2]||"--",10,116,"f7",C.white);
+  text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"--",10,dy,"f2",C.dim);text(x,S.synced?WD[S.d.getDay()]:"",10,dy+18,"f2",C.dim);
   if(!S.show.symbols)return;x.fillStyle=C.frame;x.fillRect(86,10,1,220);S.slots.forEach((sl,i)=>row(x,S,sl,92,10+i*44,148,44,{colorPrice:1,stack:1,rule:1}));},
- C05(x,S){bigTime(x,S,14,C.white);bigDate(x,S,68,C.dim);if(!S.show.symbols)return;x.fillStyle=C.rule;x.fillRect(12,122,216,1);text(x,"<",8,160,F2,C.dim);text(x,">",232,160,F2,C.dim,"right");
-  const sl=S.slots[S.active];if(sl){text(x,fitEll(x,sl.name,KOB,192),24,138,KOB,C.title);if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",24,172,'700 18px sans-serif',sl.color);if(S.show.change)text(x,pct(sl),216,176,F2,sl.color,"right");}
+ C05(x,S){bigTime(x,S,14,C.white);bigDate(x,S,68,C.dim);if(!S.show.symbols)return;x.fillStyle=C.rule;x.fillRect(12,122,216,1);text(x,"<",8,160,"f2",C.dim);text(x,">",232,160,"f2",C.dim,"right");
+  const sl=S.slots[S.active];if(sl){text(x,fitEll(x,sl.name,"ko24",192),24,138,"ko24",C.title);if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",24,172,"b12",sl.color);if(S.show.change)text(x,pct(sl),216,176,"f2",sl.color,"right");}
   const n=S.slots.length;for(let i=0;i<n;i++)dot(x,120-(n-1)*7+i*14,218,3,i===S.active?C.title:C.frame);},
- C06(x,S){text(x,S.synced?WD[S.d.getDay()]:"waiting",10,12,F2,C.dim);text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"for time",10,34,'700 18px sans-serif',C.white);
-  "MTWTFSS".split("").forEach((c,i)=>text(x,c,130+i*15+7,10,F1,C.dim,"center"));
+ C06(x,S){text(x,S.synced?WD[S.d.getDay()]:"waiting",10,12,"f2",C.dim);text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"for time",10,34,"b12",C.white);
+  "MTWTFSS".split("").forEach((c,i)=>text(x,c,130+i*15+7,10,"f1",C.dim,"center"));
   if(S.synced){const y=S.d.getFullYear(),mo=S.d.getMonth(),today=S.d.getDate(),start=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate();
     for(let d=1;d<=n;d++){const idx=start+d-1,c=idx%7,r=Math.floor(idx/7),px=130+c*15+3,py=26+r*15;
       if(d===today){x.fillStyle=C.title;x.fillRect(px-1,py-1,11,11);}else{x.fillStyle=d<today?"#606060":"#282828";x.fillRect(px,py,9,9);}}}
@@ -447,9 +477,9 @@ const L={
   S.slots.forEach((sl,i)=>{const col=i<3?0:1,r=i<3?i:i-3;row(x,S,sl,col?122:4,98+r*44,114,44,{colorPrice:1,stack:1});});},
 };
 function draw(canvas,layoutId,state){const px=canvas.width;const x=canvas.getContext("2d");x.setTransform(1,0,0,1,0,0);x.fillStyle=C.bg;x.fillRect(0,0,px,canvas.height);
-  x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S00)(x,S);}catch(e){text(x,"preview error",120,110,F2,C.dim,"center");}
-  if(S.show.id&&S.id)text(x,S.id,238,1,'500 7px "Menlo","Consolas",monospace',C.dim,"right");}  // 오른쪽 위 기기 ID 배지 (펌웨어 Font1 6x8)
-return {draw,ids:Object.keys(L)};
+  x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S00)(x,S);}catch(e){text(x,"preview error",120,110,"f2",C.dim,"center");}
+  if(S.show.id&&S.id)text(x,S.id,238,1,"f1",C.dim,"right");}  // 오른쪽 위 기기 ID 배지 (펌웨어 Font1 6x8)
+return {draw,ids:Object.keys(L),onReady(cb){if(fontsReady)cb();else readyCbs.push(cb);},get fontsReady(){return fontsReady;}};
 })();
 // 차트토템 기기 설정 페이지 동작 (window.MARKET 과 PREVIEW 가 정의된 뒤 실행). 원본: tools/web/settings.js → gen_launcher.py → launcher/settings-*.html
 // 구조: 해시 라우팅 (#/ 홈, #/screen(종목 + 화면 설정), #/screen/add(종목 추가·검색), #/screen/layout, #/wifi, #/device, #/system). 상태는 /api/state 폴링.
@@ -789,4 +819,5 @@ function maybeHomeHint(s){
 
 route();
 loadState();setInterval(()=>{if(!applying)loadState();},POLL_MS);
+if(window.PREVIEW&&PREVIEW.onReady)PREVIEW.onReady(()=>{layoutKey="";renderAll();});   // 기기 폰트를 다 받으면 미리보기를 기기 글꼴로 다시
 </script></body></html>

@@ -35,3 +35,7 @@ GitHub Pages 로 호스팅: https://jkinject.github.io/charttotem/
 ## 0.7.2 — 시계 옵션
 
 - 화면 설정 「표시 항목」에 **초 표시**, **12시간제(AM/PM)** 토글 (시계 테마, FIVE DOTS 제외). 미리보기에도 반영. 펌웨어 2.5.0 이상 필요.
+
+## 0.7.6 — 미리보기를 기기 글꼴로
+
+- 설정 페이지의 화면 미리보기가 기기와 같은 비트맵 폰트로 그려진다: `fonts/tft.json`(TFT_eSPI Font1/2/4/7 + FreeSansBold 12/18/24, `firmware/tools/gen_webfonts.py` 생성)과 `fonts/ko24.bin` · `ko14.bin`(기기 LittleFS 와 같은 한글 폰트 파일). 폰트를 받기 전엔 브라우저 글꼴로 잠깐 그렸다가 바꿔 그린다.
