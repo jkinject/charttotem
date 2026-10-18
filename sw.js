@@ -1,5 +1,5 @@
 // 앱 셸을 캐시해서 오프라인에서도 열리게 한다. 기기(http://192.168.x.x)·클라우드(workers.dev) 요청은 건드리지 않는다.
-const CACHE = "charttotem-v0.7.1";
+const CACHE = "charttotem-v0.7.2";
 const SHELL = ["./", "index.html", "style.css", "app.js", "settings-kstock.html", "settings-coin.html", "manifest.json", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-180.png"];
 
 self.addEventListener("install", (e) => {
