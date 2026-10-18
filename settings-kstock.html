@@ -77,12 +77,11 @@
  <div class="caption">표시 항목</div>
  <div class="list">
  <div class="setrow" id="showPriceRow"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg><span class="mtext"><span class="mlbl">가격</span><span class="msub">종목 현재가</span></span><label class="switch"><input id="showPrice" type="checkbox"><i></i></label></div>
- <div class="setrow" id="showChangeRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">등락률</span><span class="msub">전일 대비 % (HERO 는 금액도)</span></span><label class="switch"><input id="showChange" type="checkbox"><i></i></label></div>
+ <div class="setrow" id="showChangeRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">등락률</span><span class="msub">전일 대비 %</span></span><label class="switch"><input id="showChange" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showSparkRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">라인 차트</span><span class="msub">HERO · WATCHLIST 의 종가 선</span></span><label class="switch"><input id="showSpark" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showSecondsRow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">초 표시</span><span class="msub">시:분:초 를 같은 크기로</span></span><label class="switch"><input id="showSeconds" type="checkbox"><i></i></label></div>
- <div class="setrow" id="show12hRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">12시간제</span><span class="msub">AM · PM 을 작게 표시해요</span></span><label class="switch"><input id="show12h" type="checkbox"><i></i></label></div>
+ <div class="setrow" id="show12hRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">12시간제</span><span class="msub">AM · PM 을 표시</span></span><label class="switch"><input id="show12h" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showDateRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">날짜</span><span class="msub">시계 테마의 날짜 줄</span></span><label class="switch"><input id="showDate" type="checkbox"><i></i></label></div>
- <div class="setrow" id="showIdRow"><svg class="ic" aria-hidden="true"><use href="#i-fingerprint"/></svg><span class="mtext"><span class="mlbl">기기 ID 표시</span><span class="msub">오른쪽 위 작은 글자 · 앱에서 기기를 연결할 때 필요해요</span></span><label class="switch"><input id="showId" type="checkbox"><i></i></label></div>
  <div class="setrow hidden" id="chartLine"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">1분봉 차트 표시</span><span class="msub">CLASSIC 레이아웃에서만</span></span><label class="switch"><input id="chart" type="checkbox"><i></i></label></div>
  </div>
  <div class="band"></div>
@@ -494,7 +493,7 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 let state=null, pollTimer=null, failCount=0, toastTimer=null;
 const PAGES=["/","/screen","/screen/add","/screen/layout","/wifi","/device","/system","/privacy","/licenses"];
 const PARENT={"/screen":"/","/screen/add":"/screen","/screen/layout":"/screen","/wifi":"/","/device":"/","/system":"/","/privacy":"/","/licenses":"/"};
-const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"],["showSeconds","seconds"],["show12h","h12"],["showId","id"]];   // symbols 비트는 UI 에서 뺐다 (항상 켬)
+const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"],["showSeconds","seconds"],["show12h","h12"]];   // 기기 ID 배지는 항상 켜 둔다 (토글 없음)   // symbols 비트는 UI 에서 뺐다 (항상 켬)
 let prevPage=null, curPage=null;
 const TZ_PRESETS=[["KST-9","서울 (KST)"],["JST-9","도쿄 (JST)"],["HKT-8","홍콩 (HKT)"],["CST-8","상하이 · 싱가포르"],["IST-5:30","뭄바이 (IST)"],
   ["GMT0BST,M3.5.0/1,M10.5.0","런던 (GMT/BST)"],["CET-1CEST,M3.5.0,M10.5.0/3","파리 · 베를린 (CET)"],["EST5EDT,M3.2.0,M11.1.0","뉴욕 (EST/EDT)"],
@@ -526,7 +525,7 @@ function diffParams(){
   if(draft.rotate!==base.rotate)p.push("rotate="+draft.rotate);
   if(draft.chart!==base.chart)p.push("chart="+(draft.chart?1:0));
   if(draft.bl!==base.bl)p.push("bl="+draft.bl);
-  for(const k of ["price","change","spark","date","seconds","h12","id"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
+  for(const k of ["price","change","spark","date","seconds","h12"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
   return p;
 }
 const dirty=()=>diffParams().length>0;
