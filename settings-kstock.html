@@ -89,7 +89,7 @@
  <div class="band"></div>
  <div class="caption">설정</div>
  <div class="list">
-  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-repeat"/></svg><span class="mtext"><span class="mlbl">화면 전환 간격</span><span class="msub" id="rotateHint"></span></span><select id="rotate" class="val" aria-label="화면 전환 간격"><option value="0">끄기</option><option value="3">3초</option><option value="5">5초</option><option value="10">10초</option><option value="15">15초</option><option value="30">30초</option><option value="60">60초</option></select></div>
+  <div class="setrow" id="rotateRow"><svg class="ic" aria-hidden="true"><use href="#i-repeat"/></svg><span class="mtext"><span class="mlbl">화면 전환 간격</span><span class="msub" id="rotateHint"></span></span><select id="rotate" class="val" aria-label="화면 전환 간격"><option value="0">끄기</option><option value="3">3초</option><option value="5">5초</option><option value="10">10초</option><option value="15">15초</option><option value="30">30초</option><option value="60">60초</option></select></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg><span class="mtext"><span class="mlbl">상승·하락 색</span></span><div class="seg" id="colorsSeg" role="radiogroup" aria-label="상승·하락 색"><button role="radio" data-value="kr">한국식</button><button role="radio" data-value="global">글로벌</button></div></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span class="mtext"><span class="mlbl">시간대</span></span><select id="tz" class="val" aria-label="시간대"></select></div>
   <div class="setrow hidden" id="tzCustomRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><input class="text" id="tzCustom" placeholder="POSIX TZ (예: KST-9)" maxlength="47" aria-label="직접 시간대"><button class="textbtn" id="tzSave"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>저장</button></div>
@@ -698,6 +698,8 @@ function renderScreen(s){
   SHOW_KEYS.forEach(([id,k])=>{const el=$(id);if(document.activeElement!==el)el.checked=show[k]!==false;});
   $("showPriceRow").classList.toggle("hidden",classic);$("showChangeRow").classList.toggle("hidden",classic);
   $("showSparkRow").classList.toggle("hidden",clock||classic);$("showDateRow").classList.toggle("hidden",!clock);
+  // 화면 전환 간격: 종목을 하나씩 돌려 보여 주는 레이아웃(single: CLASSIC·HERO·HANDS·STACK)에서만. 전체를 한 화면에 보이는 레이아웃은 숨김
+  const lay=(layouts||[]).find(l=>l.id===s.layout);$("rotateRow").classList.toggle("hidden",!!(lay&&!lay.single));
   $("showSecondsRow").classList.toggle("hidden",!clock);$("show12hRow").classList.toggle("hidden",!clock||s.layout==="C02");  // HANDS(아날로그)는 초침만 해당, 12시간제 없음
   const bl=$("bl");if(document.activeElement!==bl){bl.value=s.brightness;$("blVal").textContent=s.brightness+"%";}
   const sel=$("tz");
