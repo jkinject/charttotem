@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt}].
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.26";
+const APP_VERSION = "0.7.27";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -62,7 +62,8 @@ function fmtName(d) { return d.name || `차트토템 ${(d.id || "").slice(-4)}`;
 function variantLabel(v) { return v === "coin" ? "코인" : v === "kstock" ? "주식" : ""; }
 function settingsUrl(d, hash) { return `settings-${d.variant === "coin" ? "coin" : "kstock"}.html?id=${encodeURIComponent(d.id)}${hash ? "#" + hash : ""}`; }
 // 기기 섬네일: 기기 모양(둥근 검은 정사각) 안에 ORBIT 느낌의 고리와 점. 실제 화면이 아니라 상징이다 (실제 미리보기는 설정 페이지에)
-const THUMB = `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="2" y="2" width="68" height="68" rx="14" fill="#0b0b0e"/><rect x="8" y="8" width="56" height="56" rx="9" fill="#141418"/>
+// 섬네일 이미지는 branding/launcher-home/device.png (Codex 생성) → icons/device.png. 없으면 아래 SVG 로 폴백
+const THUMB = `<img src="icons/device.png" alt="" onerror="this.remove()"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="2" y="2" width="68" height="68" rx="14" fill="#0b0b0e"/><rect x="8" y="8" width="56" height="56" rx="9" fill="#141418"/>
   <circle cx="36" cy="33" r="17" fill="none" stroke="#3a3d3a" stroke-width="1.2"/><circle cx="36" cy="16" r="2.6" fill="#e34f55"/><circle cx="51" cy="41" r="2.6" fill="#3978d4"/><circle cx="21" cy="41" r="2.6" fill="#4fbf9a"/>
   <rect x="26" y="30" width="20" height="6" rx="1.5" fill="#e8e8ec"/><rect x="14" y="54" width="44" height="3" rx="1.5" fill="#3a3d3a"/></svg>`;
 // 3개 빠른 메뉴: 기기 설정(홈) · 화면 관리(#/screen 종목·레이아웃) · 네트워크(#/wifi)
@@ -79,7 +80,7 @@ function renderDevices() {
   $("addNav").classList.toggle("hidden", none);   // 연결 전엔 큰 「기기 연결하기」 버튼이 있으니 행은 숨긴다
   for (const d of cloudDevices) {
     const el = document.createElement("section");
-    el.className = "dev";
+    el.className = "dev card";
     el.dataset.key = d.id;
     el.innerHTML = `
       <div class="devhead">
@@ -92,7 +93,7 @@ function renderDevices() {
       </div>
       <div class="msg hidden" data-r="msg"></div>
       <div class="tiles" data-r="tiles">${TILES.map(([ic, l, s]) => `<a class="tile">${I(ic)}<b>${l}</b><span>${s}</span></a>`).join("")}</div>
-      <div class="band"></div>`;
+      `;
     setTileLinks(el, d);
     el.querySelector('[data-r="more"]').onclick = () => deviceMenu(d);
     box.appendChild(el);
@@ -309,6 +310,7 @@ $("ver").onclick = () => { const now = Date.now(); verTaps = now - verTapAt < 15
 // ------------------------------------------------------------
 // 도움말: FAQ 목록. 질문을 누르면 그 답만 펼친다 (항목이 늘어나도 위에서 아래로 훑을 수 있게)
 // ------------------------------------------------------------
+const FAQ_ICON = ["wifi", "arrow-left-right", "wifi-off", "fingerprint", "monitor", "settings", "smartphone", "trash"];
 const FAQ = [
   ["기기가 \"오프라인\" 으로 보여요", `<ol><li>기기 <b>전원</b>이 켜져 있고 화면에 시세나 시계가 움직이는지 보세요.</li>
 <li>기기 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 이 떠 있으면, 기기가 있는 곳의 Wi-Fi 에 아직 연결되지 않은 거예요. 폰 카메라로 그 QR 을 찍고 Wi-Fi 를 골라 비밀번호를 넣어 주세요.</li>
@@ -325,7 +327,8 @@ function renderFaq() {
   const box = $("faq"); box.innerHTML = "";
   FAQ.forEach(([q, a], i) => {
     const item = document.createElement("div"); item.className = "faq-item";
-    item.innerHTML = `<button class="faq-q" aria-expanded="false" aria-controls="faqa${i}"><span>${q}</span>${I("chevron-right")}</button><div class="faq-a doc hidden" id="faqa${i}">${a}</div>`;
+    const ic = FAQ_ICON[i] || "info";
+    item.innerHTML = `<button class="faq-q" aria-expanded="false" aria-controls="faqa${i}"><span class="qic${ic === "trash" ? " danger" : ""}">${I(ic)}</span><span>${q}</span>${I("chevron-right")}</button><div class="faq-a doc hidden" id="faqa${i}">${a}</div>`;
     const btn = item.querySelector(".faq-q"), ans = item.querySelector(".faq-a");
     btn.onclick = () => { const open = ans.classList.toggle("hidden") === false; btn.setAttribute("aria-expanded", String(open)); item.classList.toggle("open", open); };
     box.appendChild(item);

@@ -58,6 +58,8 @@
 <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
 <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+<symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></symbol>
+<symbol id="i-arrow-left-right" viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></symbol>
 <symbol id="i-house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
 </svg>
 <main class="app">
@@ -66,8 +68,9 @@
 
   <section id="devices"></section>
 
-  <div class="hero-empty" id="emptyCard">
-    <svg class="illus" viewBox="0 0 220 120" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <div class="hero-empty card" id="emptyCard">
+    <img class="illus-img" src="icons/home-empty.png" alt="" width="840" height="504" onerror="this.remove();document.getElementById('illusSvg').classList.remove('hidden')">
+    <svg class="illus hidden" id="illusSvg" viewBox="0 0 220 120" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <rect x="62" y="8" width="60" height="104" rx="12" stroke="var(--tx)" stroke-width="2.2"/>
       <path d="M84 16h16" stroke="var(--tx)" stroke-width="2.2"/>
       <path d="M76 46v-6a4 4 0 0 1 4-4h6M98 36h6a4 4 0 0 1 4 4v6M108 70v6a4 4 0 0 1-4 4h-6M86 80h-6a4 4 0 0 1-4-4v-6" stroke="var(--ac)" stroke-width="2.4"/>
@@ -82,22 +85,22 @@
     <button class="btn primary pill" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>기기 연결하기</button>
   </div>
 
-  <div class="hintbox hidden" id="installCard">
+  <div class="hintbox card hidden" id="installCard">
     <b><svg class="ic" aria-hidden="true"><use href="#i-smartphone"/></svg>홈 화면에 추가해 주세요</b>
     <div id="installText">다음에 기기를 바로 열 수 있어요.</div>
     <div class="row"><button id="installBtn" class="primary"><svg class="ic" aria-hidden="true"><use href="#i-house"/></svg>홈 화면에 추가</button><button id="installLater">나중에</button></div>
   </div>
 
-  <div id="addNav">
-  <div class="band"></div>
+  <div id="addNav" class="card">
   <nav class="list">
     <button class="menu" data-go="/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span class="mtext"><span class="mlbl">기기 연결</span><span class="msub">기기 화면의 ID 6자리와 숫자 코드로 연결해요</span></span><span class="chev"><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></button>
   </nav>
   </div>
 
-  <div class="band"></div>
+  <div class="card">
   <div class="caption">도움말</div>
   <div class="faq" id="faq"></div>
+  </div>
 
   <div class="band"></div>
   <div id="devSection" class="hidden">
