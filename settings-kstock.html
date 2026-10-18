@@ -359,20 +359,19 @@ function norm(s){
   if(s.date){const m=/(\d+)-(\d+)-(\d+)/.exec(s.date);if(m)d=new Date(+m[1],+m[2]-1,+m[3]);}
   const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false},s.show||{});
   return {v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
-    date:(sh0.h12&&sh0.seconds&&ampm?ampm+"  ":"")+(synced?MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]:"waiting for time"),tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
+    date:synced?MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]:"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
 }
 function text(x,t,px,py,font,color,align){x.font=font;x.fillStyle=color;x.textAlign=align||"left";x.textBaseline="top";x.fillText(t,px,py);}
 function fitEll(x,t,font,maxW){x.font=font;if(x.measureText(t).width<=maxW)return t;while(t.length>1&&x.measureText(t+"…").width>maxW)t=t.slice(0,-1);return t+"…";}
 function spark(x,px,py,w,h,series,color){x.strokeStyle=color;x.lineWidth=1.5;x.beginPath();const lo=Math.min(...series),hi=Math.max(...series),r=(hi-lo)||1;
   series.forEach((v,i)=>{const sx=px+i*(w-1)/(series.length-1),sy=py+h-1-(v-lo)/r*(h-1);i?x.lineTo(sx,sy):x.moveTo(sx,sy);});x.stroke();}
-// 큰 시각: 옵션(12시간제/초)이 켜지면 오른쪽에 작은 열(AM/PM 위, 초 아래). compact(ORBIT)는 HH:MM 만, extras 는 timeExtras 로 따로
-// 큰 시각. 초 표시면 HH:MM:SS 를 같은 크기로(Font7 216px); compact(ORBIT)는 작은 폰트. 12시간제 AM/PM 은 초가 없을 때만 옆 열, 있으면 날짜 줄 앞
-const F7S='700 28px "Menlo","Consolas","Courier New",monospace';
-function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,side=!compact&&!sec&&S.show.h12,font=sec&&compact?F7S:F7;x.font=font;
-  const wT=x.measureText(sec?"88:88:88":"88:88").width,total=wT+(side?32:0),x0=120-total/2,ty=sec&&compact?cy+9:cy;
-  text(x,S.time,x0+wT,ty,font,color,"right");if(side)text(x,S.ampm,x0+wT+6,cy+2,F2,color);}
-function timeExtras(x,S,cx,cy,color){if(!S.show.h12||S.show.seconds)return;text(x,S.ampm,cx,cy,F2,color,"center");}  // 초 표시면 AM/PM 은 날짜 줄 앞
-function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,F2,color,"center");else if(S.show.h12&&S.show.seconds)text(x,S.ampm,120,cy,F2,color,"center");}
+// 큰 시각: [AM/PM 작게(왼쪽, 아래선 맞춤)] [HH:MM 또는 HH:MM:SS]. 펌웨어처럼 7세그 간격을 조여 HH:MM:SS 200px. compact(ORBIT)+초 는 작은 폰트
+const F7T='700 42px "Menlo","Consolas","Courier New",monospace',F7S='700 28px "Menlo","Consolas","Courier New",monospace';
+function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,font=sec&&compact?F7S:(sec?F7T:F7);x.font=font;
+  const wS=x.measureText(S.time).width,apW=S.show.h12?28:0,xc=120-(apW+wS)/2,ty=sec&&compact?cy+9:(sec?cy+3:cy);
+  if(S.show.h12){x.font=F2;x.fillStyle=color;x.textAlign="left";x.textBaseline="alphabetic";x.fillText(S.ampm,xc,cy+44);}
+  text(x,S.time,xc+apW,ty,font,color,"left");}
+function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,F2,color,"center");}
 function label(x,sl,px,py,h,maxW,color,S){text(x,fitEll(x,sl.label,F2,maxW),px,py+(h-14)/2,F2,color);}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
@@ -415,7 +414,7 @@ const L={
   if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,216,F1,C.dim,"right");countdown(x,236);},
  S02(x,S){text(x,"WATCHLIST",6,6,F2,C.title);text(x,S.slots.length+" symbols",96,6,F2,C.dim);text(x,S.time,234,6,F2,C.dim,"right");
   x.fillStyle=C.frame;x.fillRect(4,27,232,1);S.slots.forEach((sl,i)=>row(x,S,sl,0,30+i*42,240,42,{spark:1,name:1,rule:1}));},
- C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,104,80,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white,true);bigDate(x,S,138,C.dim);timeExtras(x,S,120,156,C.dim);if(!S.show.symbols)return;
+ C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,104,80,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white,true);bigDate(x,S,138,C.dim);if(!S.show.symbols)return;
   // 점은 |등락률| 에 비례해 시계 방향으로 돈다 (10% 이상 = 한 바퀴 30초). 펌웨어와 같은 법칙, 시간 기반이라 다시 그릴 때마다 조금씩 움직인다
   const n=S.slots.length,t=Date.now()/1000;S.slots.forEach((sl,i)=>{const w=sl.ok?Math.min(Math.abs(sl.change),10)/10*12:0;const a=(-90+360*i/n+w*t%360)*Math.PI/180;dot(x,120+80*Math.cos(a),104+80*Math.sin(a),6,sl.color);});columns(x,S,192,48);},
  C02(x,S){const cx=120,cy=104,R=86;for(let i=0;i<12;i++){const a=i*30*Math.PI/180,inn=i%3?R-7:R-12;x.strokeStyle=i%3?C.dim:C.text;x.lineWidth=1;x.beginPath();
@@ -427,9 +426,9 @@ const L={
     if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",236-x.measureText(c).width-10,218,F2,sl.color,"right");}},
  C03(x,S){bigTime(x,S,8,C.white);bigDate(x,S,62,C.dim);x.fillStyle=C.rule;x.fillRect(0,86,240,1);x.fillStyle=C.bar;x.fillRect(0,87,240,1);if(!S.show.symbols)return;
   S.slots.forEach((sl,i)=>row(x,S,sl,0,92+i*29,240,29,{colorPrice:1,rule:1}));},
- C04(x,S){const parts=S.synced?S.time.split(":"):["--","--","--"],sec=S.show.seconds,hy=sec?18:30,my=sec?66:86,dy=sec?168:146;
-  text(x,parts[0],10,hy,F7,C.white);text(x,parts[1],10,my,F7,C.white);if(sec)text(x,parts[2]||"--",10,114,F7,C.white);
-  text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"--",10,dy,F2,C.dim);text(x,(S.synced?WD[S.d.getDay()]:"")+(S.show.h12?"  "+S.ampm:""),10,dy+18,F2,C.dim);
+ C04(x,S){const parts=S.synced?S.time.split(":"):["--","--","--"],sec=S.show.seconds,hy=sec?20:30,my=sec?68:86,dy=sec?170:146;
+  if(S.show.h12)text(x,S.ampm,12,hy-16,F2,C.dim);text(x,parts[0],10,hy,F7,C.white);text(x,parts[1],10,my,F7,C.white);if(sec)text(x,parts[2]||"--",10,116,F7,C.white);
+  text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"--",10,dy,F2,C.dim);text(x,S.synced?WD[S.d.getDay()]:"",10,dy+18,F2,C.dim);
   if(!S.show.symbols)return;x.fillStyle=C.frame;x.fillRect(86,10,1,220);S.slots.forEach((sl,i)=>row(x,S,sl,92,10+i*44,148,44,{colorPrice:1,stack:1,rule:1}));},
  C05(x,S){bigTime(x,S,14,C.white);bigDate(x,S,68,C.dim);if(!S.show.symbols)return;x.fillStyle=C.rule;x.fillRect(12,122,216,1);text(x,"<",8,160,F2,C.dim);text(x,">",232,160,F2,C.dim,"right");
   const sl=S.slots[S.active];if(sl){text(x,fitEll(x,sl.name,KOB,192),24,138,KOB,C.title);if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",24,172,'700 18px sans-serif',sl.color);if(S.show.change)text(x,pct(sl),216,176,F2,sl.color,"right");}
