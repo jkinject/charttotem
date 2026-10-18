@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=c269c04a">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=e30bca38">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -138,11 +138,12 @@
  <div class="caption">저장된 Wi-Fi <span class="cnt" id="wifiKnownCount"></span></div>
  <div class="list" id="wifiKnown"></div>
  <div class="msg" id="wifiKnownMsg">기기는 여기 있는 Wi-Fi 중 보이는 것에 스스로 붙어요. 집·회사처럼 장소를 옮겨도 다시 설정하지 않아도 돼요.</div>
- <div class="local-only">
-  <div class="caption">다른 장소의 Wi-Fi 미리 등록</div>
+ <div>
+  <div class="caption">Wi-Fi 추가 · 변경</div>
   <div class="formrow"><input class="text" id="wifiAddSsid" placeholder="Wi-Fi 이름 (2.4GHz)" maxlength="32" autocomplete="off"></div>
-  <div class="formrow"><input class="text" id="wifiAddPass" type="password" placeholder="비밀번호 (8자 이상, 없으면 비움)" maxlength="63" autocomplete="off"><button class="textbtn" id="wifiAddBtn"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>등록</button></div>
-  <div class="msg" id="wifiAddMsg">연결 테스트 없이 저장만 해요. 그 장소에서 기기를 켜면 바로 붙어요.</div>
+  <div class="formrow"><input class="text" id="wifiAddPass" type="password" placeholder="비밀번호 (8자 이상, 없으면 비움)" maxlength="63" autocomplete="off"></div>
+  <div class="formrow"><label class="chk"><input type="checkbox" id="wifiAddNow" checked> 저장하고 지금 바로 이 Wi-Fi 로 바꾸기</label><button class="textbtn" id="wifiAddBtn"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>저장</button></div>
+  <div class="msg" id="wifiAddMsg">저장된 Wi-Fi 는 5개까지예요. 「지금 바꾸기」를 끄면 저장만 하고, 그 장소에서 켜면 알아서 붙어요.</div>
  </div>
  <div class="band"></div>
  <div class="caption">관리</div>
@@ -150,11 +151,7 @@
   <a class="menu" href="/setup"><svg class="ic" aria-hidden="true"><use href="#i-wifi"/></svg><span class="mtext"><span class="mlbl">다른 Wi-Fi로 변경</span><span class="msub">주변 Wi-Fi 를 골라 다시 연결해요</span></span></a>
   <button class="menu danger" id="wifiReset"><svg class="ic" aria-hidden="true"><use href="#i-rotate-ccw"/></svg><span class="mtext"><span class="mlbl">초기 설정으로</span><span class="msub">저장된 Wi-Fi 를 지우고 기기 화면에 QR 을 다시 띄워요</span></span></button>
  </nav>
- <div class="doc cloud-only">
-  <p>Wi-Fi 비밀번호는 안전을 위해 인터넷(클라우드)으로 보내지 않아요. Wi-Fi 를 바꾸거나 추가하는 건 <b>기기 옆에서</b> 해요.</p>
-  <ol><li>새 장소에서 기기를 켜면 30초쯤 뒤 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 이 떠요.</li><li>폰 카메라로 그 QR 을 찍고, 열리는 화면에서 Wi-Fi 를 고르고 비밀번호를 넣어요.</li><li>연결되면 이 앱에서 바로 다시 보여요. 이전 Wi-Fi 도 그대로 기억하니 돌아가면 알아서 붙어요.</li></ol>
-  <p>회사 Wi-Fi 가 아이디·비밀번호 로그인 방식이거나 5GHz 전용이면 기기가 붙을 수 없어요. 폰 핫스팟이나 소형 공유기를 쓰세요.</p>
- </div>
+  <div class="msg cloud-only">비밀번호는 기기 전용 키로 암호화해서 보내요. 바꾸기에 실패하면(안 보이거나 비밀번호가 틀리면) 기기는 이전 Wi-Fi 로 스스로 돌아가요. 아이디·비밀번호 로그인 방식이나 5GHz 전용 Wi-Fi 에는 붙을 수 없어요.</div>
 </section>
 
 <section class="page" data-page="/system">
@@ -533,7 +530,7 @@ function markDirty(){renderSaveBar();renderAll();}
 function revert(){draft=extract(state);applying=null;renderSaveBar();renderAll();toast("변경을 되돌렸어요");}
 function renderSaveBar(){
   const bar=$("savebar"),n=diffParams().length;
-  if(applying){bar.classList.remove("hidden");bar.classList.add("applying");document.body.classList.add("has-savebar");$("saveCount").textContent=CLOUD?"기기에 반영 중… (최대 30초)":"기기에 반영 중…";$("saveBtn").disabled=true;$("revertBtn").classList.add("hidden");return;}
+  if(applying){bar.classList.remove("hidden");bar.classList.add("applying");document.body.classList.add("has-savebar");$("saveCount").innerHTML='<i class="spin" aria-hidden="true"></i>'+(CLOUD?"기기에 반영 중… (최대 30초)":"기기에 반영 중…");$("saveBtn").disabled=true;$("revertBtn").classList.add("hidden");return;}
   bar.classList.remove("applying");$("saveBtn").disabled=false;$("revertBtn").classList.remove("hidden");
   bar.classList.toggle("hidden",!n);
   $("saveCount").textContent="변경 "+n+"개";
@@ -546,7 +543,6 @@ async function save(){
   catch(e){$("saveBtn").disabled=false;toast("저장하지 못했어요: "+e.message);return;}
   applying={since:Date.now(),target:JSON.parse(JSON.stringify(draft))};
   renderSaveBar();
-  toast(CLOUD?"저장했어요 · 기기에 곧 반영돼요":"저장했어요");
   pollSoon(CLOUD?2500:600);
 }
 // 저장 뒤: 기기 상태가 초안과 같아지면 끝. 종목이 거부되면(없는 종목) 알리고 초안에서 뺀다
@@ -725,21 +721,26 @@ function setTz(v){v=(v||"").trim();if(!v){setMsg("screenMsg","시간대를 입�
 
 // ---- 저장된 Wi-Fi 목록 (즉시 반영: 기기 옆에서만) ----
 let wifiKnownKey="";
+// 저장된 Wi-Fi 목록: 지금 것 외에는 「전환」(지금 바꾸기) 과 삭제. 명령은 모두 /api/settings (LAN·클라우드 같은 경로, 클라우드는 Worker 가 비밀번호를 감싼다)
 function renderWifiKnown(s){
   const list=s.wifiKnown||[],cur=s.ssid||"";const key=list.join("|")+"|"+cur;if(key===wifiKnownKey)return;wifiKnownKey=key;
   const box=$("wifiKnown");box.innerHTML="";$("wifiKnownCount").textContent=list.length+"/5";
   if(!list.length){box.innerHTML='<div class="msg">저장된 Wi-Fi 가 없어요.</div>';return;}
   list.forEach(n=>{const row=document.createElement("div");row.className="setrow";
     row.innerHTML=`${I("wifi")}<span class="mtext"><span class="mlbl">${esc(n)}</span><span class="msub">${n===cur?"지금 연결됨":"저장됨 · 보이면 자동으로 붙어요"}</span></span>`+
-      (n===cur?"":`<button class="rm local-only" title="삭제" aria-label="삭제">${I("x")}</button>`);
+      (n===cur?"":`<button class="act" data-a="sw">전환</button><button class="rm" title="삭제" aria-label="삭제">${I("x")}</button>`);
+    const sw=row.querySelector('[data-a="sw"]');if(sw)sw.onclick=()=>{if(!confirm(n+" 으로 지금 바꿀까요?\n연결되지 않으면 기기가 이전 Wi-Fi 로 돌아가요."))return;
+      post("/api/settings?wconnect="+encodeURIComponent(n)).then(()=>{toast(CLOUD?"바꾸는 중 · 1분쯤 뒤 여기서 확인돼요":n+" 으로 바꾸는 중");wifiKnownKey="";pollSoon(CLOUD?20000:4000);}).catch(e=>setMsg("wifiKnownMsg","바꾸지 못했어요: "+e.message,"err"));};
     const rm=row.querySelector(".rm");if(rm)rm.onclick=()=>{if(!confirm(n+" 을(를) 저장 목록에서 뺄까요?"))return;
-      post("/api/wifi/forget?ssid="+encodeURIComponent(n)).then(()=>{toast(n+" 을(를) 지웠어요");wifiKnownKey="";pollSoon(300);}).catch(e=>setMsg("wifiKnownMsg","지우지 못했어요: "+e.message,"err"));};
+      post("/api/settings?wforget="+encodeURIComponent(n)).then(()=>{toast(n+" 을(를) 지웠어요");wifiKnownKey="";pollSoon(CLOUD?20000:300);}).catch(e=>setMsg("wifiKnownMsg","지우지 못했어요: "+e.message,"err"));};
     box.appendChild(row);});
 }
-const wifiAddBtn=$("wifiAddBtn");if(wifiAddBtn)wifiAddBtn.onclick=()=>{const ssid=$("wifiAddSsid").value.trim(),pass=$("wifiAddPass").value;
+const wifiAddBtn=$("wifiAddBtn");if(wifiAddBtn)wifiAddBtn.onclick=()=>{const ssid=$("wifiAddSsid").value.trim(),pass=$("wifiAddPass").value,now=$("wifiAddNow").checked;
   if(!ssid){setMsg("wifiAddMsg","Wi-Fi 이름을 입력해 주세요.","err");return;}if(pass&&pass.length<8){setMsg("wifiAddMsg","비밀번호는 8자 이상이에요.","err");return;}
-  post("/api/wifi/add?ssid="+encodeURIComponent(ssid)+"&pass="+encodeURIComponent(pass)).then(()=>{toast(ssid+" 을(를) 등록했어요");$("wifiAddSsid").value="";$("wifiAddPass").value="";setMsg("wifiAddMsg","등록했어요. 그 장소에서 기기를 켜면 바로 붙어요.","ok");wifiKnownKey="";pollSoon(300);})
-    .catch(e=>setMsg("wifiAddMsg",e.message==="full"?"5개까지 저장할 수 있어요. 하나를 지우고 등록해 주세요.":"등록하지 못했어요: "+e.message,"err"));};
+  if(now&&!confirm(ssid+" 으로 지금 바꿀까요?\n연결되지 않으면 기기가 이전 Wi-Fi 로 돌아가요."))return;
+  post("/api/settings?wssid="+encodeURIComponent(ssid)+"&wpass="+encodeURIComponent(pass)+(now?"&wconnect="+encodeURIComponent(ssid):"")).then(()=>{$("wifiAddSsid").value="";$("wifiAddPass").value="";
+      setMsg("wifiAddMsg",now?(CLOUD?"기기에 보냈어요. 바뀌면 1분쯤 뒤 위 목록에 보여요.":"저장하고 바꾸는 중이에요."):(CLOUD?"기기에 보냈어요. 곧 위 목록에 보여요.":"저장했어요. 그 장소에서 기기를 켜면 바로 붙어요."),"ok");wifiKnownKey="";pollSoon(CLOUD?20000:(now?4000:300));})
+    .catch(e=>setMsg("wifiAddMsg",e.message==="wifi full"||e.message==="full"?"5개까지 저장할 수 있어요. 하나를 지우고 등록해 주세요.":"저장하지 못했어요: "+e.message,"err"));};
 
 // ---- 페이지 그리기 / 상태 폴링 ----
 function renderPage(p){

@@ -170,6 +170,12 @@ body.has-savebar .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 .seg .updn b{font-weight:900}
 .pname-edit{font:inherit;font-size:22px;font-weight:700;color:var(--tx);border:0;border-bottom:2px solid var(--ac);border-radius:0;background:none;padding:0 2px;width:min(56vw,220px);outline:none;vertical-align:baseline}
 .editbtn.on{color:var(--ac)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mut);flex:1}
+.chk input{width:18px;height:18px;accent-color:var(--ac)}
+.setrow .act{color:var(--ac);font-weight:700;font-size:14px;padding:6px 8px;flex:none}
+.scount{display:inline-flex;align-items:center;gap:8px}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid #0002;border-top-color:var(--ac);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */
