@@ -80,6 +80,8 @@
  <div class="setrow" id="showPriceRow"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg><span class="mtext"><span class="mlbl">가격</span><span class="msub">종목 현재가</span></span><label class="switch"><input id="showPrice" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showChangeRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">등락률</span><span class="msub">전일 대비 % (HERO 는 금액도)</span></span><label class="switch"><input id="showChange" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showSparkRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">라인 차트</span><span class="msub">HERO · WATCHLIST 의 종가 선</span></span><label class="switch"><input id="showSpark" type="checkbox"><i></i></label></div>
+ <div class="setrow" id="showSecondsRow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">초 표시</span><span class="msub">시각 옆에 초를 작게</span></span><label class="switch"><input id="showSeconds" type="checkbox"><i></i></label></div>
+ <div class="setrow" id="show12hRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">12시간제</span><span class="msub">AM · PM 을 작게 표시해요</span></span><label class="switch"><input id="show12h" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showDateRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">날짜</span><span class="msub">시계 테마의 날짜 줄</span></span><label class="switch"><input id="showDate" type="checkbox"><i></i></label></div>
  <div class="setrow hidden" id="chartLine"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">1분봉 차트 표시</span><span class="msub">CLASSIC 레이아웃에서만</span></span><label class="switch"><input id="chart" type="checkbox"><i></i></label></div>
  </div>
@@ -350,17 +352,22 @@ function norm(s){
     return {code:sl.code,label:s.variant==="kstock"?(dom?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):sl.code,
       name:s.variant==="kstock"?(sl.stockName||sl.code):sl.code+"USDT",ok:!!sl.ok,price:sl.price,currency:sl.currency,change:sl.change||0,
       up:(sl.change||0)>=0,color:sl.ok?((sl.change||0)>=0?tone.up:tone.down):C.dim,exchange:sl.exchange||"",market:sl.market||"",diff:sl.diff};});
-  const t=(s.time||"").slice(0,5),synced=!!s.timeSynced;let d=new Date();
+  const sh0=s.show||{};let t=(s.time||"").slice(0,5);const synced=!!s.timeSynced;let d=new Date();
+  const secs=(s.time||"").slice(6,8)||"--";let ampm="";
+  if(sh0.h12&&synced){const [hh,mm]=t.split(":").map(Number);ampm=hh<12?"AM":"PM";t=((hh%12)||12)+":"+String(mm).padStart(2,"0");}
   if(s.date){const m=/(\d+)-(\d+)-(\d+)/.exec(s.date);if(m)d=new Date(+m[1],+m[2]-1,+m[3]);}
-  const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true},s.show||{});
-  return {v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,
+  const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false},s.show||{});
+  return {v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
     date:synced?MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]:"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
 }
 function text(x,t,px,py,font,color,align){x.font=font;x.fillStyle=color;x.textAlign=align||"left";x.textBaseline="top";x.fillText(t,px,py);}
 function fitEll(x,t,font,maxW){x.font=font;if(x.measureText(t).width<=maxW)return t;while(t.length>1&&x.measureText(t+"…").width>maxW)t=t.slice(0,-1);return t+"…";}
 function spark(x,px,py,w,h,series,color){x.strokeStyle=color;x.lineWidth=1.5;x.beginPath();const lo=Math.min(...series),hi=Math.max(...series),r=(hi-lo)||1;
   series.forEach((v,i)=>{const sx=px+i*(w-1)/(series.length-1),sy=py+h-1-(v-lo)/r*(h-1);i?x.lineTo(sx,sy):x.moveTo(sx,sy);});x.stroke();}
-function bigTime(x,S,cy,color){text(x,S.time,120,cy,F7,color,"center");}
+// 큰 시각: 옵션(12시간제/초)이 켜지면 오른쪽에 작은 열(AM/PM 위, 초 아래). compact(ORBIT)는 HH:MM 만, extras 는 timeExtras 로 따로
+function bigTime(x,S,cy,color,compact){const side=!compact&&(S.show.h12||S.show.seconds);x.font=F7;const w7=x.measureText("88:88").width,total=w7+(side?32:0),x0=120-total/2;
+  text(x,S.time,x0+w7,cy,F7,color,"right");if(!side)return;const sx=x0+w7+6;if(S.show.h12)text(x,S.ampm,sx,cy+2,F2,color);if(S.show.seconds)text(x,S.secs,sx,cy+32,F2,C.dim);}
+function timeExtras(x,S,cx,cy,color){if(!S.show.h12&&!S.show.seconds)return;let t=S.show.h12?S.ampm:"";if(S.show.seconds)t+=(t?"  ":"")+S.secs;text(x,t,cx,cy,F2,color,"center");}
 function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,F2,color,"center");}
 function label(x,sl,px,py,h,maxW,color,S){text(x,fitEll(x,sl.label,F2,maxW),px,py+(h-14)/2,F2,color);}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
@@ -404,7 +411,7 @@ const L={
   if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,216,F1,C.dim,"right");countdown(x,236);},
  S02(x,S){text(x,"WATCHLIST",6,6,F2,C.title);text(x,S.slots.length+" symbols",96,6,F2,C.dim);text(x,S.time,234,6,F2,C.dim,"right");
   x.fillStyle=C.frame;x.fillRect(4,27,232,1);S.slots.forEach((sl,i)=>row(x,S,sl,0,30+i*42,240,42,{spark:1,name:1,rule:1}));},
- C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,104,80,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white);bigDate(x,S,138,C.dim);if(!S.show.symbols)return;
+ C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,104,80,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white,true);bigDate(x,S,138,C.dim);timeExtras(x,S,120,156,C.dim);if(!S.show.symbols)return;
   // 점은 |등락률| 에 비례해 시계 방향으로 돈다 (10% 이상 = 한 바퀴 30초). 펌웨어와 같은 법칙, 시간 기반이라 다시 그릴 때마다 조금씩 움직인다
   const n=S.slots.length,t=Date.now()/1000;S.slots.forEach((sl,i)=>{const w=sl.ok?Math.min(Math.abs(sl.change),10)/10*12:0;const a=(-90+360*i/n+w*t%360)*Math.PI/180;dot(x,120+80*Math.cos(a),104+80*Math.sin(a),6,sl.color);});columns(x,S,192,48);},
  C02(x,S){const cx=120,cy=104,R=86;for(let i=0;i<12;i++){const a=i*30*Math.PI/180,inn=i%3?R-7:R-12;x.strokeStyle=i%3?C.dim:C.text;x.lineWidth=1;x.beginPath();
@@ -417,7 +424,7 @@ const L={
  C03(x,S){bigTime(x,S,8,C.white);bigDate(x,S,62,C.dim);x.fillStyle=C.rule;x.fillRect(0,86,240,1);x.fillStyle=C.bar;x.fillRect(0,87,240,1);if(!S.show.symbols)return;
   S.slots.forEach((sl,i)=>row(x,S,sl,0,92+i*29,240,29,{colorPrice:1,rule:1}));},
  C04(x,S){const [h,m]=S.synced?S.time.split(":"):["--","--"];text(x,h,10,30,F7,C.white);text(x,m,10,86,F7,C.white);
-  text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"--",10,146,F2,C.dim);text(x,S.synced?WD[S.d.getDay()]:"",10,164,F2,C.dim);
+  text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"--",10,146,F2,C.dim);text(x,S.synced?WD[S.d.getDay()]:"",10,164,F2,C.dim);timeExtras(x,S,42,182,C.dim);
   if(!S.show.symbols)return;x.fillStyle=C.frame;x.fillRect(86,10,1,220);S.slots.forEach((sl,i)=>row(x,S,sl,92,10+i*44,148,44,{colorPrice:1,stack:1,rule:1}));},
  C05(x,S){bigTime(x,S,14,C.white);bigDate(x,S,68,C.dim);if(!S.show.symbols)return;x.fillStyle=C.rule;x.fillRect(12,122,216,1);text(x,"<",8,160,F2,C.dim);text(x,">",232,160,F2,C.dim,"right");
   const sl=S.slots[S.active];if(sl){text(x,fitEll(x,sl.name,KOB,192),24,138,KOB,C.title);if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",24,172,'700 18px sans-serif',sl.color);if(S.show.change)text(x,pct(sl),216,176,F2,sl.color,"right");}
@@ -450,7 +457,7 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 let state=null, pollTimer=null, failCount=0, toastTimer=null;
 const PAGES=["/","/screen","/screen/add","/screen/layout","/wifi","/device","/system","/privacy","/licenses"];
 const PARENT={"/screen":"/","/screen/add":"/screen","/screen/layout":"/screen","/wifi":"/","/device":"/","/system":"/","/privacy":"/","/licenses":"/"};
-const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"]];   // symbols 비트는 UI 에서 뺐다 (항상 켬)
+const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"],["showSeconds","seconds"],["show12h","h12"]];   // symbols 비트는 UI 에서 뺐다 (항상 켬)
 let prevPage=null, curPage=null;
 const TZ_PRESETS=[["KST-9","서울 (KST)"],["JST-9","도쿄 (JST)"],["HKT-8","홍콩 (HKT)"],["CST-8","상하이 · 싱가포르"],["IST-5:30","뭄바이 (IST)"],
   ["GMT0BST,M3.5.0/1,M10.5.0","런던 (GMT/BST)"],["CET-1CEST,M3.5.0,M10.5.0/3","파리 · 베를린 (CET)"],["EST5EDT,M3.2.0,M11.1.0","뉴욕 (EST/EDT)"],
@@ -469,7 +476,7 @@ const codesOf=s=>s&&s.codes?s.codes:(s?[s[MARKET.key]]:[]);
 // ---- 초안(draft): 기기 상태에서 뽑은 설정 묶음. UI 는 초안을 보여 주고 고치며, 「저장」이 차이만 기기에 보낸다 ----
 let draft=null, applying=null;   // applying: {since, target} 저장을 보냈고 기기 상태에 반영되길 기다리는 중
 function extract(s){return {codes:codesOf(s).slice(),layout:s.layout||"S00",theme:s.theme||"stock",colors:s.colors||"",tz:s.tz||"",rotate:s.rotate==null?5:s.rotate,
-  chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true},s.show||{})};}
+  chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true,seconds:false,h12:false},s.show||{})};}
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 // 기기 상태와 다른 초안 항목 → /api/settings 쿼리 조각. 보내지 않는 키는 바뀌지 않는다
 function diffParams(){
@@ -482,7 +489,7 @@ function diffParams(){
   if(draft.rotate!==base.rotate)p.push("rotate="+draft.rotate);
   if(draft.chart!==base.chart)p.push("chart="+(draft.chart?1:0));
   if(draft.bl!==base.bl)p.push("bl="+draft.bl);
-  for(const k of ["price","change","spark","date"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
+  for(const k of ["price","change","spark","date","seconds","h12"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
   return p;
 }
 const dirty=()=>diffParams().length>0;
@@ -653,6 +660,7 @@ function renderScreen(s){
   SHOW_KEYS.forEach(([id,k])=>{const el=$(id);if(document.activeElement!==el)el.checked=show[k]!==false;});
   $("showPriceRow").classList.toggle("hidden",classic);$("showChangeRow").classList.toggle("hidden",classic);
   $("showSparkRow").classList.toggle("hidden",clock||classic);$("showDateRow").classList.toggle("hidden",!clock);
+  $("showSecondsRow").classList.toggle("hidden",!clock||s.layout==="C02");$("show12hRow").classList.toggle("hidden",!clock||s.layout==="C02");  // FIVE DOTS 는 아날로그
   const bl=$("bl");if(document.activeElement!==bl){bl.value=s.brightness;$("blVal").textContent=s.brightness+"%";}
   const sel=$("tz");
   if(!sel.options.length){TZ_PRESETS.forEach(([v,l])=>sel.add(new Option(l,v)));sel.add(new Option("직접 입력...","custom"));}
