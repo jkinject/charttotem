@@ -413,6 +413,8 @@ function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,small=sec&&compa
     else text(x,S.ampm,xc,small?ty+34-16:cy+28,"f2",color);}   // 숫자 아래선에 맞춘 Font2 (16px)
   if(small)seg7(x,S.time,xc+apW,ty,color);else text(x,S.time,xc+apW,ty,"f7t",color,"left");}
 function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,"f2",color,"center");}
+// 좁은 칸용 두 줄 날짜 [날짜, 요일]: 다섯 형식 모두 마지막 공백 앞/뒤 (펌웨어 dateTwoLines). 날짜 토글이 꺼져 있으면 ["",""]
+function dateTwo(S){if(!S.show.date||!S.synced)return ["",""];const d=S.date.trim(),i=d.lastIndexOf(" ");return i<0?[d,""]:[d.slice(0,i).trim(),d.slice(i+1).trim()];}
 function label(x,sl,px,py,h,maxW,color,S){text(x,fitEll(x,sl.label,"f2",maxW),px,py+(h-14)/2,"f2",color);}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
@@ -474,12 +476,12 @@ const L={
   S.slots.forEach((sl,i)=>row(x,S,sl,0,92+i*29,240,29,{colorPrice:1,rule:1}));},
  C04(x,S){const parts=S.synced?S.time.split(":").map(p=>p.padStart(2,"0")):["--","--","--"],sec=S.show.seconds,hy=sec?20:30,my=sec?68:86,dy=sec?170:146;   // 시는 펌웨어 drawBigDigits("%02d") 처럼 두 자리
   if(S.show.h12)text(x,S.ampm,12,hy-16,"f2",C.dim);text(x,parts[0],10,hy,"f7",C.white);text(x,parts[1],10,my,"f7",C.white);if(sec)text(x,parts[2]||"--",10,116,"f7",C.white);
-  text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"--",10,dy,"f2",C.dim);text(x,S.synced?WD[S.d.getDay()]:"",10,dy+18,"f2",C.dim);
+  {const [l1,l2]=dateTwo(S);const f1=measure(x,l1,"f2")>72?"f1":"f2";text(x,l1,10,f1==="f1"?dy+4:dy,f1,C.dim);text(x,l2,10,dy+18,"f2",C.dim);}   // 날짜 형식(dateFmt) 두 줄, 폭이 넘치면 작은 글자
   if(!S.show.symbols)return;x.fillStyle=C.frame;x.fillRect(86,10,1,220);S.slots.forEach((sl,i)=>row(x,S,sl,92,10+i*44,148,44,{colorPrice:1,stack:1,rule:1}));},
  C05(x,S){bigTime(x,S,14,C.white);bigDate(x,S,68,C.dim);if(!S.show.symbols)return;x.fillStyle=C.rule;x.fillRect(12,122,216,1);text(x,"<",8,160,"f2",C.dim);text(x,">",232,160,"f2",C.dim,"right");
   const sl=S.slots[S.active];if(sl){text(x,fitEll(x,sl.name,"ko24",192),24,138,"ko24",C.title);if(S.show.price)text(x,sl.ok?money(sl,S.v):"-",24,172,"b12",sl.color);if(S.show.change)text(x,pct(sl),216,176,"f2",sl.color,"right");}
   const n=S.slots.length;for(let i=0;i<n;i++)dot(x,120-(n-1)*7+i*14,218,3,i===S.active?C.title:C.frame);},
- C06(x,S){text(x,S.synced?WD[S.d.getDay()]:"waiting",10,12,"f2",C.dim);text(x,S.synced?MON[S.d.getMonth()]+" "+S.d.getDate():"for time",10,34,"b12",C.white);
+ C06(x,S){const [cl1,cl2]=dateTwo(S);text(x,cl2,10,12,"f2",C.dim);text(x,cl1,10,/[가-힣]/.test(cl1)?30:34,/[가-힣]/.test(cl1)?"ko24":"b12",C.white);   // 머리도 날짜 형식을 따른다
   "MTWTFSS".split("").forEach((c,i)=>text(x,c,130+i*15+7,10,"f1",C.dim,"center"));
   if(S.synced){const y=S.d.getFullYear(),mo=S.d.getMonth(),today=S.d.getDate(),start=(new Date(y,mo,1).getDay()+6)%7,n=new Date(y,mo+1,0).getDate();
     for(let d=1;d<=n;d++){const idx=start+d-1,c=idx%7,r=Math.floor(idx/7),px=130+c*15+3,py=26+r*15;

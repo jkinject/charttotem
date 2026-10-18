@@ -83,3 +83,7 @@ GitHub Pages 로 호스팅: https://jkinject.github.io/charttotem/
 ## 0.7.30
 
 - 설정 홈 「화면」 메뉴 부제는 "레이아웃 이름 · 종목 n/5" 까지만. 표시 중 종목명은 뺐다.
+
+## 0.7.31
+
+- CLOCK FACE·CALENDAR 미리보기가 날짜 형식(dateFmt)과 「날짜」 토글을 따른다 (펌웨어 2.6.0 과 동일: 마지막 공백 기준 "날짜 / 요일" 두 줄). 전에는 "OCT 19 / MON" 고정이었다.
