@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=930606e5">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=baee9c12">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -169,7 +169,7 @@
 <section class="page" data-page="/system">
  <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">시스템</h1></header>
  <div class="list">
-  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span class="mtext"><span class="mlbl">펌웨어 버전</span><span class="msub wrap" id="sysVer">-</span></span></div>
+  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span class="mtext"><span class="mlbl">펌웨어 버전</span><span class="msub wrap" id="sysVer">-</span></span><button class="pillbtn hidden" id="fwUpdate">업데이트</button></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-memory"/></svg><span class="mtext"><span class="mlbl">여유 메모리</span><span class="msub wrap" id="sysHeap">-</span></span></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg><span class="mtext"><span class="mlbl">시세 갱신 주기</span><span class="msub wrap" id="sysInterval">-</span></span></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">가동 시간</span><span class="msub wrap" id="sysUptime">-</span></span></div>
@@ -649,8 +649,8 @@ function renderHome(s){
   const codes=codesOf(s),slots=s.slots||[],act=slots[s.active]||null;
   const items=[["monitor","화면",(s.layoutName||"-")+" · 종목 "+codes.length+"/"+(s.max||5),"/screen"],   // 레이아웃 이름 · 종목 수까지만 (표시 중 종목명은 뺐다, 0.7.30)
     ["wifi","Wi-Fi",s.ssid||"연결 안 됨","/wifi"],
-    ["settings","시스템","v"+s.version,"/system"]];
-  $("homeMenu").innerHTML=items.map(x=>`<button class="menu" data-go="${x[3]}">${I(x[0])}<span class="mtext"><span class="mlbl">${x[1]}</span><span class="msub">${esc(x[2])}</span></span></button>`).join("");
+    ["settings","시스템",(s.fw&&s.fw.available?"새 펌웨어 v"+s.fw.latest+" · ":"")+"v"+s.version,"/system",!!(s.fw&&s.fw.available)]];
+  $("homeMenu").innerHTML=items.map(x=>`<button class="menu" data-go="${x[3]}">${I(x[0])}<span class="mtext"><span class="mlbl">${x[1]}${x[4]?'<span class="newtag">NEW</span>':""}</span><span class="msub">${esc(x[2])}</span></span></button>`).join("");
   if(pendingName&&(s.name===pendingName.v||Date.now()>pendingName.until))pendingName=null;
   const nm=pendingName?pendingName.v:s.name;
   $("devTitle").textContent=nm||"차트토템 "+(s.id||"").slice(-4);
@@ -853,7 +853,7 @@ function renderPage(p){
   else if(p==="/screen/layout")renderLayouts(s);
   else if(p==="/wifi/add"){if(WA.sent)waTrack(s);else renderWifiAdd(s);}
   else if(p==="/wifi"){$("wifiState").innerHTML=s.ssid?'<span class="ok">연결됨</span>':"연결 안 됨";$("wifiSsid").textContent=s.ssid||"-";$("wifiIp").textContent=s.ip||"-";renderWifiKnown(s);}
-  else if(p==="/system"){$("sysVer").textContent="v"+s.version;$("sysHeap").textContent=(s.heap/1024).toFixed(1)+" KB";$("sysInterval").textContent=Math.round(s.interval/1000)+"초";
+  else if(p==="/system"){renderFw(s);$("sysHeap").textContent=(s.heap/1024).toFixed(1)+" KB";$("sysInterval").textContent=Math.round(s.interval/1000)+"초";
     const m=Math.floor(s.uptime/60),h=Math.floor(m/60),d=Math.floor(h/24);$("sysUptime").textContent=d?d+"일 "+(h%24)+"시간":h?h+"시간 "+(m%60)+"분":m+"분";$("sysErr").textContent=s.error||"없음"}
 }
 function renderAll(){const s=view();if(!s)return;renderHome(s);const p=page()||"/";if(p!=="/")renderPage(p);}
@@ -905,6 +905,22 @@ function startNameEdit(){const title=$("devTitle"),btn=$("devEdit"),wrap=title.p
   btn.onclick=()=>finish(true);inp.onkeydown=e=>{if(e.key==="Enter")finish(true);else if(e.key==="Escape")finish(false);};inp.onblur=()=>setTimeout(()=>finish(true),150);
   inp.focus();inp.select();}
 $("devEdit").onclick=startNameEdit;
+// ---- 펌웨어 업데이트 (v2.6.1): /api/state 의 fw{} ----
+let fwInstalling=null;   // {from, since}: 「업데이트」를 눌렀다. 버전이 바뀌면 끝
+function renderFw(s){
+  const fw=s.fw||{},btn=$("fwUpdate"),el=$("sysVer");
+  if(fwInstalling){
+    if(s.version!==fwInstalling.from){fwInstalling=null;toast("v"+s.version+" 으로 업데이트됐어요");}
+    else{el.textContent="v"+s.version+" → v"+fwInstalling.to+" 업데이트 중… 기기 화면을 보세요";btn.classList.add("hidden");return;}
+  }
+  if(fw.available){el.textContent="v"+s.version+" → 새 버전 v"+fw.latest+(fw.notes?" · "+fw.notes:"");btn.classList.remove("hidden");btn.disabled=false;}
+  else{el.textContent="v"+s.version+(fw.checked!=null?" · 최신 버전이에요":"")+(fw.error?" · 확인 실패: "+fw.error:"");btn.classList.add("hidden");}
+}
+$("fwUpdate").onclick=()=>{const fw=(state&&state.fw)||{};if(!fw.available)return;
+  if(!confirm("v"+fw.latest+" 로 업데이트할까요?\n\n1~2분 걸리고 기기가 다시 시작해요. 그동안 기기 화면에 진행률이 보여요."))return;
+  $("fwUpdate").disabled=true;
+  post("/api/settings?update=1").then(()=>{fwInstalling={from:state.version,to:fw.latest,since:Date.now()};renderFw(state);toast("업데이트를 시작했어요");pollSoon(CLOUD?5000:3000);})
+    .catch(e=>{$("fwUpdate").disabled=false;toast("시작하지 못했어요: "+e.message);});};
 $("restart").onclick=()=>{if(confirm("기기를 재시작할까요?")){fetch("/restart").catch(()=>{});toast(CLOUD?(wsUp()?"재시작 명령을 보냈어요 · 곧 재시작해요":"재시작 명령을 보냈어요 · 최대 30초 뒤 재시작해요"):"기기를 재시작하고 있어요");if(!CLOUD)setTimeout(()=>setConn(false),1500);}};
 // 기기 초기화: 두 번 확인 → /api/settings?reset=1 (LAN·클라우드 같은 경로). 기기는 서버 기록을 지우고(앱 연결 모두 해제) 설정·Wi-Fi 를 지운 뒤 재시작한다
 const factoryReset=$("factoryReset");if(factoryReset)factoryReset.onclick=()=>{
@@ -937,4 +953,12 @@ function maybeHomeHint(s){
 route();
 loadState();setInterval(()=>{if(!applying)loadState();},POLL_MS);
 if(window.PREVIEW&&PREVIEW.onReady)PREVIEW.onReady(()=>{layoutKey="";renderAll();});   // 기기 폰트를 다 받으면 미리보기를 기기 글꼴로 다시
+
+// 화면 페이지 미리보기 축소 (2.6.1): 스크롤한 만큼 미리보기 높이를 줄여(최대 반) 위쪽 가장자리가 헤더 아래 8px 에 고정돼 보이게 한다.
+// .pvstick 의 sticky top 이 -(폭/2) 라 폭/2 만큼 스크롤하면 위 절반이 헤더 뒤로 들어가고, 그만큼 scale 을 줄이면 아래 내용은 평소 속도로 흐른다.
+const pvStick=document.querySelector(".pvstick"),pvBox=pvStick&&pvStick.querySelector(".preview"),pvHead=pvStick&&pvStick.previousElementSibling;
+function pvShrink(){if(!pvBox||!pvBox.offsetWidth)return;const w=pvBox.offsetWidth;
+  const s=Math.min(Math.max(pvHead.getBoundingClientRect().bottom-pvStick.getBoundingClientRect().top,0),w/2);
+  pvBox.style.setProperty("--pvk",(1-s/w).toFixed(4));}
+addEventListener("scroll",pvShrink,{passive:true});addEventListener("resize",pvShrink);addEventListener("hashchange",()=>requestAnimationFrame(pvShrink));pvShrink();
 </script></body></html>

@@ -117,8 +117,8 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 .chip{border:1px solid var(--ln);border-radius:999px;background:#fff;padding:6px 12px;font-size:13px;font-weight:600}
 .chip.on{border-color:var(--ac);background:var(--ac2)}
 .logo-row canvas{width:40px;height:40px;border-radius:50%;background:var(--bg2);flex:none}
-.pvstick{position:sticky;top:0;z-index:5;background:var(--bg);padding:4px 0 6px;box-shadow:0 8px 12px -10px #0003}   /* 화면 페이지: 아래 설정을 고치는 동안 미리보기가 위에 붙어 있게 (0.7.25) */
-.preview{width:min(240px,64vw);aspect-ratio:1;margin:4px auto 4px;background:var(--screen);border-radius:18px;padding:8px}
+.pvstick{--pw:min(240px,64vw);position:sticky;top:calc(56px - var(--pw)/2);z-index:5;background:var(--bg);padding:4px 0 6px;box-shadow:0 8px 12px -10px #0003}   /* 화면 페이지: 아래 설정을 고치는 동안 미리보기가 위에 붙어 있게 (0.7.25). 2.6.1: 스크롤하면 반 크기까지 줄어 헤더(56px) 아래에 붙는다 — 레이아웃 높이는 그대로 두고(top 을 음수로 헤더 뒤로 밀어 넣음) 미리보기만 transform 으로 축소해 떨림 없이 */
+.preview{width:var(--pw);aspect-ratio:1;margin:4px auto 4px;background:var(--screen);border-radius:18px;padding:8px;transform-origin:50% 100%;transform:scale(var(--pvk,1));will-change:transform}
 .preview canvas{width:100%;height:100%;display:block;border-radius:10px}
 .layout-label{text-align:center;color:var(--mut);font-size:12px;font-weight:700;letter-spacing:.08em;margin-bottom:10px}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 12px;padding:6px 20px 0}
@@ -203,6 +203,10 @@ body.cloud .local-only{display:none !important}
 .sicon.bad{background:var(--danger);color:#fff;font-weight:800;font-size:20px}
 .sicon .ic{width:22px;height:22px;stroke-width:2.5}
 .stitle{font-weight:700;font-size:17px;margin-bottom:2px}
+/* 펌웨어 업데이트 (v2.6.1): 홈 「시스템」 NEW 표시, 시스템 페이지 버전 옆 알약 버튼 */
+.newtag{display:inline-block;font-size:10px;font-weight:800;line-height:1.5;color:#fff;background:var(--ac);border-radius:5px;padding:1px 5px;margin-left:6px;vertical-align:2px;letter-spacing:.04em}
+.pillbtn{flex:none;background:var(--ac);color:#fff;font-weight:700;font-size:14px;padding:9px 14px;border-radius:999px}
+.pillbtn:disabled{opacity:.5}
 
 /* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */
