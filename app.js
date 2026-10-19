@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.42";
+const APP_VERSION = "0.7.43";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -224,7 +224,7 @@ $("pairNext").onclick = async () => {
   }
   pairingId = id;
   $("stepId").classList.add("hidden"); $("stepPin").classList.remove("hidden");
-  $("pinStatus").textContent = ping.pairing === "shown" ? "기기 화면에 숫자가 떠 있어요." : "기기 화면에 숫자 6자리가 뜨길 기다리는 중이에요... (최대 30초)";
+  $("pinStatus").textContent = ping.pairing === "shown" ? "기기 화면에 숫자가 떠 있어요." : "기기 화면에 숫자 6자리가 뜨길 기다리는 중이에요... (보통 바로, 늦어도 30초)";
   setTimeout(() => $("pairPin").focus(), 50);
   pairStop();
   pairTimer = setInterval(async () => {   // 기기가 PIN 을 받아 화면에 띄웠는지
@@ -329,25 +329,28 @@ $("ver").onclick = () => { const now = Date.now(); verTaps = now - verTapAt < 15
 // ------------------------------------------------------------
 // 도움말: FAQ 목록. 질문을 누르면 그 답만 펼친다 (항목이 늘어나도 위에서 아래로 훑을 수 있게)
 // ------------------------------------------------------------
-const FAQ_ICON = ["wifi", "arrow-left-right", "wifi-off", "fingerprint", "monitor", "settings", "smartphone", "trash"];
+const FAQ_ICON = ["wifi", "arrow-left-right", "repeat", "wifi-off", "fingerprint", "monitor", "settings", "upload", "smartphone", "trash", "triangle-alert"];
 const FAQ = [
   ["기기가 \"오프라인\" 으로 보여요", `<ol><li>기기 <b>전원</b>이 켜져 있고 화면에 시세나 시계가 움직이는지 보세요.</li>
 <li>기기 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 이 떠 있으면, 기기가 있는 곳의 Wi-Fi 에 아직 연결되지 않은 거예요. 폰 카메라로 그 QR 을 찍고 Wi-Fi 를 골라 비밀번호를 넣어 주세요.</li>
 <li>공유기를 껐다 켠 직후라면 1~2분 기다려 보세요. 기기가 스스로 다시 붙어요.</li></ol>`],
-  ["기기를 다른 곳으로 옮겼어요", `<p>새 장소에서 켜면 30초쯤 뒤 기기 화면에 QR 이 떠요. 그 QR 을 찍어 그곳 Wi-Fi 에 한 번만 연결하면 돼요.</p><p>이전 Wi-Fi 도 그대로 기억하니 돌아가면 알아서 붙고, 이 앱은 다시 연결할 필요가 없어요.</p>`],
+  ["기기를 다른 곳으로 옮겼어요", `<p><b>미리 저장해 두는 방법</b>: 옮기기 전에 기기 설정 → Wi-Fi → 「Wi-Fi 추가 · 변경」에서 새 장소의 Wi-Fi 이름과 비밀번호를 넣고 「지금 바로 바꾸기」를 끄면 저장만 돼요. 그 장소에서 켜면 바로 붙어요.</p><p><b>그냥 옮겼다면</b>: 새 장소에서 켜면 저장된 Wi-Fi 를 차례로 찾아본 뒤(몇십 초) 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 이 떠요. 그 QR 을 찍어 그곳 Wi-Fi 에 한 번만 연결하면 돼요.</p><p>이전 Wi-Fi 도 그대로 기억하니 돌아가면 알아서 붙고, 이 앱은 다시 연결할 필요가 없어요.</p>`],
+  ["공유기를 바꿨거나 Wi-Fi 비밀번호가 바뀌었어요", `<p>기기가 붙을 Wi-Fi 가 없으면 앱으로는 바꿀 수 없어요. 기기는 1~2분 안에 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 을 띄우니, 폰 카메라로 그 QR 을 찍고 새 Wi-Fi 를 골라 비밀번호를 넣어 주세요.</p><p>아직 옛 Wi-Fi 에 붙어 있는 상태라면 기기 설정 → Wi-Fi → 「Wi-Fi 추가 · 변경」에서 미리 새 Wi-Fi 를 저장해 두세요. 비밀번호는 기기 전용 키로 암호화돼 가고, 바꾸기에 실패하면 기기가 이전 Wi-Fi 로 스스로 돌아가요.</p>`],
   ["회사 Wi-Fi 에 안 붙어요", `<p>아이디·비밀번호 로그인 방식(기업용)이나 웹 로그인이 뜨는 Wi-Fi, 5GHz 전용 Wi-Fi 에는 기기가 붙을 수 없어요.</p><p>폰 핫스팟이나 소형 공유기를 쓰세요.</p>`],
-  ["기기 ID 가 어디 있나요?", `<p>기기 화면 <b>오른쪽 위 구석</b>에 항상 작은 회색 글자로 적혀 있어요 (예: A75E1F). 처음 연결할 때는 「Wi-Fi 연결 완료」 화면 아래 알약에도 크게 나와요.</p><p>설정 페이지의 「시스템」에서도 볼 수 있어요.</p>`],
-  ["연결 코드가 기기 화면에 안 떠요", `<p>「기기 연결」에서 ID 를 넣고 다음을 누르면 기기가 최대 30초 안에 화면에 숫자 6자리를 띄워요. 기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았으면 뜨지 않아요.</p><p>숫자는 10분 동안만 유효해요. 지나면 「처음부터」를 눌러 다시 받으세요.</p>`],
+  ["기기 ID 가 어디 있나요?", `<p>기기 화면 <b>오른쪽 위 구석</b>에 항상 작은 회색 글자로 적혀 있어요 (예: A75E1F). 처음 연결할 때는 「Wi-Fi 연결 완료」 화면 아래 알약에도 크게 나와요.</p><p>이미 연결한 기기라면 이 앱의 기기 카드와 기기 설정 맨 위(이름 아래 "ID …")에서도 볼 수 있어요.</p>`],
+  ["연결 코드가 기기 화면에 안 떠요", `<p>「기기 연결」에서 ID 를 넣고 다음을 누르면 기기 화면에 숫자 6자리가 떠요. 보통 바로 뜨고, 늦어도 30초 안이에요. 기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았으면 뜨지 않아요.</p><p>숫자는 10분 동안만 유효해요. 지나면 「처음부터」를 눌러 다시 받으세요.</p>`],
   ["설정을 바꿨는데 기기가 안 바뀌어요", `<p>설정은 바꾸는 즉시 기기로 가고 보통 1~2초 안에 반영돼요. 설정 화면 아래 "기기에 반영됐어요" 가 뜨면 끝이에요.</p><p>계속 "반영 중" 이거나 "(최대 30초)" 가 붙어 있으면 기기가 오프라인이거나 예전 펌웨어예요. 기기가 켜지면 바뀐 설정이 그때 반영돼요. 위의 오프라인 항목도 확인해 주세요.</p>`],
+  ["펌웨어 업데이트는 어떻게 하나요?", `<p>기기는 켤 때 새 펌웨어가 있으면 스스로 설치하고, 켜져 있는 동안은 6시간마다 확인해요. 따로 할 일은 없어요.</p><p>바로 올리고 싶으면 기기 설정 홈의 「시스템」에 <b>NEW</b> 표시가 떴을 때 들어가 「업데이트」를 누르세요. 1~2분 걸리고 기기 화면에 진행률이 보인 뒤 다시 시작해요. 그동안 전원을 빼지 마세요.</p>`],
   ["다른 폰에서도 이 기기를 설정하고 싶어요", `<p>그 폰에서 이 앱을 열고 「기기 연결」로 같은 ID 와 기기 화면의 숫자 코드로 연결하면 돼요. 한 기기에 여러 폰을 연결할 수 있어요.</p>`],
-  ["앱에서 기기를 빼고 싶어요", `<p>기기 항목 오른쪽 ⋯ 을 누르고 <b>기기 삭제</b>를 고르면 이 폰에서 연결이 끊겨요. 기기 자체 설정은 그대로예요.</p>`],
+  ["앱에서 기기를 빼고 싶어요", `<p>기기 항목 오른쪽 ⋯ 을 누르고 <b>기기 삭제</b>를 고르면 이 폰에서만 연결이 끊겨요. 기기 자체 설정과 다른 폰의 연결은 그대로예요.</p>`],
+  ["기기를 처음 상태로 되돌리고 싶어요 (양도·처분)", `<p>기기 설정 → 「시스템」 → <b>기기 초기화</b>를 누르세요. 종목·화면 설정·저장된 Wi-Fi 를 지우고, 서버에 있는 이 기기의 기록과 연결된 모든 폰의 연결도 함께 끊겨요. 기기는 다시 시작해 처음의 Wi-Fi 설정 QR 화면으로 돌아가요.</p><p>이 폰에서만 빼려면 위의 「기기 삭제」로 충분해요.</p>`],
 ];
 function renderFaq() {
   const box = $("faq"); box.innerHTML = "";
   FAQ.forEach(([q, a], i) => {
     const item = document.createElement("div"); item.className = "faq-item";
     const ic = FAQ_ICON[i] || "info";
-    item.innerHTML = `<button class="faq-q" aria-expanded="false" aria-controls="faqa${i}"><span class="qic${ic === "trash" ? " danger" : ""}">${I(ic)}</span><span>${q}</span>${I("chevron-right")}</button><div class="faq-a doc hidden" id="faqa${i}">${a}</div>`;
+    item.innerHTML = `<button class="faq-q" aria-expanded="false" aria-controls="faqa${i}"><span class="qic${ic === "trash" || ic === "triangle-alert" ? " danger" : ""}">${I(ic)}</span><span>${q}</span>${I("chevron-right")}</button><div class="faq-a doc hidden" id="faqa${i}">${a}</div>`;
     const btn = item.querySelector(".faq-q"), ans = item.querySelector(".faq-a");
     btn.onclick = () => { const open = ans.classList.toggle("hidden") === false; btn.setAttribute("aria-expanded", String(open)); item.classList.toggle("open", open); };
     box.appendChild(item);
