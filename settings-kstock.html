@@ -237,7 +237,7 @@ function totemOf(d) { return Number.isInteger(d.totem) && d.totem >= 0 && d.tote
 function totemSrc(i) { return `icons/totems/${TOTEMS[i][0]}.png`; }
 
 // 아이콘 고르기 바닥 시트 (CSS: launcher.css 의 .sheet-bd/.sheet/.totem-grid — 설정 페이지 style.css 에도 들어 있다).
-// 누르면 d.totem 을 바꾸고 onPick(i) 를 부른다. 저장·화면 갱신은 호출자 몫. #sheet 가 없으면 만든다.
+// 누르면 d.totem 을 바꾸고 onPick(i) 를 부른 뒤 시트를 바로 닫는다. 저장·화면 갱신은 호출자 몫. #sheet 가 없으면 만든다.
 function openTotemPicker(d, name, onPick) {
   let sh = document.getElementById("sheet");
   if (!sh) { sh = document.createElement("div"); sh.id = "sheet"; sh.className = "sheet-bd"; document.body.appendChild(sh); }
@@ -251,8 +251,9 @@ function openTotemPicker(d, name, onPick) {
     if (b) {
       const i = +b.dataset.i;
       d.totem = i;
-      sh.querySelectorAll("[data-i]").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });
+      b.classList.add("on"); b.setAttribute("aria-pressed", "true");
       onPick(i);
+      setTimeout(close, 120);   // 고른 테두리가 잠깐 보인 뒤 닫힌다
       return;
     }
     if (e.target.closest("[data-a]") || e.target === sh) close();
