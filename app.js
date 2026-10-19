@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.41";
+const APP_VERSION = "0.7.42";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -414,5 +414,13 @@ $("installLater").onclick = () => $("installCard").classList.add("hidden");
   setInterval(refreshAll, 15000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshAll(); });
   setTimeout(showInstall, 1500);
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  if ("serviceWorker" in navigator) {
+    // 새 버전의 서비스워커가 넘겨받으면(controllerchange) 홈 화면에서만 한 번 새로고침해 옛 캐시 화면이 남지 않게 (0.7.42).
+    // 처음 설치(이전 컨트롤러 없음)와 기기 연결·설정 같은 다른 화면에서는 새로고침하지 않는다
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (hadController && (location.hash === "" || location.hash === "#/" || location.hash === "#")) location.reload();
+    });
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
 })();
