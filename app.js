@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.37";
+const APP_VERSION = "0.7.38";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -153,26 +153,12 @@ function deviceMenu(d) {
   requestAnimationFrame(() => sh.classList.add("on"));
 }
 function pickTotem(d) {
-  // 아이콘 고르기 시트: 토템 캐릭터 12종 격자, 지금 것에 테두리. 누르면 바로 저장하고 카드만 갱신한다.
-  const sh = $("sheet"); if (!sh) return;
-  const cur = totemOf(d);
-  sh.innerHTML = `<div class="sheet" role="dialog" aria-label="아이콘 바꾸기"><div class="sheet-title">${esc(fmtName(d))} 의 아이콘</div>
-    <div class="totem-grid">${TOTEMS.map(([f, n], i) => `<button type="button" class="${i === cur ? "on" : ""}" data-i="${i}" aria-label="${n}" aria-pressed="${i === cur}"><img src="${totemSrc(i)}" alt=""><span>${n}</span></button>`).join("")}</div>
-    <button class="cancel" data-a="cancel">닫기</button></div>`;
-  const close = () => { sh.classList.remove("on"); setTimeout(() => { sh.innerHTML = ""; }, 200); };
-  sh.onclick = (e) => {
-    const b = e.target.closest("[data-i]");
-    if (b) {
-      const i = +b.dataset.i;
-      d.totem = i; save(KEY_CLOUD, cloudDevices);
-      sh.querySelectorAll("[data-i]").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });
-      const th = cardOf(d)?.querySelector(".thumb"); if (th) th.innerHTML = thumbHtml(d);
-      toast(`아이콘을 ${TOTEMS[i][1]}(으)로 바꿨어요`);
-      return;
-    }
-    if (e.target.closest("[data-a]") || e.target === sh) close();
-  };
-  requestAnimationFrame(() => sh.classList.add("on"));
+  // 아이콘 고르기 시트(totems.js openTotemPicker). 누르면 바로 저장하고 카드 섬네일만 갱신한다
+  openTotemPicker(d, fmtName(d), (i) => {
+    save(KEY_CLOUD, cloudDevices);
+    const th = cardOf(d)?.querySelector(".thumb"); if (th) th.innerHTML = thumbHtml(d);
+    toast(`아이콘을 ${TOTEMS[i][1]}(으)로 바꿨어요`);
+  });
 }
 function renameDevice(d) {
   // 카드의 이름 글자가 그 자리에서 입력칸으로 바뀐다 (Enter/✓ 저장, Esc 취소, 포커스 빠져도 저장)

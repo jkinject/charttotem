@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=4aaeb3b2">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=dfa98260">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -243,6 +243,30 @@ function hashTotem(id) { let h = 5381; for (const c of String(id || "").toUpperC
 function totemOf(d) { return Number.isInteger(d.totem) && d.totem >= 0 && d.totem < TOTEMS.length ? d.totem : hashTotem(d.id); }
 function totemSrc(i) { return `icons/totems/${TOTEMS[i][0]}.png`; }
 
+// 아이콘 고르기 바닥 시트 (CSS: launcher.css 의 .sheet-bd/.sheet/.totem-grid — 설정 페이지 style.css 에도 들어 있다).
+// 누르면 d.totem 을 바꾸고 onPick(i) 를 부른다. 저장·화면 갱신은 호출자 몫. #sheet 가 없으면 만든다.
+function openTotemPicker(d, name, onPick) {
+  let sh = document.getElementById("sheet");
+  if (!sh) { sh = document.createElement("div"); sh.id = "sheet"; sh.className = "sheet-bd"; document.body.appendChild(sh); }
+  const cur = totemOf(d), h = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  sh.innerHTML = `<div class="sheet" role="dialog" aria-label="아이콘 바꾸기"><div class="sheet-title">${h(name)} 의 아이콘</div>
+    <div class="totem-grid">${TOTEMS.map(([f, n], i) => `<button type="button" class="${i === cur ? "on" : ""}" data-i="${i}" aria-label="${n}" aria-pressed="${i === cur}"><img src="${totemSrc(i)}" alt=""><span>${n}</span></button>`).join("")}</div>
+    <button type="button" class="cancel" data-a="cancel">닫기</button></div>`;
+  const close = () => { sh.classList.remove("on"); setTimeout(() => { sh.innerHTML = ""; }, 200); };
+  sh.onclick = (e) => {
+    const b = e.target.closest("[data-i]");
+    if (b) {
+      const i = +b.dataset.i;
+      d.totem = i;
+      sh.querySelectorAll("[data-i]").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });
+      onPick(i);
+      return;
+    }
+    if (e.target.closest("[data-a]") || e.target === sh) close();
+  };
+  requestAnimationFrame(() => sh.classList.add("on"));
+}
+
 // 클라우드 모드 shim (런처 PWA 에서 연 설정 페이지: launcher/settings-<variant>.html, tools/gen_launcher.py 가 끼워 넣는다).
 // 기기 설정 페이지 JS(settings.js, page_*.h)는 "/api/..." 를 그대로 부르고, 여기서 그 요청을 클라우드 중계(cloud/API.md)로 돌린다.
 //   ?id=A75E1F  +  localStorage ct.cloudDevices 의 토큰  →  https://<worker>/p/A75E1F/...  (Authorization: Bearer)
@@ -256,9 +280,24 @@ function totemSrc(i) { return `icons/totems/${TOTEMS[i][0]}.png`; }
   window.CLOUD={base:BASE,id,token:dev.token,name:dev.name||"",variant:dev.variant||""};
   document.documentElement.classList.add("cloud");
   if(document.body)document.body.classList.add("cloud");
-  // 머리의 아바타를 런처 홈 카드와 같은 기기 아이콘(totems.js, gen_launcher.py 가 앞에 끼워 넣음)으로. 이미지를 못 받으면 원래 동그라미로 둔다
+  // 머리의 아바타를 런처 홈 카드와 같은 기기 아이콘(totems.js, gen_launcher.py 가 앞에 끼워 넣음)으로. 누르면 아이콘 고르기 시트(홈과 같은 것, 이 폰의 ct.cloudDevices 에 저장).
+  // 이미지를 못 받으면 원래 동그라미로 둔다
   const av=document.querySelector(".profile .avatar");
-  if(av&&typeof totemOf==="function"){const im=new Image();im.alt="";im.onload=()=>{av.classList.add("totem");av.replaceChildren(im);};im.src=totemSrc(totemOf(dev));}
+  if(av&&typeof totemOf==="function"){
+    const im=new Image();im.alt="";
+    im.onload=()=>{
+      av.classList.add("totem");av.removeAttribute("aria-hidden");av.setAttribute("role","button");av.setAttribute("aria-label","아이콘 바꾸기");av.tabIndex=0;
+      const badge=document.createElement("span");badge.className="avbadge";badge.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg>';
+      av.replaceChildren(im,badge);
+      const open=()=>openTotemPicker(dev,(document.getElementById("devTitle")||{}).textContent||dev.name||"차트토템 "+id.slice(-4),(i)=>{
+        try{localStorage.setItem("ct.cloudDevices",JSON.stringify(devs));}catch(e){}
+        im.src=totemSrc(i);
+        if(typeof toast==="function")toast("아이콘을 "+TOTEMS[i][1]+"(으)로 바꿨어요");
+      });
+      av.onclick=open;av.onkeydown=(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}};
+    };
+    im.src=totemSrc(totemOf(dev));
+  }
   const MAP={"/api/state":"/state","/api/layouts":"/layouts","/api/search":"/search","/api/quote":"/quote","/api/settings":"/settings","/restart":"/restart"};
   const orig=window.fetch.bind(window);
   const deny=()=>Promise.resolve(new Response('{"ok":false,"error":"local only"}',{status:400,headers:{"content-type":"application/json"}}));
