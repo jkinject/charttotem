@@ -105,3 +105,7 @@ GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인.
 
 - 기기 카드의 섬네일이 기기 그림 대신 **토템 캐릭터**(황소·곰·부엉이·고래·여우·고양이·토끼·펭귄·개구리·유령·로봇·문어, `icons/totems/`)가 된다. 기본값은 **기기 ID 해시**(`app.js` `hashTotem`)라 같은 기기는 어느 폰·재설치 뒤에도 같은 토템이다. ⋯ 메뉴 「토템 바꾸기」로 고르면 `cloudDevices[].totem` 에 저장(이 폰에서만, 서버·기기에는 안 보냄).
 - 원본·프롬프트는 루트 저장소 `branding/totems/` (`ip-as-logo` 스킬 + Codex 이미지 생성, `PROMPT.md`·`NOTES.md`). `python3 branding/totems/make_icons.py` 가 144px 로 줄여 `icons/totems/` 에 넣는다. 토템 이미지를 못 받으면 예전 기기 그림(`icons/device.png`)으로 폴백.
+
+## 0.7.36 — 네온 로고
+
+- 앱 아이콘·상단 로고를 기기 부팅 화면의 **네온 시계 로고**(펌웨어 2.6.12 A안)와 통일. 검은 바탕 위 민트·빨강 네온 테두리. 원본 `branding/app-icon-neon/app-icon-1024.png`(Codex, `PROMPT.md`) → `python3 firmware/tools/gen_icon.py` 로 `icons/icon-512/192/180.png`. 옛 라벤더 플랫 아이콘은 `branding/icon-1024-flat-old.png`.
