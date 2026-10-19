@@ -1,7 +1,7 @@
 # 차트토템 런처 (PWA)
 
 책상에 세워두는 투자자의 작은 토템, **차트토템** 기기를 폰에서 관리하는 설치형 웹앱.
-GitHub Pages 로 호스팅: https://jkinject.github.io/charttotem/
+GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인. `CNAME` 파일 + Cloudflare DNS 의 CNAME `charttotem → jkinject.github.io`, DNS only. 옛 주소 https://jkinject.github.io/charttotem/ 는 GitHub 가 301 로 보낸다)
 
 - 기기 목록(여러 대), 온보딩/기기 QR 로 자동 등록 (`?add=1&id=&ip=&host=&ssid=`)
 - **기기 관리 전용 (0.5.x)**: 기기 항목에는 연결 상태 점 · 이름 · Wi-Fi/주소 · ⋯(이름 바꾸기/삭제) · 요약 한 줄(펌웨어 · 레이아웃 · 종목 수 · 표시 중 종목) · 「기기 설정 열기」만 있다.
@@ -96,3 +96,7 @@ GitHub Pages 로 호스팅: https://jkinject.github.io/charttotem/
 ## 0.7.33
 
 - 「화면」 페이지 미리보기가 스크롤하면 반 크기까지 부드럽게 줄어 헤더 아래에 붙는다. 전에는 헤더(sticky)가 미리보기 위 56px 을 덮어 화면이 잘려 보였다. 레이아웃 높이는 그대로 두고(`.pvstick` 의 sticky top 을 -(폭/2) 로) 미리보기만 transform 으로 축소해 스크롤 떨림이 없다.
+
+## 0.7.34
+
+- 커스텀 도메인 **charttotem.lalatap.kr** (HTTPS 강제). 펌웨어 2.6.13 부터 기기 QR·온보딩이 이 주소로 안내한다. 개인정보 안내의 런처 주소 문구 갱신.
