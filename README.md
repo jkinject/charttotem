@@ -101,11 +101,17 @@ GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인.
 
 - 커스텀 도메인 **charttotem.lalatap.kr** (HTTPS 강제). 펌웨어 2.6.13 부터 기기 QR·온보딩이 이 주소로 안내한다. 개인정보 안내의 런처 주소 문구 갱신.
 
-## 0.7.35 — 기기 토템
+## 0.7.35 — 기기 아이콘 (토템 캐릭터)
 
-- 기기 카드의 섬네일이 기기 그림 대신 **토템 캐릭터**(황소·곰·부엉이·고래·여우·고양이·토끼·펭귄·개구리·유령·로봇·문어, `icons/totems/`)가 된다. 기본값은 **기기 ID 해시**(`app.js` `hashTotem`)라 같은 기기는 어느 폰·재설치 뒤에도 같은 토템이다. ⋯ 메뉴 「토템 바꾸기」로 고르면 `cloudDevices[].totem` 에 저장(이 폰에서만, 서버·기기에는 안 보냄).
+- 기기 카드의 섬네일이 기기 그림 대신 **토템 캐릭터**(황소·곰·부엉이·고래·여우·고양이·토끼·펭귄·개구리·유령·로봇·문어, `icons/totems/`)가 된다. 기본값은 **기기 ID 해시**(`app.js` `hashTotem`)라 같은 기기는 어느 폰·재설치 뒤에도 같은 토템이다. ⋯ 메뉴 「아이콘 바꾸기」로 고르면 `cloudDevices[].totem` 에 저장(이 폰에서만, 서버·기기에는 안 보냄).
 - 원본·프롬프트는 루트 저장소 `branding/totems/` (`ip-as-logo` 스킬 + Codex 이미지 생성, `PROMPT.md`·`NOTES.md`). `python3 branding/totems/make_icons.py` 가 144px 로 줄여 `icons/totems/` 에 넣는다. 토템 이미지를 못 받으면 예전 기기 그림(`icons/device.png`)으로 폴백.
 
 ## 0.7.36 — 네온 로고
 
 - 앱 아이콘·상단 로고를 기기 부팅 화면의 **네온 시계 로고**(펌웨어 2.6.12 A안)와 통일. 검은 바탕 위 민트·빨강 네온 테두리. 원본 `branding/app-icon-neon/app-icon-1024.png`(Codex, `PROMPT.md`) → `python3 firmware/tools/gen_icon.py` 로 `icons/icon-512/192/180.png`. 옛 라벤더 플랫 아이콘은 `branding/icon-1024-flat-old.png`.
+
+## 0.7.37 — 아이콘 바꾸기
+
+- 「토템 바꾸기」 → **「아이콘 바꾸기」**. 토템 목록·해시는 `totems.js` 로 분리해 설정 페이지와 공유한다(`gen_launcher.py` 가 `settings-*.html` 에 끼워 넣음).
+- 설정 페이지 머리의 그라데이션 동그라미 대신 **홈 카드와 같은 아이콘**이 뜬다 (`cloud_shim.js` 가 `.avatar` 를 바꿈. 기기 IP 로 직접 연 펌웨어 페이지는 그대로 동그라미).
+- 기기 카드의 머리 영역(아이콘·이름·ID)을 누르면 「기기 설정」 타일과 같은 페이지로 간다 (⋯ 버튼·이름 편집 중 입력칸 제외, 연결 해제 상태면 동작 안 함).

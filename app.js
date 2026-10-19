@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.36";
+const APP_VERSION = "0.7.37";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -63,18 +63,12 @@ function variantLabel(v) { return v === "coin" ? "코인" : v === "kstock" ? "�
 function settingsUrl(d, hash) { return `settings-${d.variant === "coin" ? "coin" : "kstock"}.html?id=${encodeURIComponent(d.id)}${hash ? "#" + hash : ""}`; }
 // 기기 섬네일: 기기 모양(둥근 검은 정사각) 안에 ORBIT 느낌의 고리와 점. 실제 화면이 아니라 상징이다 (실제 미리보기는 설정 페이지에)
 // 섬네일 이미지는 branding/launcher-home/device.png (Codex 생성) → icons/device.png. 없으면 아래 SVG 로 폴백.
-// 0.7.35 부터 기기마다 토템 캐릭터(icons/totems/, branding/totems/ 에서 생성)를 보여 주고, 이 기기 그림은 토템 이미지를 못 받았을 때의 폴백이다.
+// 0.7.35 부터 기기마다 아이콘(토템 캐릭터, icons/totems/, branding/totems/ 에서 생성)을 보여 주고, 이 기기 그림은 그 이미지를 못 받았을 때의 폴백이다.
 const THUMB = `<img src="icons/device.png" alt="" onerror="this.remove()"><svg viewBox="0 0 72 72" aria-hidden="true"><rect x="2" y="2" width="68" height="68" rx="14" fill="#0b0b0e"/><rect x="8" y="8" width="56" height="56" rx="9" fill="#141418"/>
   <circle cx="36" cy="33" r="17" fill="none" stroke="#3a3d3a" stroke-width="1.2"/><circle cx="36" cy="16" r="2.6" fill="#e34f55"/><circle cx="51" cy="41" r="2.6" fill="#3978d4"/><circle cx="21" cy="41" r="2.6" fill="#4fbf9a"/>
   <rect x="26" y="30" width="20" height="6" rx="1.5" fill="#e8e8ec"/><rect x="14" y="54" width="44" height="3" rx="1.5" fill="#3a3d3a"/></svg>`;
-// 기기 토템: 12종 캐릭터 풀. 기본값은 기기 ID 해시(같은 기기는 어느 폰에서 봐도 같은 토템), ⋯ 메뉴 「토템 바꾸기」로 고르면 d.totem 에 저장(이 폰에서만).
-const TOTEMS = [["01-bull", "황소"], ["02-bear", "곰"], ["03-owl", "부엉이"], ["04-whale", "고래"], ["05-fox", "여우"], ["06-cat", "고양이"],
-  ["07-rabbit", "토끼"], ["08-penguin", "펭귄"], ["09-frog", "개구리"], ["10-ghost", "유령"], ["11-robot", "로봇"], ["12-octopus", "문어"]];
-function hashTotem(id) { let h = 5381; for (const c of String(id || "").toUpperCase()) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0; return h % TOTEMS.length; }
-function totemOf(d) { return Number.isInteger(d.totem) && d.totem >= 0 && d.totem < TOTEMS.length ? d.totem : hashTotem(d.id); }
-function totemSrc(i) { return `icons/totems/${TOTEMS[i][0]}.png`; }
-// 토템 이미지가 없으면(캐시 전·구버전) 기기 그림으로 폴백
-function thumbHtml(d) { const i = totemOf(d); return `<img class="totem" src="${totemSrc(i)}" alt="${TOTEMS[i][1]} 토템" onerror="this.outerHTML=THUMB">`; }
+// 기기 아이콘(토템 캐릭터 12종): TOTEMS·hashTotem·totemOf·totemSrc 는 totems.js (설정 페이지와 공유). 이미지가 없으면(캐시 전·구버전) 기기 그림으로 폴백
+function thumbHtml(d) { const i = totemOf(d); return `<img class="totem" src="${totemSrc(i)}" alt="${TOTEMS[i][1]} 아이콘" onerror="this.outerHTML=THUMB">`; }
 // 3개 빠른 메뉴: 기기 설정(홈) · 화면 관리(#/screen 종목·레이아웃) · 네트워크(#/wifi)
 const TILES = [["settings", "기기 설정", "종목 · 화면 · 시스템", ""], ["monitor", "화면 관리", "종목 · 레이아웃", "/screen"], ["wifi", "네트워크", "Wi-Fi 설정", "/wifi"]];
 function setTileLinks(el, d) { el.querySelectorAll(".tile").forEach((a, i) => { a.href = settingsUrl(d, TILES[i][3]); }); }
@@ -98,13 +92,19 @@ function renderDevices() {
           <div class="drow"><span class="pname" data-r="name">${esc(fmtName(d))}</span><span class="st wait" data-r="st">확인 중</span></div>
           <div class="psub"><span>ID ${esc(d.id)}</span>${d.variant ? `<span class="badge">${esc(variantLabel(d.variant))}</span>` : ""}</div>
         </div>
-        <button class="more" data-r="more" title="토템 바꾸기 · 이름 바꾸기 · 기기 삭제" aria-label="더보기">${I("more")}</button>
+        <button class="more" data-r="more" title="아이콘 바꾸기 · 이름 바꾸기 · 기기 삭제" aria-label="더보기">${I("more")}</button>
       </div>
       <div class="msg hidden" data-r="msg"></div>
       <div class="tiles" data-r="tiles">${TILES.map(([ic, l, s]) => `<a class="tile">${I(ic)}<b>${l}</b><span>${s}</span></a>`).join("")}</div>
       `;
     setTileLinks(el, d);
     el.querySelector('[data-r="more"]').onclick = () => deviceMenu(d);
+    // 머리 영역(아이콘·이름·ID) 전체를 누르면 「기기 설정」과 같은 페이지로. ⋯ 버튼과 이름 편집 중인 입력칸은 제외, 연결 해제(타일 비활성) 상태면 안 감
+    el.querySelector(".devhead").onclick = (e) => {
+      if (e.target.closest(".more, .pname-edit, .editbtn")) return;
+      if (el.querySelector('[data-r="tiles"]').classList.contains("disabled")) return;
+      location.href = settingsUrl(d, TILES[0][3]);
+    };
     box.appendChild(el);
   }
 }
@@ -133,11 +133,11 @@ async function refreshDevice(d) {
 function refreshAll() { for (const d of cloudDevices) refreshDevice(d); }
 
 function deviceMenu(d) {
-  // ⋯ 메뉴: 토템 바꾸기 / 이름 바꾸기 / 기기 삭제 (삭제는 confirm 뒤에만). 바닥 시트 하나를 재사용한다.
+  // ⋯ 메뉴: 아이콘 바꾸기 / 이름 바꾸기 / 기기 삭제 (삭제는 confirm 뒤에만). 바닥 시트 하나를 재사용한다.
   let sh = $("sheet");
   if (!sh) { sh = document.createElement("div"); sh.id = "sheet"; sh.className = "sheet-bd"; document.body.appendChild(sh); }
   sh.innerHTML = `<div class="sheet" role="menu"><div class="sheet-title">${esc(fmtName(d))} · ID ${esc(d.id)}</div>
-    <button role="menuitem" data-a="totem">${I("image")}토템 바꾸기</button>
+    <button role="menuitem" data-a="totem">${I("image")}아이콘 바꾸기</button>
     <button role="menuitem" data-a="rename">${I("pencil")}이름 바꾸기</button>
     <button role="menuitem" class="danger" data-a="remove">${I("trash")}기기 삭제</button>
     <button role="menuitem" class="cancel" data-a="cancel">취소</button></div>`;
@@ -153,10 +153,10 @@ function deviceMenu(d) {
   requestAnimationFrame(() => sh.classList.add("on"));
 }
 function pickTotem(d) {
-  // 토템 고르기 시트: 12종 격자, 지금 것에 테두리. 누르면 바로 저장하고 카드만 갱신한다.
+  // 아이콘 고르기 시트: 토템 캐릭터 12종 격자, 지금 것에 테두리. 누르면 바로 저장하고 카드만 갱신한다.
   const sh = $("sheet"); if (!sh) return;
   const cur = totemOf(d);
-  sh.innerHTML = `<div class="sheet" role="dialog" aria-label="토템 바꾸기"><div class="sheet-title">${esc(fmtName(d))} 의 토템</div>
+  sh.innerHTML = `<div class="sheet" role="dialog" aria-label="아이콘 바꾸기"><div class="sheet-title">${esc(fmtName(d))} 의 아이콘</div>
     <div class="totem-grid">${TOTEMS.map(([f, n], i) => `<button type="button" class="${i === cur ? "on" : ""}" data-i="${i}" aria-label="${n}" aria-pressed="${i === cur}"><img src="${totemSrc(i)}" alt=""><span>${n}</span></button>`).join("")}</div>
     <button class="cancel" data-a="cancel">닫기</button></div>`;
   const close = () => { sh.classList.remove("on"); setTimeout(() => { sh.innerHTML = ""; }, 200); };
@@ -167,7 +167,7 @@ function pickTotem(d) {
       d.totem = i; save(KEY_CLOUD, cloudDevices);
       sh.querySelectorAll("[data-i]").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); });
       const th = cardOf(d)?.querySelector(".thumb"); if (th) th.innerHTML = thumbHtml(d);
-      toast(`${TOTEMS[i][1]} 토템으로 바꿨어요`);
+      toast(`아이콘을 ${TOTEMS[i][1]}(으)로 바꿨어요`);
       return;
     }
     if (e.target.closest("[data-a]") || e.target === sh) close();

@@ -79,7 +79,8 @@
 .hero-empty b{display:block;font-size:20px;font-weight:700;margin-bottom:8px}
 .hero-empty .hint{color:var(--mut);font-size:14px;line-height:1.55;margin-bottom:18px}
 .btn.pill{border-radius:999px;width:auto;min-width:200px;margin:0 auto;padding:0 28px;display:inline-flex}
-.devhead{display:flex;align-items:center;gap:14px;padding:16px 12px 10px 20px}
+.devhead{display:flex;align-items:center;gap:14px;padding:16px 12px 10px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.devhead:active .thumb,.devhead:active .dtext{opacity:.6}
 .devhead .thumb{width:72px;height:72px;flex:none}
 .devhead .thumb svg{width:100%;height:100%;display:block}
 .devhead .dtext{flex:1;min-width:0}
@@ -108,7 +109,10 @@
 .devhead .thumb img{width:100%;height:100%;display:block;object-fit:contain}
 .devhead .thumb img+svg{display:none}
 .devhead .thumb img.totem{border-radius:18px;object-fit:cover}
-/* 토템 고르기 시트: 4열 격자. .sheet button 의 가로 꽉 찬 행 스타일을 덮어쓴다 */
+/* 설정 페이지 머리의 아바타: 클라우드(런처) 모드에서는 홈 카드와 같은 아이콘 이미지 (cloud_shim.js 가 .avatar 에 totem 클래스와 img 를 넣는다) */
+.avatar.totem{background:none;box-shadow:none;border-radius:14px;overflow:hidden}
+.avatar.totem img{width:100%;height:100%;display:block;object-fit:cover}
+/* 아이콘 고르기 시트: 4열 격자. .sheet button 의 가로 꽉 찬 행 스타일을 덮어쓴다 */
 .totem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:6px 10px 10px}
 .totem-grid button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0 6px;border-radius:16px;border:2px solid transparent;font-size:12px;color:var(--mut);width:100%}
 .totem-grid button.on{border-color:var(--ac);background:var(--ac2);color:#2e8f6e;font-weight:700}
