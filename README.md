@@ -100,3 +100,8 @@ GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인.
 ## 0.7.34
 
 - 커스텀 도메인 **charttotem.lalatap.kr** (HTTPS 강제). 펌웨어 2.6.13 부터 기기 QR·온보딩이 이 주소로 안내한다. 개인정보 안내의 런처 주소 문구 갱신.
+
+## 0.7.35 — 기기 토템
+
+- 기기 카드의 섬네일이 기기 그림 대신 **토템 캐릭터**(황소·곰·부엉이·고래·여우·고양이·토끼·펭귄·개구리·유령·로봇·문어, `icons/totems/`)가 된다. 기본값은 **기기 ID 해시**(`app.js` `hashTotem`)라 같은 기기는 어느 폰·재설치 뒤에도 같은 토템이다. ⋯ 메뉴 「토템 바꾸기」로 고르면 `cloudDevices[].totem` 에 저장(이 폰에서만, 서버·기기에는 안 보냄).
+- 원본·프롬프트는 루트 저장소 `branding/totems/` (`ip-as-logo` 스킬 + Codex 이미지 생성, `PROMPT.md`·`NOTES.md`). `python3 branding/totems/make_icons.py` 가 144px 로 줄여 `icons/totems/` 에 넣는다. 토템 이미지를 못 받으면 예전 기기 그림(`icons/device.png`)으로 폴백.

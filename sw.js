@@ -1,6 +1,7 @@
 // 앱 셸을 캐시해서 오프라인에서도 열리게 한다. 기기(http://192.168.x.x)·클라우드(workers.dev) 요청은 건드리지 않는다.
-const CACHE = "charttotem-v0.7.34";
-const SHELL = ["./", "index.html", "style.css", "app.js", "settings-kstock.html", "settings-coin.html", "fonts/tft.json", "fonts/ko24.bin", "fonts/ko14.bin", "manifest.json", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-180.png", "icons/home-empty.png", "icons/device.png"];
+const CACHE = "charttotem-v0.7.35";
+const SHELL = ["./", "index.html", "style.css", "app.js", "settings-kstock.html", "settings-coin.html", "fonts/tft.json", "fonts/ko24.bin", "fonts/ko14.bin", "manifest.json", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-180.png", "icons/home-empty.png", "icons/device.png",
+  ...["01-bull", "02-bear", "03-owl", "04-whale", "05-fox", "06-cat", "07-rabbit", "08-penguin", "09-frog", "10-ghost", "11-robot", "12-octopus"].map((f) => `icons/totems/${f}.png`)];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
