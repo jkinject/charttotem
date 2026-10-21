@@ -437,8 +437,10 @@ function compact(sl,variant){const p=sl.price;if(!(p>=10000))return money(sl,var
   return pre+(p>=1e9?(p/1e9).toFixed(2)+"B":p>=1e6?(p/1e6).toFixed(2)+"M":p>=1e5?Math.round(p/1e3)+"K":(p/1e3).toFixed(1)+"K");}
 function pct(sl){return sl.ok?(sl.change>=0?"+":"")+Number(sl.change).toFixed(2)+"%":"";}
 // 봉 데이터는 API 에 없어 코드에서 만든 의사 난수로 흔들리는 선을 그린다 (모양만)
-function fakeSeries(code,up,n){let h=0;for(const c of code)h=(h*31+c.charCodeAt(0))>>>0;const a=[];let v=50;
-  for(let i=0;i<n;i++){h=(h*1103515245+12345)>>>0;v+=((h>>16)%11-5)+(up?0.6:-0.6);a.push(v);}return a;}
+// 코드 해시로 흔들리는 선 + 끝이 등락 방향(up)으로 가게 기울인다. 32비트 곱은 Math.imul, 상위 비트는 >>> (부호 있는 >> 와 일반 곱셈은 늘 하락 선이 됐다)
+function fakeSeries(code,up,n){let h=0;for(const c of code)h=(Math.imul(h,31)+c.charCodeAt(0))>>>0;const a=[];let v=50;
+  for(let i=0;i<n;i++){h=(Math.imul(h,1103515245)+12345)>>>0;v+=(h>>>16)%11-5;a.push(v);}
+  const d=a[n-1]-a[0],t=(up?1:-1)*(Math.abs(d)+n/2);return a.map((y,i)=>y+(t-d)*i/(n-1));}
 
 // 상태 정규화: 슬롯 라벨(해외/코인 티커, 국내 주식은 한글명), 색, 시각
 function norm(s){
