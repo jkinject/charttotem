@@ -11,10 +11,12 @@ button{background:none;border:0;padding:0;cursor:pointer;text-align:left}
 @media(min-width:520px){body{background:#f1f0ed}.app{border-left:1px solid var(--ln);border-right:1px solid var(--ln)}}
 .hidden{display:none!important}
 .ic{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.offline{display:none;position:sticky;top:0;z-index:20;min-height:44px;padding:8px 20px;background:#fdecec;color:#8a2a2a;align-items:center;gap:8px;font-size:14px;font-weight:600}
+/* 오프라인 배너: 1줄 = 아이콘·제목·「다시 시도」, 부제(.sub)는 아래 줄 전체 폭 (좁은 폰에서 제목·버튼이 세로로 쪼개지던 문제, 2026-10-21) */
+.offline{display:none;position:sticky;top:0;z-index:20;min-height:44px;padding:8px 20px;background:#fdecec;color:#8a2a2a;align-items:center;flex-wrap:wrap;gap:2px 8px;font-size:14px;font-weight:600}
 .offline.on{display:flex}
-.offline .ic{width:18px;height:18px}
-.offline button{margin-left:auto;display:flex;align-items:center;gap:4px;color:#8a2a2a;font-weight:700;font-size:13px}
+.offline .ic{width:18px;height:18px;flex:none}
+.offline .ttl{white-space:nowrap;font-weight:700}
+.offline button{margin-left:auto;flex:none;white-space:nowrap;display:flex;align-items:center;gap:4px;color:#8a2a2a;font-weight:700;font-size:13px}
 .offline button .ic{width:14px;height:14px}
 .top{height:56px;display:flex;align-items:center;gap:4px;padding:0 20px 0 8px;position:sticky;top:0;z-index:10;background:var(--bg)}
 .top h1{font-size:20px;font-weight:700;margin:0 0 0 4px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -152,7 +154,8 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 body.cloud .cloud-only{display:block}
 body.cloud a.cloud-only{display:flex}
 body.cloud .local-only{display:none !important}
-.offline .sub{font-weight:400;opacity:.8;margin-left:6px}
+.offline .sub{order:3;flex-basis:100%;margin-left:26px;font-weight:400;font-size:13px;line-height:1.4;opacity:.85}
+.offline .sub:empty{display:none}
 
 /* 저장 바 (v2.5.0): 초안에 변경이 있으면 하단에 고정. 저장을 눌러야 기기에 반영된다 */
 .sbtn{display:inline-flex;align-items:center;gap:6px;background:var(--ac);color:#fff;font-weight:700;font-size:15px;padding:11px 20px;border-radius:999px}
