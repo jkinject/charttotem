@@ -448,7 +448,8 @@ function norm(s){
   const slots=(s.slots||[]).slice(0,5).map(sl=>{const dom=/^[0-9][0-9A-Z]{5}$/.test(sl.code);
     return {code:sl.code,label:s.variant==="kstock"?(dom?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):sl.code,
       name:s.variant==="kstock"?(sl.stockName||sl.code):sl.code+"USDT",ok:!!sl.ok,price:sl.price,currency:sl.currency,change:sl.change||0,
-      up:(sl.change||0)>=0,color:sl.ok?((sl.change||0)>=0?tone.up:tone.down):C.dim,exchange:sl.exchange||"",market:sl.market||"",diff:sl.diff};});
+      up:(sl.change||0)>=0,color:sl.ok?((sl.change||0)>=0?tone.up:tone.down):C.dim,exchange:sl.exchange||"",market:sl.market||"",diff:sl.diff,
+      spark:typeof sl.spark==="string"?(sl.spark.match(/\d\d/g)||[]).map(Number):null};});
   const sh0=s.show||{};let t=(s.time||"").slice(0,5);const synced=!!s.timeSynced;let d=new Date();
   const hms=(s.time||"").split(":").map(Number);
   const secs=(s.time||"").slice(6,8)||"--";let ampm="";
@@ -459,7 +460,11 @@ function norm(s){
   return {id:s.id||"",hms,v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
     date:synced?(window.fmtDate?fmtDate(s.dateFmt||0,d):MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]):"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
 }
-function spark(x,px,py,w,h,series,color){x.strokeStyle=color;x.lineWidth=1.5;x.beginPath();const lo=Math.min(...series),hi=Math.max(...series),r=(hi-lo)||1;
+// 종가 선: 2.6.25 부터 기기가 slots[].spark(0~99 두 자리씩, 기기가 그리는 봉 종가)를 보낸다 → 기기와 같은 모양. 옛 펌웨어는 코드 해시 의사 난수 선
+function seriesOf(sl,n){return sl&&sl.spark?sl.spark:fakeSeries(sl?sl.code:"x",!!(sl&&sl.up),n);}
+function spark(x,px,py,w,h,series,color){
+  if(series.length<2){x.fillStyle=C.dim;for(let sx=px;sx<px+w;sx+=4)x.fillRect(sx,py+(h>>1),1,1);return;}   // 봉이 아직 없다: 기기 drawSparkline 처럼 가운데 점선
+  x.strokeStyle=color;x.lineWidth=1.5;x.beginPath();const lo=Math.min(...series),hi=Math.max(...series),r=(hi-lo)||1;
   series.forEach((v,i)=>{const sx=px+i*(w-1)/(series.length-1),sy=py+h-1-(v-lo)/r*(h-1);i?x.lineTo(sx,sy):x.moveTo(sx,sy);});x.stroke();}
 // 큰 시각: [AM/PM 작게(왼쪽, 아래선 맞춤)] [HH:MM 또는 HH:MM:SS]. 펌웨어처럼 7세그 간격을 조여 HH:MM:SS 200px. compact(ORBIT)+초 는 작은 폰트
 // compact(ORBIT)+초: 펌웨어 seg7Draw 와 같은 작은 7세그 (20x34, 획 4, 숫자 23·콜론 9)
@@ -490,7 +495,7 @@ function row(x,S,sl,px,py,w,h,f){if(!sl)return;if(f.rule){x.fillStyle=C.bar;x.fi
   const two=h>=38;text(x,p,px+w-4,two?py+4:py+(h-14)/2,"f2",priceC,"right");let used=measure(x,p,"f2");
   if(two)text(x,c,px+w-4,py+22,"f2",sl.color,"right");else{text(x,c,px+w-4-used-8,py+(h-14)/2,"f2",sl.color,"right");used+=8+measure(x,c,"f2");}
   let right=px+w-4-used-6;
-  if(f.spark&&S.show.spark&&right-56>px+44){spark(x,right-50,py+(h-22)/2,50,22,fakeSeries(sl.code,sl.up,24),sl.color);right-=56;}
+  if(f.spark&&S.show.spark&&right-56>px+44){spark(x,right-50,py+(h-22)/2,50,22,seriesOf(sl,24),sl.color);right-=56;}
   if(f.name)text(x,fitEll(x,sl.name,"ko24",right-px-4),px+4,py+(h-20)/2,"ko24",C.white);else label(x,sl,px+4,py,h,right-px-4,C.text,S);}
 function columns(x,S,py,h){const n=S.slots.length;if(!n)return;const cw=240/n;S.slots.forEach((sl,i)=>{const px=i*cw;
   text(x,fitEll(x,sl.label,"f2",cw-4),px+2,py+1,"f2",C.text);const f=cw>=56?"f2":"f1";
@@ -505,7 +510,7 @@ const L={
     x.fillStyle=C.tag;x.beginPath();x.roundRect(170,70,66,18,3);x.fill();text(x,S.candleLabel,203,72,"f2","#ccc","center");
     x.strokeStyle=C.frame;x.lineWidth=2;x.beginPath();x.roundRect(5,95,230,140,6);x.stroke();text(x,(sl&&sl.market==="OPEN")?"market open":"market closed",120,99,"f1",C.dim,"center");
     text(x,"1/"+Math.max(1,S.slots.length)+"  next 4s",230,99,"f1",C.dim,"right");
-    const ser=fakeSeries(sl?sl.code:"x",up,36),lo=Math.min(...ser),hi=Math.max(...ser),r=(hi-lo)||1;
+    const ser=seriesOf(sl,36),lo=Math.min(...ser),hi=Math.max(...ser),r=(hi-lo)||1;
     ser.forEach((v,i)=>{const o=i?ser[i-1]:v,cx=8+(224-216)/2+i*6,y1=112+107-(Math.max(o,v)-lo)/r*107,y2=112+107-(Math.min(o,v)-lo)/r*107;
       x.fillStyle=v>=o?S.tone.up:S.tone.down;x.fillRect(cx,y1-4,5,Math.max(2,y2-y1+4));x.fillRect(cx+2,y1-8,1,y2-y1+14);});
     countdown(x,228);}
@@ -515,7 +520,7 @@ const L={
   if(S.show.price)text(x,sl.ok?money(sl,S.v):"loading...",6,56,"b24",sl.ok?C.white:C.dim);
   if(S.show.change){text(x,pct(sl),6,103,"f2",col);text(x,sl.diff!=null?(sl.diff>=0?"+":"")+Number(sl.diff).toLocaleString():"24h",6+measure(x,pct(sl),"f2")+12,103,"f2",C.dim);
     text(x,S.candleLabel,234,103,"f2",C.dim,"right");}
-  if(S.show.spark){text(x,"high",6,128,"f1",C.dim);text(x,"low",6,198,"f1",C.dim);spark(x,6,138,228,58,fakeSeries(sl.code,sl.up,36),col);}
+  if(S.show.spark){text(x,"high",6,128,"f1",C.dim);text(x,"low",6,198,"f1",C.dim);spark(x,6,138,228,58,seriesOf(sl,36),col);}
   ["1D","1W","1M","3M","1Y"].forEach((t,i)=>{text(x,t,6+i*32,212,"f2",i?C.dim:C.accent);if(!i){x.fillStyle=C.accent;x.fillRect(6,229,16,1);}});
   if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,216,"f1",C.dim,"right");countdown(x,236);},
  S02(x,S){text(x,"WATCHLIST",6,6,"f2",C.title);text(x,S.slots.length+" symbols",96,6,"f2",C.dim);text(x,S.time,234,11,"f2",C.dim,"right");
