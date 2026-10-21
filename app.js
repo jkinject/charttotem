@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.7.44";
+const APP_VERSION = "0.7.45";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
