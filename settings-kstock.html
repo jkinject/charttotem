@@ -504,7 +504,6 @@ function blend(a,b,t){const A=hex2(a),B=hex2(b);return "#"+A.map((v,i)=>Math.rou
 const num=s=>Number(String(s||"").replace(/[^0-9.\-]/g,""));
 function strokeRR(x,px,py,w,h,r,c){x.strokeStyle=c;x.lineWidth=1;x.beginPath();x.roundRect(px+.5,py+.5,w-1,h-1,r);x.stroke();}
 function fillRR(x,px,py,w,h,r,c){x.fillStyle=c;x.beginPath();x.roundRect(px,py,w,h,r);x.fill();}
-function bar(x,px,py,w,frac){const f=Math.round(w*frac);x.fillStyle=C.accent;x.fillRect(px,py,f,2);x.fillStyle=C.bar;x.fillRect(px+f,py,w-f,2);}   // drawCountdownBar (남은 시간 비율은 미리보기에서 65% 로 고정)
 function tileRect(i,n){if(i===0)return [4,10,232,80];const k=n-1,j=i-1,row=Math.floor(j/2),inRow=Math.min(2,k-row*2);return [4+(j%2)*118,96+row*74,inRow===2?114:232,69];}
 function heatRect(i,n){if(n<=1)return [4,10,232,226];if(i<2)return [i?146:4,10,i?90:138,n===2?226:118];const k=n-2,j=i-2;
   if(k===1)return [4,132,232,104];if(k===2)return [4+j*118,132,114,104];return [[4,82,162][j],132,[74,76,74][j],104];}
@@ -526,7 +525,6 @@ function columns(x,S,py,h){const n=S.slots.length;if(!n)return;const cw=240/n;S.
   text(x,fitEll(x,sl.label,"f2",cw-4),px+2,py+1,"f2",C.text);const f=cw>=56?"f2":"f1";
   if(S.show.price){let p=sl.ok?money(sl,S.v):"-";if(measure(x,p,f)>cw-4)p=compact(sl,S.v);text(x,p,px+2,py+18,f,sl.color);if(h>=46&&S.show.change)text(x,pct(sl),px+2,py+(cw>=56?36:28),"f1",sl.color);}
   else if(S.show.change)text(x,pct(sl),px+2,py+18,f,sl.color);});}   // 가격 숨김: 등락률이 가격 자리로 (펌웨어 drawSlotColumn 과 동일)
-function countdown(x,py){x.fillStyle=C.accent;x.fillRect(6,py,150,2);x.fillStyle=C.bar;x.fillRect(156,py,78,2);}
 
 const L={
  S01(x,S){const sl=S.slots[S.active];title(x,S);if(!sl)return;const col=sl.color;
@@ -535,7 +533,7 @@ const L={
     text(x,S.candleLabel,234,103,"f2",C.dim,"right");}
   if(S.show.spark){text(x,"high",6,128,"f1",C.dim);text(x,"low",6,198,"f1",C.dim);spark(x,6,138,228,58,seriesOf(sl,36),col);}
   ["1D","1W","1M","3M","1Y"].forEach((t,i)=>{text(x,t,6+i*32,212,"f2",i?C.dim:C.accent);if(!i){x.fillStyle=C.accent;x.fillRect(6,229,16,1);}});
-  if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,216,"f1",C.dim,"right");countdown(x,236);},
+  if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,216,"f1",C.dim,"right");},
  S02(x,S){text(x,"WATCHLIST",6,6,"f2",C.title);text(x,S.slots.length+" symbols",96,6,"f2",C.dim);text(x,S.time,234,11,"f2",C.dim,"right");
   x.fillStyle=C.frame;x.fillRect(4,27,232,1);S.slots.forEach((sl,i)=>row(x,S,sl,0,30+i*42,240,42,{spark:1,name:1,rule:1}));},
  // S03 CHART: 머리 / 큰 가격 · 등락 / O H L C / 캔들 + 가격 눈금 / 거래량 / 시간 축 (봉·눈금 글자는 기기가 /api/state chart 로 보낸 그대로)
@@ -555,7 +553,7 @@ const L={
       const v=+String(ch.v||"").substr(i*2,2)||0,vh=Math.max(1,Math.floor(v/99*26));x.fillRect(px,186+26-vh,3,vh);}
     if(ch.vol){text(x,"VOL",190,186,"f1",C.dim);text(x,ch.vol,190,196,"f1",C.dim);}
     (ch.ticks||[]).forEach(([i,t])=>text(x,t,x0+i*5+1,218,"f1",C.dim,"center"));}
-  bar(x,6,234,228,.65);},
+},
  // S04 TILES: 첫 종목 큰 카드 + 나머지 작은 카드 (테두리 = 등락색)
  S04(x,S){const n=Math.min(S.slots.length,5);S.slots.slice(0,n).forEach((sl,i)=>{const [px,py,w,h]=tileRect(i,n),ok=sl.ok,tone=sl.color;
    strokeRR(x,px,py,w,h,6,tone);strokeRR(x,px+1,py+1,w-2,h-2,5,tone);if(ok)tri(x,px+w-12,py+12,sl.change>=0,tone);
@@ -579,19 +577,18 @@ const L={
   const lo=num(sl.dayLow),hi=num(sl.dayHigh);if(ok&&hi>lo){const pos=Math.max(6,Math.min(151,6+Math.floor((sl.price-lo)/(hi-lo)*145)));
     x.fillStyle=C.bar;x.fillRect(6,200,146,4);x.fillStyle=tone;x.fillRect(6,200,pos-6+1,4);x.fillStyle=C.text;x.beginPath();x.moveTo(pos-4,193);x.lineTo(pos+4,193);x.lineTo(pos,198);x.fill();
     text(x,sl.dayLow,6,208,"f2",C.dim);text(x,sl.dayHigh,152,208,"f2",C.dim,"right");}
-  bar(x,6,234,146,.65);
   S.slots.filter((_,i)=>i!==a).slice(0,4).forEach((o,j)=>{const y=30+j*52,ok2=o.ok;if(j<3){x.fillStyle=C.bar;x.fillRect(164,y+51,70,1);}
     slabel(x,o,164,y+2,16,58,C.text);if(ok2)tri(x,230,y+10,o.change>=0,o.color);
     if(S.show.price){let pr=ok2?money(o,S.v):"-";if(measure(x,pr,"f2")>72)pr=compact(o,S.v);text(x,pr,164,y+18,"f2",ok2?C.white:C.dim);}
     if(ok2&&S.show.change)text(x,pct(o),164,y+(S.show.price?34:18),"f2",o.color);});},
- // S07 TAPE: 지수 3칸 + 종목 시세판 (활성 행 강조). 2.7.0 전 펌웨어는 indices 가 없어 이름만
+ // S07 TAPE: 지수 3칸 + 전체 종목 시세판 (등락 삼각형만, 강조 없음). 2.7.0 전 펌웨어는 indices 가 없어 이름만
  S07(x,S){(S.indices.length?S.indices:(S.v==="coin"?["BTC","ETH","SOL"]:["KOSPI","NASDAQ","S&P 500"]).map(label=>({label,ok:false}))).slice(0,3).forEach((m,i)=>{const px=i*80+6,tone=m.change>=0?S.tone.up:S.tone.down;
     if(i){x.fillStyle=C.bar;x.fillRect(i*80,12,1,42);}text(x,m.label,px,10,"f2",C.dim);text(x,m.ok?m.price:"-",px,26,"f2",m.ok?C.white:C.dim);
     if(m.ok)text(x,(m.change>=0?"+":"")+Number(m.change).toFixed(2)+"%",px,42,"f2",tone);});
   x.fillStyle=C.frame;x.fillRect(4,58,232,1);
-  S.slots.slice(0,5).forEach((sl,i)=>{const y=62+i*35,cy=y+17,ok=sl.ok,act=i===S.active,tone=sl.color;
-    if(act){strokeRR(x,2,y+1,236,33,5,tone);x.fillStyle=tone;x.beginPath();x.moveTo(8,cy-5);x.lineTo(8,cy+5);x.lineTo(14,cy);x.fill();}else if(ok)tri(x,11,cy,sl.change>=0,tone);
-    slabel(x,sl,22,y,35,72,act?C.white:C.text);
+  S.slots.slice(0,5).forEach((sl,i)=>{const y=62+i*35,cy=y+17,ok=sl.ok,tone=sl.color;
+    if(ok)tri(x,11,cy,sl.change>=0,tone);
+    slabel(x,sl,22,y,35,72,C.text);
     if(ok&&S.show.change)text(x,pct(sl),231,midY("f2",cy),"f2",tone,"right");
     if(S.show.price){const pr=ok?money(sl,S.v):"-",f=fitBold(x,pr,70,9);text(x,pr,170,midY(f,cy),f,ok?C.white:C.dim,"right");}});},
  C01(x,S){x.strokeStyle=C.ring;x.lineWidth=1;x.beginPath();x.arc(120,101,84,0,Math.PI*2);x.stroke();bigTime(x,S,84,C.white,true);bigDate(x,S,138,C.dim);if(!S.show.symbols)return;
@@ -883,8 +880,8 @@ function renderScreen(s){
   const show=s.show||{},clock=s.theme==="clock";
   SHOW_KEYS.forEach(([id,k])=>{const el=$(id);if(document.activeElement!==el)el.checked=show[k]!==false;});
   $("showSparkRow").classList.toggle("hidden",clock||s.layout==="S07");   // TAPE 는 라인 차트가 없다$("showDateRow").classList.toggle("hidden",!clock);
-  // 화면 전환 간격: 종목을 하나씩 돌려 보여 주는 레이아웃(single: HERO·CHART·SPLIT·TAPE·HANDS·STACK)에서만. 전체를 한 화면에 보이는 레이아웃은 숨김
-  const lay=(layouts||[]).find(l=>l.id===s.layout);const single=lay?lay.single:["S01","S03","S06","S07","C02","C05"].includes(s.layout);  // 목록이 오기 전엔 알려진 ID 로 판단 (깜빡임 방지)
+  // 화면 전환 간격: 종목을 하나씩 돌려 보여 주는 레이아웃(single: HERO·CHART·SPLIT·HANDS·STACK)에서만. 전체를 한 화면에 보이는 레이아웃은 숨김
+  const lay=(layouts||[]).find(l=>l.id===s.layout);const single=lay?lay.single:["S01","S03","S06","C02","C05"].includes(s.layout);  // 목록이 오기 전엔 알려진 ID 로 판단 (깜빡임 방지)
   $("rotateRow").classList.toggle("hidden",!single);
   $("showSecondsRow").classList.toggle("hidden",!clock);$("show12hRow").classList.toggle("hidden",!clock||s.layout==="C02");  // HANDS(아날로그)는 초침만 해당, 12시간제 없음
   // 밝기: 어둡게 1 · 보통 50 · 밝게 75. 다른 값(옛 슬라이더로 맞춘 값)은 가장 가까운 단계로 표시
