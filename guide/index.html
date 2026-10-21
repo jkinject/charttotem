@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>차트토템 세팅 가이드</title>
+<meta name="description" content="차트토템 주식시계 구매 후 세팅 가이드. 전원 연결부터 Wi-Fi, 앱 연결, 종목·화면 설정까지 iPhone·Android 안내.">
+<meta property="og:title" content="차트토템 주식시계 세팅 가이드">
+<meta property="og:description" content="전원 연결부터 관심 종목 띄우기까지 약 3분">
+<meta property="og:image" content="https://charttotem.lalatap.kr/guide/img/09-lineup-3colors.jpg">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<meta name="theme-color" content="#FFFFFF">
+<style>
+:root{--bg:#fff;--bg2:#f6f5f2;--tx:#1e1e23;--mut:#7d7d87;--ln:#ecebe7;--ac:#4fbf9a;--ac-tx:#2e9e7a;--ac2:#ddf3eb;
+--font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg2);color:var(--tx);font:16px/1.65 var(--font);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
+main{max-width:640px;margin:0 auto;background:var(--bg);min-height:100vh;padding-bottom:40px}
+.hero{padding:0 0 24px}
+.hero img{display:block;width:100%;height:auto;background:#e9e9ea}
+.hero .eyebrow{margin:20px 20px 0;font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--ac-tx)}
+.hero h1{margin:6px 20px 0;font-size:28px;line-height:1.3}
+.hero .lead{margin:10px 20px 0;color:var(--mut)}
+.osbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;background:#ffffffee;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--ln)}
+.osbar>span{font-size:14px;color:var(--mut)}
+.seg{display:flex;background:var(--bg2);padding:3px;border-radius:999px;gap:2px}
+.seg button{border:0;background:none;font:600 14px var(--font);color:var(--mut);padding:7px 16px;border-radius:999px;cursor:pointer}
+.seg button.on{background:#fff;color:var(--tx);box-shadow:0 1px 3px #0002}
+.toc{display:flex;gap:8px;overflow-x:auto;padding:14px 20px;scrollbar-width:none}
+.toc::-webkit-scrollbar{display:none}
+.toc a{flex:none;font-size:14px;padding:6px 12px;border-radius:999px;background:var(--bg2);color:var(--tx);text-decoration:none}
+section{padding:28px 20px 8px;border-top:8px solid var(--bg2)}
+h2{margin:0 0 12px;font-size:21px;line-height:1.35;display:flex;align-items:center;gap:10px}
+h2 em{font-style:normal;flex:none;width:30px;height:30px;border-radius:50%;background:var(--ac);color:#fff;font-size:16px;display:grid;place-items:center}
+h3{margin:18px 0 6px;font-size:15px}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--ac2);color:var(--ac-tx);font-size:13px}
+p{margin:0 0 12px}
+ol,ul{margin:0 0 14px;padding-left:22px}
+li{margin:0 0 8px}
+li::marker{color:var(--ac-tx);font-weight:700}
+.tip{background:var(--ac2);border-radius:12px;padding:12px 14px;font-size:15px}
+.tip span{font-weight:800;color:var(--ac-tx);margin-right:8px;font-size:13px}
+.note{background:var(--bg2);border-radius:12px;padding:14px 14px 4px;margin:6px 0 14px}
+.mut{color:var(--mut);font-size:14px}
+figure{margin:0}
+figcaption{font-size:13px;color:var(--mut);text-align:center;margin-top:6px;line-height:1.4}
+.devs{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 16px}
+.dev{width:min(200px,44%)}
+.dev img{display:block;width:100%;height:auto;border-radius:12px}
+.strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:6px -20px 16px;padding:4px 20px 8px;scrollbar-width:thin}
+.ph{flex:none;width:min(62%,230px);scroll-snap-align:center}
+.ph img{display:block;width:100%;height:auto;border-radius:18px;box-shadow:0 0 0 1px var(--ln),0 4px 14px #0000000f}
+.cta{text-align:center;margin:18px 0 8px}
+.cta a{display:inline-block;background:var(--ac);color:#fff;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:999px}
+details{border-bottom:1px solid var(--ln);padding:4px 0}
+summary{cursor:pointer;font-weight:700;padding:10px 0;list-style:none;position:relative;padding-right:24px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";position:absolute;right:2px;top:8px;color:var(--mut);font-weight:400;font-size:20px}
+details[open] summary::after{content:"−"}
+details p{color:#4a4a52}
+footer{text-align:center;color:var(--mut);font-size:13px;padding:24px 20px 0}
+footer a{color:var(--ac-tx)}
+body.only-ios .os-android,body.only-android .os-ios{display:none}
+@media (min-width:600px){.ph{width:190px}.strip{justify-content:center;margin:6px 0 16px;padding:4px 0 8px}}
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <img src="img/09-lineup-3colors.jpg" width="900" height="600" alt="차트토템 주식시계 블랙·오렌지·화이트">
+  <p class="eyebrow">CHART TOTEM</p>
+  <h1>차트토템 주식시계<br>세팅 가이드</h1>
+  <p class="lead">처음 전원을 켜고 관심 종목을 띄우기까지 약 3분이면 끝나요.</p>
+</header>
+<nav class="osbar" aria-label="폰 종류">
+  <span>내 폰</span>
+  <div class="seg" role="tablist">
+    <button type="button" data-os="ios" role="tab">iPhone</button>
+    <button type="button" data-os="android" role="tab">Android</button>
+  </div>
+</nav>
+<nav class="toc" aria-label="목차">
+  <a href="#prep">준비물</a><a href="#s1">1 전원</a><a href="#s2">2 기기 Wi-Fi</a><a href="#s3">3 집 Wi-Fi</a>
+  <a href="#s4">4 앱 연결</a><a href="#s5">5 홈 화면</a><a href="#s6">6 종목·화면</a><a href="#faq">문제 해결</a>
+</nav>
+<section id="prep"><h2>준비물</h2><ul><li><b>차트토템 주식시계</b> 본체와 동봉된 <b>USB-C 케이블</b></li><li><b>USB 전원</b>: 휴대폰 충전기(5V)나 PC·모니터의 USB 포트. 충전기는 들어 있지 않아요.</li><li><b>집(사무실) Wi-Fi 이름과 비밀번호</b>: 반드시 <b>2.4GHz</b> Wi-Fi여야 해요. 이름 끝에 5G가 붙은 Wi-Fi는 연결되지 않아요.</li><li><b>스마트폰</b>: iPhone은 기본 카메라와 Safari, Android는 기본 카메라와 Chrome을 권장해요.</li></ul></section><section id="s1"><h2><em>1</em>전원 연결하기</h2>
+<p>기기 뒷면의 USB-C 포트에 케이블을 꽂고, 반대쪽을 충전기나 PC·모니터의 USB 포트에 꽂아 주세요. 몇 초 뒤 기기 화면에 <b>「Wi-Fi 연결 1/2」</b>와 QR 코드가 나타나요.</p>
+<div class="devs"><figure class="dev"><img src="img/dev-1-wifi.jpg" width="480" height="480" alt="기기 화면: Wi-Fi 연결 1/2" loading="lazy"><figcaption>기기 화면: Wi-Fi 연결 1/2</figcaption></figure></div>
+<p class="tip"><span>TIP</span>차트토템은 배터리가 없는 상시 전원 제품이에요. 케이블을 꽂아 두는 동안 계속 켜져 있어요.</p>
+</section><section id="s2"><h2><em>2</em>기기 Wi-Fi에 접속하기</h2>
+<p>기기 화면의 QR은 차트토템이 잠시 만들어 둔 <b>설정용 Wi-Fi</b>에 접속하는 QR이에요. 폰 카메라로 찍으면 Wi-Fi 설정 화면이 자동으로 열려요.</p>
+<div class="os os-ios"><h3><span class="chip">iPhone</span></h3><ol><li>기본 <b>카메라</b> 앱을 열고 기기 화면의 QR을 비춰요.</li><li>화면 아래에 뜨는 <b>「'ChartTotem-XXXX' 네트워크에 연결」</b> 알림을 누르고 <b>「연결」</b>을 눌러요.</li><li>잠시 뒤 <b>「Wi-Fi 연결」</b> 창이 저절로 올라와요. 3단계로 넘어가세요.</li></ol></div>
+<div class="os os-android"><h3><span class="chip">Android (갤럭시 등)</span></h3><ol><li>기본 <b>카메라</b> 앱으로 QR을 비춰요. 반응이 없으면 카메라 설정에서 <b>「QR 코드 스캔」</b>을 켜거나, 빠른 설정의 <b>QR 스캐너</b>·<b>Google 렌즈</b>를 써 주세요.</li><li><b>「네트워크에 연결」</b>(또는 「연결」)을 눌러요.</li><li><b>「Wi-Fi 네트워크에 로그인하세요」</b> 알림이나 창이 뜨면 눌러요. 3단계 화면이 열려요.</li><li>「인터넷에 연결되어 있지 않습니다. 연결을 유지할까요?」라고 물으면 <b>「예」(연결 유지)</b>를 눌러요. 설정용 Wi-Fi는 인터넷이 없는 게 정상이에요.</li></ol></div>
+<div class="note"><p><b>설정 화면이 자동으로 안 열린다면?</b><br>폰이 설정용 Wi-Fi에 붙은 뒤 몇 초가 지나면 기기 화면이 <b>「설정 페이지 열기 2/2」</b>로 바뀌어요. 그 QR을 한 번 더 찍거나, 브라우저 주소창에 <b>8.8.8.8</b> 을 입력하세요.</p>
+<div class="devs"><figure class="dev"><img src="img/dev-2-page.jpg" width="480" height="480" alt="기기 화면: 설정 페이지 열기 2/2" loading="lazy"><figcaption>기기 화면: 설정 페이지 열기 2/2</figcaption></figure></div></div>
+</section><section id="s3"><h2><em>3</em>집 Wi-Fi 고르기</h2>
+<p>폰에 뜬 <b>「Wi-Fi 연결」</b> 화면에서 기기가 쓸 집 Wi-Fi를 고르고 비밀번호를 입력한 뒤 <b>「연결」</b>을 눌러요. iPhone과 Android가 같아요.</p>
+<div class="strip"><figure class="ph"><img src="img/portal-1-list.jpg" width="600" height="1154" alt="① 집 Wi-Fi 선택" loading="lazy"><figcaption>① 집 Wi-Fi 선택</figcaption></figure><figure class="ph"><img src="img/portal-2-pass.jpg" width="600" height="1154" alt="② 비밀번호 입력 후 「연결」" loading="lazy"><figcaption>② 비밀번호 입력 후 「연결」</figcaption></figure><figure class="ph"><img src="img/portal-3-done.jpg" width="600" height="1154" alt="③ 「연결됐어요!」" loading="lazy"><figcaption>③ 「연결됐어요!」</figcaption></figure></div>
+<ul><li>기기 화면에는 <b>「Wi-Fi 연결 중」</b>이 잠시 표시돼요.</li><li><b>「연결됐어요!」</b>가 나오면 이 창을 닫아 주세요. 폰은 원래 쓰던 Wi-Fi나 데이터로 자동으로 돌아가요.</li><li>iPhone은 창 오른쪽 위 <b>「완료」</b>, Android는 <b>뒤로 가기</b>나 <b>X</b>로 닫으면 돼요.</li><li>목록에 집 Wi-Fi가 없으면 <b>「다시 검색」</b>을 누르거나, <b>「목록에 없나요?」</b>에서 이름을 직접 입력하세요.</li></ul>
+<div class="devs"><figure class="dev"><img src="img/dev-3-connecting.jpg" width="480" height="480" alt="기기 화면: Wi-Fi 연결 중" loading="lazy"><figcaption>기기 화면: Wi-Fi 연결 중</figcaption></figure></div>
+</section><section id="s4"><h2><em>4</em>앱과 기기 연결하기</h2>
+<p>Wi-Fi 연결이 끝나면 기기 화면이 <b>「Wi-Fi 연결 완료」</b>로 바뀌고, 새 QR과 <b>기기 ID</b>(영문·숫자 6자리)가 보여요.</p>
+<div class="devs"><figure class="dev"><img src="img/dev-4-done.jpg" width="480" height="480" alt="기기 화면: Wi-Fi 연결 완료 + 기기 ID" loading="lazy"><figcaption>기기 화면: Wi-Fi 연결 완료 + 기기 ID</figcaption></figure></div>
+<ol><li>폰 카메라로 이 QR을 찍으면 <b>차트토템 앱</b>이 열리고, <b>「기기 연결」</b> 화면에 ID가 자동으로 채워져요. <b>「다음」</b>을 눌러요.</li><li>기기 화면에 <b>「앱 연결 코드」</b> 숫자 6자리가 떠요.</li><li>그 숫자를 앱에 입력하고 <b>「연결」</b>을 눌러요. 6자리를 모두 넣으면 자동으로 진행되기도 해요.</li><li>기기 화면에 <b>「앱과 연결됐어요」</b>가 나오면 끝이에요. 이제 집 밖에서도 앱으로 설정을 바꿀 수 있어요.</li></ol>
+<div class="strip"><figure class="ph"><img src="img/app-pair-1-id.jpg" width="600" height="1304" alt="앱: 기기 ID 확인 후 「다음」" loading="lazy"><figcaption>앱: 기기 ID 확인 후 「다음」</figcaption></figure><figure class="ph"><img src="img/app-pair-2-pin.jpg" width="600" height="1304" alt="앱: 기기 화면의 숫자 6자리 입력" loading="lazy"><figcaption>앱: 기기 화면의 숫자 6자리 입력</figcaption></figure></div>
+<div class="devs"><figure class="dev"><img src="img/dev-5-pin.jpg" width="480" height="480" alt="기기 화면: 앱 연결 코드" loading="lazy"><figcaption>기기 화면: 앱 연결 코드</figcaption></figure><figure class="dev"><img src="img/dev-6-paired.jpg" width="480" height="480" alt="기기 화면: 앱과 연결됐어요" loading="lazy"><figcaption>기기 화면: 앱과 연결됐어요</figcaption></figure></div>
+<p class="tip"><span>TIP</span>QR을 찍기 어렵다면 아래 「차트토템 앱 열기」를 누르고 <b>「기기 연결하기」</b>에서 기기 ID를 직접 입력해도 돼요. 연결 코드는 10분 안에 입력해야 해요.</p>
+<p class="mut">앱은 따로 설치하지 않는 <b>웹 앱</b>이에요. iPhone은 Safari, Android는 Chrome에서 여는 것을 권장해요.</p>
+<p class="cta"><a href="/">차트토템 앱 열기</a></p>
+</section><section id="s5"><h2><em>5</em>앱을 홈 화면에 추가하기</h2>
+<p>홈 화면에 추가해 두면 일반 앱처럼 아이콘을 눌러 바로 열 수 있어요.</p>
+<div class="os os-ios"><h3><span class="chip">iPhone</span></h3><ol><li>Safari 아래쪽의 <b>「···」(더 보기)</b> 버튼을 누르고 <b>「공유」</b>를 눌러요. 예전 iOS는 아래쪽 <b>공유 버튼(□↑)</b>을 바로 누르면 돼요.</li><li>공유 메뉴를 위로 밀어 올려 <b>「홈 화면에 추가」</b>를 눌러요.</li><li>이름이 「차트토템」인지 확인하고 오른쪽 위 <b>「추가」</b>를 눌러요.</li></ol><div class="strip"><figure class="ph"><img src="img/ios-home-1-menu.jpg" width="600" height="1304" alt="① ··· → 공유" loading="lazy"><figcaption>① ··· → 공유</figcaption></figure><figure class="ph"><img src="img/ios-home-2-share.jpg" width="600" height="1304" alt="② 홈 화면에 추가" loading="lazy"><figcaption>② 홈 화면에 추가</figcaption></figure><figure class="ph"><img src="img/ios-home-3-add.jpg" width="600" height="1304" alt="③ 오른쪽 위 「추가」" loading="lazy"><figcaption>③ 오른쪽 위 「추가」</figcaption></figure></div></div>
+<div class="os os-android"><h3><span class="chip">Android (갤럭시 등)</span></h3><ol><li>Chrome 오른쪽 위 <b>「⋮」</b> 메뉴를 눌러요.</li><li><b>「홈 화면에 추가」</b>(또는 <b>「앱 설치」</b>)를 누르고, 이어서 <b>「설치」</b>나 <b>「추가」</b>를 눌러요.</li><li>삼성 인터넷이라면 아래쪽 <b>「≡」</b> 메뉴 → <b>「현재 페이지 추가」</b> → <b>「홈 화면」</b>을 눌러요.</li></ol></div>
+</section><section id="s6"><h2><em>6</em>종목과 화면 고르기</h2>
+<p>앱 홈에서 <b>「기기 설정」</b>이나 <b>「화면 관리」</b>를 누르면 기기 화면을 내 마음대로 바꿀 수 있어요. 바꾼 내용은 따로 저장할 필요 없이 1~2초 안에 기기에 반영돼요.</p>
+<div class="strip"><figure class="ph"><img src="img/set-2-screen.jpg" width="600" height="1154" alt="화면: 미리보기·레이아웃·종목 목록" loading="lazy"><figcaption>화면: 미리보기·레이아웃·종목 목록</figcaption></figure><figure class="ph"><img src="img/set-3-layout.jpg" width="600" height="1154" alt="레이아웃 선택: 주식형·시계형 11종" loading="lazy"><figcaption>레이아웃 선택: 주식형·시계형 11종</figcaption></figure></div>
+<ul><li><b>종목 추가</b>: 종목 목록 오른쪽 위 <b>「+ 추가」</b>를 누르고 이름이나 코드로 검색해요. 국내 주식, 미국 주식, KODEX·TIGER 같은 ETF를 섞어서 <b>최대 5종목</b>까지 넣을 수 있어요.</li><li><b>순서 바꾸기·빼기</b>: 종목 왼쪽 손잡이를 끌어 순서를 바꾸고, 오른쪽 <b>×</b>로 목록에서 빼요.</li><li><b>레이아웃</b>: <b>「레이아웃」</b>을 눌러 주식형·시계형 중 마음에 드는 화면을 골라요.</li><li><b>세부 설정</b>: 표시 항목(가격·등락률·초·날짜), 전환 간격, 등락 색(한국식 빨강 상승 / 글로벌식 초록 상승), 시간대, 밝기도 앱에서 바꿀 수 있어요.</li></ul>
+<p class="mut">시세는 네이버증권 시세를 받아와 보여 주기 때문에 약간의 지연이 발생할 수 있어요. 장이 닫혀 있을 때는 마지막 가격과 등락률을 보여 주고, 시계는 그대로 동작해요.</p>
+</section><section id="faq"><h2>문제가 생겼을 때</h2><details><summary>QR이 안 찍혀요</summary><p>기기와 폰 사이를 15~20cm 정도로 두고 다시 비춰 보세요. Android는 카메라 설정의 「QR 코드 스캔」을 켜거나 Google 렌즈로 찍어 보세요.</p></details><details><summary>집 Wi-Fi가 목록에 안 보여요</summary><p>차트토템은 2.4GHz Wi-Fi만 연결돼요. 공유기가 5GHz만 켜져 있다면 2.4GHz를 켜 주세요. 기기를 공유기 가까이에 두고 「다시 검색」을 누르거나, 「목록에 없나요?」에서 이름을 직접 입력해도 돼요.</p></details><details><summary>「비밀번호가 틀린 것 같아요」가 나와요</summary><p>대소문자와 특수문자를 다시 확인해 주세요. 입력칸 오른쪽 눈 모양을 누르면 비밀번호가 보여요.</p></details><details><summary>앱에서 「기기를 찾을 수 없어요」가 나와요</summary><p>기기 화면이 「Wi-Fi 연결 완료」나 시세 화면인지 확인해 주세요. 아직 Wi-Fi 연결 전이라면 2~3단계를 먼저 해 주세요. ID는 숫자와 A~F로 된 6자리예요.</p></details><details><summary>연결 코드가 만료됐어요</summary><p>코드는 10분 동안만 유효해요. 앱에서 「처음부터」를 누르면 새 코드가 떠요.</p></details><details><summary>이사했거나 공유기를 바꿨어요</summary><p>저장된 Wi-Fi를 찾지 못하면 기기 화면에 「Wi-Fi 를 못 찾았어요」와 QR이 떠요. 2~3단계와 같은 방법으로 새 Wi-Fi를 연결하면 돼요.</p></details><details><summary>가족 폰에서도 설정하고 싶어요</summary><p>다른 폰에서도 차트토템 앱의 「기기 연결하기」로 같은 기기를 연결할 수 있어요. 기기 화면 오른쪽 위 구석에 ID가 작게 적혀 있어요.</p></details><details><summary>처음 상태로 되돌리고 싶어요</summary><p>앱의 기기 설정 → 「시스템」 → 「기기 초기화」를 누르면 종목·화면 설정·Wi-Fi·앱 연결이 모두 지워지고 1단계 화면으로 돌아가요.</p></details></section>
+<footer>차트토템 · <a href="/">앱 열기</a></footer>
+</main>
+<script>
+(function(){var ua=navigator.userAgent,def=/Android/i.test(ua)?'android':'ios',k='ctg-os',os=def;
+try{os=localStorage.getItem(k)||def}catch(e){}
+function set(o){os=o;document.body.classList.remove('only-ios','only-android');document.body.classList.add('only-'+o);
+document.querySelectorAll('.seg button').forEach(function(b){var on=b.dataset.os===o;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
+try{localStorage.setItem(k,o)}catch(e){}}
+document.querySelectorAll('.seg button').forEach(function(b){b.onclick=function(){set(b.dataset.os)}});set(os);})();
+</script>
+</body>
+</html>
