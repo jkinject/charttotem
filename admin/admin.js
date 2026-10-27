@@ -269,18 +269,22 @@ function screenSection(d, raw, layouts) {
   const sameTheme = layouts.filter((l) => l.theme === (st.theme || cur.theme));
   const show = st.show || {};
   const flags = [["price", "가격"], ["change", "등락폭"], ["spark", "스파크라인"], ["date", "날짜"], ["symbols", "종목 코드"], ["seconds", "초"], ["h12", "12시간제"], ["id", "ID 배지"]];
+  const on = flags.filter(([k]) => show[k]).map(([, n]) => n), off = flags.filter(([k]) => !show[k]).map(([, n]) => n);
+  if (st.showChart != null) (st.showChart ? on : off).push("차트");
   return `<div class="dsec"><h3>지금 화면</h3></div>
-    <div class="screen"><canvas id="pv" width="240" height="240" title="기기 state 로 그린 미리보기 (실제 캡처가 아니에요)"></canvas>
-      <div class="sinfo"><b>${esc(st.layoutName || cur.name || st.layout || "-")} <span class="dim" style="font-weight:400;font-size:12px">${esc(st.layout || "")} · ${st.theme === "clock" ? "시계" : "주식"} 테마</span></b>
-        <div class="desc">${esc(cur.desc || "")}</div>
-        ${sameTheme.length ? `<div class="lays">${sameTheme.map((l) => `<span class="tag${l.id === st.layout ? " ac" : ""}" title="${esc(l.desc || "")}">${esc(l.name)}</span>`).join("")}</div>` : ""}
-        <div class="flags">${flags.map(([k, n]) => `<span class="flag${show[k] ? " on" : ""}">${n}</span>`).join("")}${st.showChart != null ? `<span class="flag${st.showChart ? " on" : ""}">차트</span>` : ""}</div>
-        <dl class="kv" style="margin-top:10px">
-          <dt>등락 색</dt><dd>${esc(COLORS[st.colors] || st.colors || "-")}</dd>
-          <dt>날짜 형식</dt><dd>${esc(DATEFMT[st.dateFmt] || st.dateFmt || "-")}${st.date ? ` <span class="dim">· 지금 「${esc(st.date)}」</span>` : ""}</dd>
-          <dt>종목 전환</dt><dd>${esc(st.rotate || "-")}초마다 · ${esc((d.codes || []).length)}종목</dd>
-          <dt>밝기</dt><dd>${esc(st.brightness != null ? st.brightness + "%" : "-")}</dd>
-        </dl></div></div>`;
+    <div class="screen">
+      <canvas id="pv" width="240" height="240" title="기기 state 로 그린 미리보기 (실제 캡처가 아니에요)"></canvas>
+      <div class="stitle"><b>${esc(st.layoutName || cur.name || st.layout || "-")}</b><span class="dim">${st.theme === "clock" ? "시계" : "주식"} 테마 · ${esc(st.layout || "")}</span></div>
+      ${cur.desc ? `<div class="sdesc">${esc(cur.desc)}</div>` : ""}
+    </div>
+    <div class="dsec"><dl class="kv">
+      <dt>표시</dt><dd>${on.join(" · ") || "-"}${off.length ? `<br><span class="dim">끔: ${off.join(", ")}</span>` : ""}</dd>
+      <dt>등락 색</dt><dd>${esc(COLORS[st.colors] || st.colors || "-")}</dd>
+      <dt>날짜 형식</dt><dd>${esc(DATEFMT[st.dateFmt] || st.dateFmt || "-")}${st.date ? ` <span class="dim">· 지금 「${esc(st.date)}」</span>` : ""}</dd>
+      <dt>종목 전환</dt><dd>${esc(st.rotate || "-")}초마다 · ${esc((d.codes || []).length)}종목</dd>
+      <dt>밝기</dt><dd>${esc(st.brightness != null ? st.brightness + "%" : "-")}</dd>
+      ${sameTheme.length > 1 ? `<dt>다른 화면</dt><dd class="dim">${sameTheme.filter((l) => l.id !== st.layout).map((l) => esc(l.name)).join(" · ")}</dd>` : ""}
+    </dl></div>`;
 }
 function drawPreview(raw) {
   const c = $("pv");
