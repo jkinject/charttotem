@@ -255,12 +255,41 @@ async function openDetail(id) {
   detailId = id;
   $("drawerBd").classList.add("on");
   $("drawer").innerHTML = `<div class="dhead"><h2>${esc(id)}</h2><span class="dim">불러오는 중…</span><button class="close" aria-label="닫기">${I("x")}</button></div>`;
-  const [s, raw] = await Promise.all([api(`/admin/${id}/summary`), api(`/admin/${id}/state`)]);
+  const [s, raw, lay] = await Promise.all([api(`/admin/${id}/summary`), api(`/admin/${id}/state`), api(`/admin/${id}/layouts`)]);
   if (detailId !== id) return;
   if (!s.ok) { $("drawer").innerHTML = `<div class="dhead"><h2>${esc(id)}</h2><button class="close" aria-label="닫기">${I("x")}</button></div><div class="pad msg err">${esc(s.error || "오류")}</div>`; return; }
-  renderDetail(s, raw && raw.ok !== false ? raw : null);
+  renderDetail(s, raw && raw.ok !== false ? raw : null, lay && Array.isArray(lay.layouts) ? lay.layouts : []);
 }
-function renderDetail(d, raw) {
+// 화면 설정 설명 (기기 state 의 show·colors·dateFmt 등). 설정 페이지와 같은 번호·이름
+const DATEFMT = ["10-19 (월)", "OCT 19  MON", "2026-10-19 (월)", "10월 19일 월요일", "10/19 (Mon)"];
+const COLORS = { kr: "한국식 (빨강 ↑ · 파랑 ↓)", global: "해외식 (초록 ↑ · 빨강 ↓)" };
+function screenSection(d, raw, layouts) {
+  const st = raw || d.st || {};
+  const cur = layouts.find((l) => l.id === st.layout) || {};
+  const sameTheme = layouts.filter((l) => l.theme === (st.theme || cur.theme));
+  const show = st.show || {};
+  const flags = [["price", "가격"], ["change", "등락폭"], ["spark", "스파크라인"], ["date", "날짜"], ["symbols", "종목 코드"], ["seconds", "초"], ["h12", "12시간제"], ["id", "ID 배지"]];
+  return `<div class="dsec"><h3>지금 화면</h3></div>
+    <div class="screen"><canvas id="pv" width="240" height="240" title="기기 state 로 그린 미리보기 (실제 캡처가 아니에요)"></canvas>
+      <div class="sinfo"><b>${esc(st.layoutName || cur.name || st.layout || "-")} <span class="dim" style="font-weight:400;font-size:12px">${esc(st.layout || "")} · ${st.theme === "clock" ? "시계" : "주식"} 테마</span></b>
+        <div class="desc">${esc(cur.desc || "")}</div>
+        ${sameTheme.length ? `<div class="lays">${sameTheme.map((l) => `<span class="tag${l.id === st.layout ? " ac" : ""}" title="${esc(l.desc || "")}">${esc(l.name)}</span>`).join("")}</div>` : ""}
+        <div class="flags">${flags.map(([k, n]) => `<span class="flag${show[k] ? " on" : ""}">${n}</span>`).join("")}${st.showChart != null ? `<span class="flag${st.showChart ? " on" : ""}">차트</span>` : ""}</div>
+        <dl class="kv" style="margin-top:10px">
+          <dt>등락 색</dt><dd>${esc(COLORS[st.colors] || st.colors || "-")}</dd>
+          <dt>날짜 형식</dt><dd>${esc(DATEFMT[st.dateFmt] || st.dateFmt || "-")}${st.date ? ` <span class="dim">· 지금 「${esc(st.date)}」</span>` : ""}</dd>
+          <dt>종목 전환</dt><dd>${esc(st.rotate || "-")}초마다 · ${esc((d.codes || []).length)}종목</dd>
+          <dt>밝기</dt><dd>${esc(st.brightness != null ? st.brightness + "%" : "-")}</dd>
+        </dl></div></div>`;
+}
+function drawPreview(raw) {
+  const c = $("pv");
+  if (!c || !raw || !window.PREVIEW) return;
+  const paint = () => { try { PREVIEW.draw(c, raw.layout || "S01", raw); } catch (e) { /* 미리보기는 보조 정보 */ } };
+  paint();
+  PREVIEW.onReady(() => { if ($("pv") === c) paint(); });   // 기기 폰트를 다 받으면 다시
+}
+function renderDetail(d, raw, layouts = []) {
   const st = d.st || {}, [cls, label] = statusOf(d);
   const night = st.night ? (st.night.on ? `켜짐 ${pad(Math.floor(st.night.from / 60))}:${pad(st.night.from % 60)}~${pad(Math.floor(st.night.to / 60))}:${pad(st.night.to % 60)} · ${["끄기", "어둡게", "그대로"][st.night.mode] || st.night.mode}${st.night.active ? " · 지금 야간" : ""}` : "꺼짐") : "-";
   const fwi = st.fw || {};
@@ -272,6 +301,7 @@ function renderDetail(d, raw) {
       <button class="btn small" data-cmd="restart=1">${I("power")}재시작</button>
       <a class="btn small ghost" href="../settings-${esc(d.variant || "kstock")}.html?id=${esc(d.id)}" target="_blank">${I("external-link")}설정 페이지</a>
     </div>` : `<div class="actions"><span class="dim" style="font-size:13px">초기화돼 서버 기록이 비어 있어요. 기기를 다시 켜 Wi-Fi 에 붙이면 새로 등록돼요.</span><button class="btn small danger" id="forget">${I("trash")}목록에서 지우기</button></div>`}
+    ${d.registered && raw ? screenSection(d, raw, layouts) : ""}
     <div class="dsec"><h3>연결</h3><dl class="kv">
       <dt>마지막 연결</dt><dd>${esc(fmtTs(d.lastSync, true))} <span class="dim">(${esc(ago(d.lastSync))})</span></dd>
       <dt>등록</dt><dd>${esc(fmtTs(d.registeredAt, true))}</dd>
@@ -295,6 +325,7 @@ function renderDetail(d, raw) {
     <div class="dsec"><h3>연결된 앱 ${(d.tokens || []).length}개</h3>${(d.tokens || []).length ? `<dl class="kv">${d.tokens.map((t) => `<dt title="${esc(t.label)}">${esc(labelOf(t))}</dt><dd>마지막 사용 ${esc(ago(t.lastUsed))} <span class="dim">· 연결 ${esc(fmtTs(t.createdAt))}</span></dd>`).join("")}</dl>` : '<span class="dim">없음 — 앱이 아직 연결되지 않았어요.</span>'}</div>
     <div class="dsec"><h3>활동 기록</h3><ul class="dlog">${(d.log || []).slice().reverse().map((l) => `<li><span class="t">${esc(fmtTs(l.at, true))}</span><span><span class="ev ${esc(l.ev)}">${esc(EV[l.ev] || l.ev)}</span> ${esc(evText(l))}</span></li>`).join("") || '<li class="dim">없음</li>'}</ul></div>
     <div class="dsec"><details><summary>원본 state JSON</summary><pre class="raw">${esc(raw ? JSON.stringify(raw, null, 1) : "없음")}</pre></details></div>`;
+  drawPreview(raw);
   $("drawer").querySelectorAll("[data-cmd]").forEach((b) => { b.onclick = async () => {
     const q = b.dataset.cmd;
     if (q !== "fwcheck=1" && !confirm(`${d.id} 에 「${b.textContent.trim()}」 명령을 보낼까요?`)) return;

@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>차트토템 관리자</title>
 <meta name="robots" content="noindex,nofollow">
-<link rel="icon" href="../icons/icon-192.png">
-<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<base href="../">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF">
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="admin/admin.css">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -29,7 +30,7 @@
 <!-- 로그인 -->
 <section class="gate" id="gate">
   <form class="gatebox" id="loginForm" autocomplete="off">
-    <img src="../icons/icon-192.png" alt="" width="56" height="56">
+    <img src="icons/icon-192.png" alt="" width="56" height="56">
     <h1>차트토템 관리자</h1>
     <p class="dim">판매자 전용 화면이에요. 비밀번호를 입력하세요.</p>
     <div class="pwrow"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="pw" placeholder="비밀번호" autocomplete="current-password" required></div>
@@ -42,7 +43,7 @@
 <!-- 본문 -->
 <main class="admin hidden" id="app">
   <header class="bar">
-    <div class="brand"><img src="../icons/icon-192.png" alt="" width="28" height="28"><b>차트토템 관리자</b><span class="dim" id="updated"></span></div>
+    <div class="brand"><img src="icons/icon-192.png" alt="" width="28" height="28"><b>차트토템 관리자</b><span class="dim" id="updated"></span></div>
     <div class="tools">
       <label class="chk small"><input type="checkbox" id="auto" checked> 1분마다 새로고침</label>
       <button class="btn small" id="refresh"><svg class="ic"><use href="#i-refresh"/></svg>새로고침</button>
@@ -102,6 +103,7 @@
   <aside class="drawer" id="drawer" aria-live="polite"></aside>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="admin.js"></script>
+<script src="preview.js"></script>
+<script src="admin/admin.js"></script>
 </body>
 </html>
