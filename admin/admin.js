@@ -60,6 +60,13 @@ const bytes = (b) => (b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : b >= 1e6 ? (b / 
 const variantName = (v) => ({ kstock: "주식", coin: "코인" }[v] || v || "-");
 const baseVer = (fw) => String(fw || "").replace(/-(kstock|coin)$/, "");
 function cmpVer(a, b) { const x = baseVer(a).split(".").map(Number), y = baseVer(b).split(".").map(Number); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0); } return 0; }
+// 앱 연결 라벨: 런처는 navigator.userAgent 앞 60자를 보낸다 → 기기 종류로 줄여 보여 준다
+function labelOf(t) {
+  const l = t.label || "";
+  if (!/Mozilla\//.test(l)) return l || "(이름 없음)";
+  const m = /iPhone|iPad|Android|Macintosh|Windows|Linux/.exec(l);
+  return { iPhone: "iPhone", iPad: "iPad", Android: "Android 폰", Macintosh: "Mac", Windows: "Windows PC", Linux: "Linux" }[m ? m[0] : ""] || "브라우저";
+}
 const isOld = (d) => !!(latestFw && d.registered && d.fw && cmpVer(d.fw, latestFw) < 0);
 
 // ---- 로그인 ----
@@ -191,7 +198,7 @@ function renderTable() {
       <td>${esc(st.ssid || "-")}<br><span class="devname">${esc(st.ip || "")}</span></td>
       <td class="when"><b>${d.registered ? esc(ago(d.lastSync)) : "-"}</b><span>${esc(fmtTs(d.lastSync))}</span></td>
       <td class="when"><b>${esc(d.registeredAt ? fmtTs(d.registeredAt).slice(0, 10) : "-")}</b><span>${d.registeredAt ? esc(ago(d.registeredAt)) : ""}</span></td>
-      <td>${(d.tokens || []).length ? `${d.tokens.length}개<br><span class="devname">${esc((d.tokens[0].label || "?") + (d.tokens.length > 1 ? " 외" : ""))} · ${esc(ago(d.tokens[0].lastUsed))}</span>` : '<span class="dim">없음</span>'}</td>
+      <td>${(d.tokens || []).length ? `${d.tokens.length}개<br><span class="devname">${esc(labelOf(d.tokens[0]) + (d.tokens.length > 1 ? " 외" : ""))} · ${esc(ago(d.tokens[0].lastUsed))}</span>` : '<span class="dim">없음</span>'}</td>
     </tr>`;
   }).join("");
   renderBulk();
@@ -285,7 +292,7 @@ function renderDetail(d, raw) {
       ${st.error ? `<dt>오류</dt><dd class="msg err" style="display:block">${esc(st.error)}</dd>` : ""}
     </dl></div>
     <div class="dsec"><h3>종목 ${d.codes ? d.codes.length : 0}개</h3>${(d.slots || []).length ? `<table class="slots">${d.slots.map((s) => `<tr><td>${esc(s.code)}</td><td>${esc(s.name || "")}</td><td class="r">${esc(s.price != null ? num(s.price) : "")}</td><td class="r ${s.change > 0 ? "up" : s.change < 0 ? "down" : ""}">${s.change != null ? (s.change > 0 ? "+" : "") + esc(s.change) + "%" : ""}</td><td class="r">${s.ok === false ? `<span class="tag bad">${esc(s.error || "오류")}</span>` : ""}</td></tr>`).join("")}</table>` : `<span class="dim">${(d.codes || []).join(", ") || "없음"}</span>`}</div>
-    <div class="dsec"><h3>연결된 앱 ${(d.tokens || []).length}개</h3>${(d.tokens || []).length ? `<dl class="kv">${d.tokens.map((t) => `<dt>${esc(t.label || "(이름 없음)")}</dt><dd>마지막 사용 ${esc(ago(t.lastUsed))} <span class="dim">· 연결 ${esc(fmtTs(t.createdAt))}</span></dd>`).join("")}</dl>` : '<span class="dim">없음 — 앱이 아직 연결되지 않았어요.</span>'}</div>
+    <div class="dsec"><h3>연결된 앱 ${(d.tokens || []).length}개</h3>${(d.tokens || []).length ? `<dl class="kv">${d.tokens.map((t) => `<dt title="${esc(t.label)}">${esc(labelOf(t))}</dt><dd>마지막 사용 ${esc(ago(t.lastUsed))} <span class="dim">· 연결 ${esc(fmtTs(t.createdAt))}</span></dd>`).join("")}</dl>` : '<span class="dim">없음 — 앱이 아직 연결되지 않았어요.</span>'}</div>
     <div class="dsec"><h3>활동 기록</h3><ul class="dlog">${(d.log || []).slice().reverse().map((l) => `<li><span class="t">${esc(fmtTs(l.at, true))}</span><span><span class="ev ${esc(l.ev)}">${esc(EV[l.ev] || l.ev)}</span> ${esc(evText(l))}</span></li>`).join("") || '<li class="dim">없음</li>'}</ul></div>
     <div class="dsec"><details><summary>원본 state JSON</summary><pre class="raw">${esc(raw ? JSON.stringify(raw, null, 1) : "없음")}</pre></details></div>`;
   $("drawer").querySelectorAll("[data-cmd]").forEach((b) => { b.onclick = async () => {
