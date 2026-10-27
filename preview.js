@@ -134,7 +134,7 @@ function title(x,S){const sl=S.slots[S.active];if(!sl)return;
 // 종목 한 행 (primitives drawSlotRow 근사): flags {spark,name,colorPrice,stack,rule}
 function row(x,S,sl,px,py,w,h,f){if(!sl)return;if(f.rule){x.fillStyle=C.bar;x.fillRect(px+2,py+h-1,w-4,1);}
   const priceC=f.colorPrice?sl.color:(sl.ok?C.white:C.dim),p=S.show.price?(sl.ok?money(sl,S.v):"-"):"",c=S.show.change?pct(sl):"";
-  if(f.stack){text(x,c,px+w-4,py+4,"f2",sl.color,"right");const cw=measure(x,c,"f2");if(S.show.price)text(x,sl.ok?compact(sl,S.v):"-",px+w-4,py+h/2+3,"f2",priceC,"right");
+  if(f.stack){text(x,c,px+w-4,py+4,"f2",sl.color,"right");const cw=measure(x,c,"f2");if(S.show.price){let pp=sl.ok?money(sl,S.v):"-";if(measure(x,pp,"f2")>w-8)pp=compact(sl,S.v);text(x,pp,px+w-4,py+h/2+3,"f2",priceC,"right");}   /* 펌웨어 fitPrice(w-8): 들어가면 전체 숫자, 모자랄 때만 225K 식 */
     text(x,fitEll(x,sl.label,"f2",w-cw-16),px+4,py+4,"f2",C.text);return;}
   const two=h>=38;text(x,p,px+w-4,two?py+4:py+(h-14)/2,"f2",priceC,"right");let used=measure(x,p,"f2");
   if(two)text(x,c,px+w-4,py+22,"f2",sl.color,"right");else{text(x,c,px+w-4-used-8,py+(h-14)/2,"f2",sl.color,"right");used+=8+measure(x,c,"f2");}
