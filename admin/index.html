@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>차트토템 관리자</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></symbol>
+<symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+<symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+</svg>
+
+<!-- 로그인 -->
+<section class="gate" id="gate">
+  <form class="gatebox" id="loginForm" autocomplete="off">
+    <img src="../icons/icon-192.png" alt="" width="56" height="56">
+    <h1>차트토템 관리자</h1>
+    <p class="dim">판매자 전용 화면이에요. 비밀번호를 입력하세요.</p>
+    <div class="pwrow"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="pw" placeholder="비밀번호" autocomplete="current-password" required></div>
+    <label class="chk"><input type="checkbox" id="remember"> 이 브라우저에 기억</label>
+    <div class="msg err" id="loginMsg"></div>
+    <button class="btn primary" type="submit" id="loginBtn">들어가기</button>
+  </form>
+</section>
+
+<!-- 본문 -->
+<main class="admin hidden" id="app">
+  <header class="bar">
+    <div class="brand"><img src="../icons/icon-192.png" alt="" width="28" height="28"><b>차트토템 관리자</b><span class="dim" id="updated"></span></div>
+    <div class="tools">
+      <label class="chk small"><input type="checkbox" id="auto" checked> 1분마다 새로고침</label>
+      <button class="btn small" id="refresh"><svg class="ic"><use href="#i-refresh"/></svg>새로고침</button>
+      <button class="btn small ghost" id="logout" title="로그아웃"><svg class="ic"><use href="#i-logout"/></svg></button>
+    </div>
+  </header>
+  <div class="msg err" id="topMsg"></div>
+
+  <!-- 요약 -->
+  <section class="chips" id="chips"></section>
+
+  <!-- Cloudflare 사용량 -->
+  <section class="card">
+    <div class="cardhead"><svg class="ic"><use href="#i-cloud"/></svg><b>Cloudflare 사용량</b><span class="dim">무료 한도 · UTC 하루 기준</span><button class="btn tiny ghost" id="usageRefresh">지금 다시 가져오기</button></div>
+    <div id="usage" class="usage"><div class="dim pad">불러오는 중…</div></div>
+  </section>
+
+  <!-- 기기 목록 -->
+  <section class="card">
+    <div class="cardhead"><svg class="ic"><use href="#i-cpu"/></svg><b>기기</b><span class="dim" id="devCount"></span></div>
+    <div class="filters">
+      <div class="seg" id="filterSeg">
+        <button data-f="all" class="on">전체</button><button data-f="online">온라인</button><button data-f="offline">오프라인</button><button data-f="unset">세팅 전</button><button data-f="old">구버전</button><button data-f="gone">초기화됨</button>
+      </div>
+      <div class="search"><svg class="ic"><use href="#i-search"/></svg><input type="search" id="q" placeholder="ID · 이름 · 종목 · Wi-Fi 검색"></div>
+    </div>
+    <div class="bulk hidden" id="bulk">
+      <b><span id="selCount">0</span>대 선택</b>
+      <button class="btn tiny" data-bulk="fwcheck=1">업데이트 확인</button>
+      <button class="btn tiny" data-bulk="update=1">업데이트 설치</button>
+      <button class="btn tiny" data-bulk="restart=1">재시작</button>
+      <button class="btn tiny ghost" id="selClear">선택 해제</button>
+    </div>
+    <div class="tablewrap">
+      <table class="devices" id="devTable">
+        <thead><tr>
+          <th class="c"><input type="checkbox" id="selAll" title="모두 선택"></th>
+          <th>상태</th><th>기기</th><th>앱</th><th>펌웨어</th><th>화면</th><th>종목</th><th>Wi-Fi</th><th>마지막 연결</th><th>등록</th><th>연결된 앱</th>
+        </tr></thead>
+        <tbody id="devBody"></tbody>
+      </table>
+    </div>
+    <div class="dim pad" id="devEmpty"></div>
+  </section>
+
+  <!-- 최근 활동 -->
+  <section class="card">
+    <div class="cardhead"><svg class="ic"><use href="#i-list"/></svg><b>최근 활동</b><span class="dim">모든 기기의 서버 기록 (등록·펌웨어·명령·앱 연결)</span></div>
+    <ul class="activity" id="activity"></ul>
+  </section>
+
+  <footer class="foot">기기 목록은 v2.9.0 이후 한 번이라도 서버에 접속한 기기예요. 시각은 이 기기의 시간대로 표시해요.</footer>
+</main>
+
+<!-- 기기 상세 -->
+<div class="drawer-bd" id="drawerBd">
+  <aside class="drawer" id="drawer" aria-live="polite"></aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="admin.js"></script>
+</body>
+</html>
