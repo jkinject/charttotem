@@ -223,7 +223,7 @@ const L={
     if(ok2&&S.show.change)text(x,pct(o),164,y+(S.show.price?34:18),"f2",o.color);});},
  // S07 TAPE: 지수 3칸 + 전체 종목 시세판 (등락 삼각형만, 강조 없음). 2.7.0 전 펌웨어는 indices 가 없어 이름만
  S07(x,S){(S.indices.length?S.indices:(S.v==="coin"?["시가총액","BTC 점유율","공포탐욕"]:["KOSPI","NASDAQ","S&P 500"]).map(label=>({label,ok:false}))).slice(0,3).forEach((m,i)=>{const px=i*80+6,tone=m.change>=0?S.tone.up:S.tone.down;
-    const mc=m.mood?(m.mood<0?GL.down:GL.up):null;   // 공포탐욕: 공포 빨강·탐욕 초록 고정 (기기 moodColor, 2.10.6)
+    const mc=m.mood?(m.mood<0?S.tone.down:S.tone.up):null;   // 공포탐욕: 공포 = 하락색, 탐욕 = 상승색 (설정한 색 관례, 기기 moodColor 2.10.7)
     if(i){x.fillStyle=C.bar;x.fillRect(i*80,12,1,42);}text(x,m.label,px,10,"f2",C.dim);text(x,m.ok?m.price:"-",px,26,"f2",!m.ok?C.dim:mc||C.white);
     if(m.ok)text(x,m.sub?m.sub:(m.change>=0?"+":"")+Number(m.change).toFixed(2)+"%",px,42,"f2",mc||(m.sub&&!m.change?C.dim:tone));});   // sub: 코인 공포·탐욕 단계 글자 (2.10.4, 기기와 같게)
   x.fillStyle=C.frame;x.fillRect(4,58,232,1);
