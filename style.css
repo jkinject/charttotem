@@ -118,6 +118,29 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 .chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px 4px}
 .chip{border:1px solid var(--ln);border-radius:999px;background:#fff;padding:6px 12px;font-size:13px;font-weight:600}
 .chip.on{border-color:var(--ac);background:var(--ac2)}
+/* 코인 종목 추가 (2.10.0): 거래소 탭 · 견적 통화 칩 · 아이콘 목록 */
+.extabs{display:flex;gap:8px;overflow-x:auto;padding:10px 20px 6px;scrollbar-width:none}
+.extabs::-webkit-scrollbar{display:none}
+.extab{flex:none;display:flex;align-items:center;gap:6px;border:1.5px solid var(--ln);border-radius:12px;background:var(--bg);padding:8px 12px;font-size:14px;font-weight:600;color:var(--tx)}
+.extab i{width:18px;height:18px;border-radius:50%;color:#fff;font-style:normal;font-size:10px;font-weight:800;display:grid;place-items:center}
+.extab.on{border-color:var(--ac);background:var(--ac2)}
+.qrow{display:flex;align-items:center;gap:4px;padding:6px 0 0 20px}
+.qrow .qlbl{font-size:13px;color:var(--mut);flex:none}
+.qrow .chips{padding:6px 20px 4px 8px}
+.ccount{display:flex;justify-content:space-between;padding-right:20px}
+.crow{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 20px;position:relative;cursor:pointer}
+.crow+.crow:before{content:"";position:absolute;left:68px;right:20px;top:0;border-top:1px solid var(--ln)}
+.crow.empty{color:var(--mut);font-size:14px;cursor:default;padding:18px 20px}
+.crow .l{flex:1;min-width:0}
+.crow .nm{font-size:16px;font-weight:700}
+.crow .cd{font-size:13px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cicon{width:36px;height:36px;border-radius:50%;flex:none;background:var(--bg2);object-fit:contain}
+.cicon.ph{display:grid;place-items:center;font-weight:800;color:var(--mut)}
+.cadd{flex:none;min-width:44px;height:44px;border:0;background:none;color:var(--ac);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;border-radius:10px}
+.cadd .ic{width:24px;height:24px}
+.cadd.on span{line-height:1.2}
+.cadd:disabled{color:var(--ln)}
+.badge.cx{background:var(--bg2);color:var(--tx)}
 .logo-row canvas{width:40px;height:40px;border-radius:50%;background:var(--bg2);flex:none}
 .pvstick{--pw:min(240px,64vw);position:sticky;top:calc(56px - var(--pw)/2);z-index:5;background:var(--bg);padding:4px 0 6px;box-shadow:0 8px 12px -10px #0003}   /* 화면 페이지: 아래 설정을 고치는 동안 미리보기가 위에 붙어 있게 (0.7.25). 2.6.1: 스크롤하면 반 크기까지 줄어 헤더(56px) 아래에 붙는다 — 레이아웃 높이는 그대로 두고(top 을 음수로 헤더 뒤로 밀어 넣음) 미리보기만 transform 으로 축소해 떨림 없이 */
 .preview{width:var(--pw);aspect-ratio:1;margin:4px auto 4px;background:var(--screen);border-radius:18px;padding:8px;transform-origin:50% 100%;transform:scale(var(--pvk,1));will-change:transform}

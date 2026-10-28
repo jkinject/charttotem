@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=ccd895c3">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=0c7ca999">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -83,6 +83,8 @@
  <div class="setrow" id="showSparkRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">라인 차트</span><span class="msub">레이아웃의 종가 선</span></span><label class="switch"><input id="showSpark" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showSecondsRow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">초 표시</span><span class="msub">시:분:초 로 표시</span></span><label class="switch"><input id="showSeconds" type="checkbox"><i></i></label></div>
  <div class="setrow" id="show12hRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">12시간제</span><span class="msub">AM · PM 을 표시</span></span><label class="switch"><input id="show12h" type="checkbox"><i></i></label></div>
+ <div class="setrow hidden" id="cnameRow"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg><span class="mtext"><span class="mlbl">코인 이름</span><span class="msub">기기 화면에 보일 이름</span></span><div class="seg" id="cnameSeg" role="radiogroup" aria-label="코인 이름"><button role="radio" data-value="0">심볼</button><button role="radio" data-value="1">한글 이름</button></div></div>
+ <div class="setrow hidden" id="cintRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">봉 간격</span><span class="msub">차트·라인의 봉 하나</span></span><select id="cint" class="val" aria-label="봉 간격"><option value="1m">1분</option><option value="5m">5분</option><option value="15m">15분</option><option value="1h">1시간</option><option value="4h">4시간</option><option value="1d">1일</option></select></div>
  <div class="setrow" id="showDateRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">날짜</span><span class="msub">오늘 날짜 표시</span></span><label class="switch"><input id="showDate" type="checkbox"><i></i></label></div>
  </div>
  <div class="band"></div>
@@ -106,17 +108,20 @@
  <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">종목 추가</h1></header>
  <div class="hint" id="addCount"></div>
 
+ <div class="extabs" id="exTabs" role="tablist" aria-label="거래소"></div>
  <div class="search">
-  <svg class="ic" aria-hidden="true"><use href="#i-coins"/></svg>
-  <input type="text" id="custom" placeholder="심볼 입력 (예: ARB)" maxlength="12" autocapitalize="characters" autocomplete="off" enterkeyhint="done">
-  <button class="clear" id="apply" aria-label="추가"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></button>
+  <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+  <input type="text" id="custom" placeholder="이름, 심볼 또는 거래쌍 검색" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="24" enterkeyhint="search">
+  <button class="clear hidden" id="coinClear" aria-label="지우기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
  </div>
- <div class="chips" id="chips"></div>
- <div class="msg" id="coinMsg">USDT 마켓 기준으로 표시해요. 여러 코인을 등록하면 화면이 차례로 넘어가요.</div>
- <div class="band"></div>
- <div class="caption">로고</div>
- <div class="list">
-  <div class="setrow logo-row local-only"><canvas id="logo" width="40" height="40"></canvas><span class="mtext"><span class="mlbl">지금 보이는 코인</span><span class="msub wrap" id="logoMsg">로고는 설정 페이지를 열었을 때 자동으로 받아요.</span></span></div>
+ <div class="qrow" id="quoteRow"><span class="qlbl">견적 통화</span><div class="chips" id="quoteChips"></div></div>
+ <div class="rcount ccount"><span id="coinCount"></span><span id="coinPick"></span></div>
+ <ul class="rlist" id="coinList"></ul>
+ <div class="msg" id="coinMsg"></div>
+ <div class="band local-only"></div>
+ <div class="caption local-only">로고</div>
+ <div class="list local-only">
+  <div class="setrow logo-row"><canvas id="logo" width="40" height="40"></canvas><span class="mtext"><span class="mlbl">지금 보이는 코인</span><span class="msub wrap" id="logoMsg">로고는 설정 페이지를 열었을 때 자동으로 받아 기기에 저장해요.</span></span></div>
   <button class="menu" id="refetch"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg><span class="mtext"><span class="mlbl">로고 다시 받기</span></span></button>
   <label class="menu" for="file"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span class="mtext"><span class="mlbl">이미지 직접 올리기</span></span></label><input type="file" id="file" accept="image/*" hidden>
  </div>
@@ -320,21 +325,116 @@ function openTotemPicker(d, name, onPick) {
   };
 })();
 
+// ---- 코인 종목 (2.10.0) ----
+const COIN=(()=>{
+  const g=id=>document.getElementById(id);
+  const API="https://charttotem-cloud.jkinject.workers.dev";
+  const EXS=[["UPBIT","업비트","#093687"],["BITHUMB","빗썸","#f37321"],["COINONE","코인원","#0062df"],["KORBIT","코빗","#2350d8"],["BINANCE","바이낸스","#f0b90b"]];
+  const EXN=Object.fromEntries(EXS.map(([k,n])=>[k,n]));
+  const QUOTES={UPBIT:["KRW","USDT","BTC"],BITHUMB:["KRW","BTC"],COINONE:["KRW"],KORBIT:["KRW"],BINANCE:["USDT","BTC"]};
+  const NAMES={};            // 기초 심볼 → 한글 이름 (목록·기기 cnames 에서 모은다)
+  const lists={};            // 거래소 → [{q,b,ko,en}]
+  let ex=localStorage.getItem("ct.coinEx")||"UPBIT", quote="", items=[], loading=null;
+  if(!EXN[ex])ex="UPBIT";
+  const parse=c=>{const m=/^(?:([A-Z]+):)?([A-Z]+)-([A-Z0-9]+)$/.exec(String(c||"").toUpperCase());return m?{ex:m[1]||"BINANCE",q:m[2],b:m[3]}:null;};
+  const codeOf=(e,q,b)=>e+":"+q+"-"+b;
+  const clean=t=>String(t||"").replace(/[;=]/g," ").trim().slice(0,24);
+  const nameOf=b=>NAMES[b]||"";
+  function learn(list){for(const m of list||[])if(m.ko&&!NAMES[m.b])NAMES[m.b]=clean(m.ko);}
+  function learnState(s){for(const p of String((s&&s.cnames)||"").split(";")){const i=p.indexOf("=");if(i>0&&!NAMES[p.slice(0,i)])NAMES[p.slice(0,i)]=p.slice(i+1);}
+    for(const sl of (s&&s.slots)||[])if(sl.base&&sl.name&&!NAMES[sl.base])NAMES[sl.base]=sl.name;}
+  // 기기에 보낼 한글 이름: 지금 목록에 든 코인만
+  function cnamesFor(codes){const seen={},out=[];for(const c of codes){const p=parse(c);if(p&&!seen[p.b]&&NAMES[p.b]){seen[p.b]=1;out.push(p.b+"="+clean(NAMES[p.b]));}}return out.join(";");}
+  // ---- 목록 받기: 서버(6시간 캐시) → 실패하면 바이낸스는 브라우저가 직접, 코빗은 런처에 든 파일 ----
+  const LS="ct.coinList.";
+  function fromLocal(e){try{const v=JSON.parse(localStorage.getItem(LS+e)||"null");if(v&&Date.now()-v.at<6*3600e3)return v.items;}catch(_){}return null;}
+  function toLocal(e,it){try{localStorage.setItem(LS+e,JSON.stringify({at:Date.now(),items:it}));}catch(_){}}
+  async function binanceDirect(){
+    const r=await (await fetch("https://data-api.binance.vision/api/v3/ticker/price")).json();
+    await load("UPBIT").catch(()=>{});
+    const rank={};(lists.UPBIT||[]).forEach((m,i)=>{if(rank[m.b]===undefined)rank[m.b]=i;});
+    const out=[];for(const {symbol} of r)for(const q of ["USDT","BTC"]){if(!symbol.endsWith(q))continue;const b=symbol.slice(0,-q.length);
+      if(b&&!/(UP|DOWN|BULL|BEAR)$/.test(b))out.push({q,b,ko:NAMES[b]||""});break;}
+    return out.sort((a,b)=>(a.q==="USDT"?0:1)-(b.q==="USDT"?0:1)||(rank[a.b]??1e6)-(rank[b.b]??1e6)||a.b.localeCompare(b.b));
+  }
+  async function load(e){
+    if(lists[e])return lists[e];
+    const local=fromLocal(e);if(local){learn(local);return lists[e]=local;}
+    let it=null;
+    try{const r=await (await fetch(API+"/coin/markets?ex="+e.toLowerCase())).json();if(r.ok)it=r.items;}catch(_){}
+    if(!it&&e==="BINANCE")it=await binanceDirect().catch(()=>null);
+    if(!it&&e==="KORBIT"){try{it=(await (await fetch("https://charttotem.lalatap.kr/coin-korbit.json")).json()).items;}catch(_){}}   // 코빗은 서버 요청을 막는다 → 런처에 든 목록 (cloud/tools/coin_static.py)
+    if(!it)throw new Error("list");
+    learn(it);toLocal(e,it);return lists[e]=it;
+  }
+  // ---- 화면 ----
+  function tabs(){g("exTabs").innerHTML=EXS.map(([k,n,c])=>`<button role="tab" class="extab${k===ex?" on":""}" data-ex="${k}" aria-selected="${k===ex}"><i style="background:${c}">${n[0]}</i>${n}</button>`).join("");}
+  function chips(){const qs=QUOTES[ex];g("quoteRow").classList.toggle("hidden",qs.length<2);
+    g("quoteChips").innerHTML=["",...qs].map(q=>`<button class="chip${q===quote?" on":""}" data-q="${q}">${q===quote?"✓ ":""}${q||"전체"}</button>`).join("");}
+  const icon=b=>`https://static.upbit.com/logos/${b}.png`;
+  window.coinIconErr=img=>{const b=img.dataset.b;if(!img.dataset.t){img.dataset.t=1;img.src=`https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/32/color/${b.toLowerCase()}.png`;return;}
+    const s=document.createElement("span");s.className="cicon ph";s.textContent=b.slice(0,1);img.replaceWith(s);};
+  function codes(){return (typeof draft!=="undefined"&&draft)?draft.codes:[];}
+  function render(){
+    const q=(g("custom").value||"").trim().toUpperCase(),qk=(g("custom").value||"").trim(),max=(typeof state!=="undefined"&&state&&state.max)||5,have=codes();
+    const hits=items.filter(m=>(!quote||m.q===quote)&&(!q||m.b.includes(q)||(m.b+"/"+m.q).includes(q)||(m.q+"-"+m.b).includes(q)||(m.ko&&m.ko.includes(qk))||(m.en&&m.en.toUpperCase().includes(q))));
+    // 이름이 정확히 맞는 것을 맨 앞에
+    if(q)hits.sort((a,b)=>(b.b===q)-(a.b===q));
+    g("coinCount").textContent=loading?"목록 받는 중...":"검색 결과 "+hits.length.toLocaleString()+"개";
+    g("coinPick").textContent="관심 종목 "+have.length+"/"+max;
+    const rows=hits.slice(0,200).map(m=>{const c=codeOf(ex,m.q,m.b),on=have.includes(c),full=!on&&have.length>=max;
+      return `<li class="crow" data-c="${c}"><img class="cicon" src="${icon(m.b)}" data-b="${m.b}" alt="" loading="lazy" onerror="coinIconErr(this)"><div class="l"><div class="nm">${esc(m.b)}/${esc(m.q)}</div><div class="cd">${esc(m.ko||m.en||"")}</div></div>`+
+        `<button class="cadd${on?" on":""}" ${full?"disabled":""} aria-label="${on?"빼기":"추가"}">${on?I("check")+"<span>추가됨</span>":I("plus")}</button></li>`;});
+    // 목록에 없는 심볼: 직접 추가 (기기가 거래소에 물어 확인한다)
+    if(q&&/^[A-Z0-9]{1,10}$/.test(q)&&!hits.some(m=>m.b===q)){const qq=quote||QUOTES[ex][0],c=codeOf(ex,qq,q);
+      rows.push(`<li class="crow" data-c="${c}"><span class="cicon ph">?</span><div class="l"><div class="nm">${esc(q)}/${qq}</div><div class="cd">목록에 없어요 · 직접 추가하면 기기가 거래소에 확인해요</div></div><button class="cadd" ${have.length>=max?"disabled":""}>${I("plus")}</button></li>`);}
+    g("coinList").innerHTML=rows.join("")||(loading?"":`<li class="crow empty">검색 결과가 없어요</li>`);
+  }
+  async function show(e){
+    ex=e;quote="";setMsg("coinMsg","");try{localStorage.setItem("ct.coinEx",e);}catch(_){}tabs();chips();items=[];loading=e;render();
+    try{const it=await load(e);if(ex!==e)return;items=it;}catch(_){if(ex!==e)return;items=[];setMsg("coinMsg","목록을 받지 못했어요. 심볼을 직접 입력해 추가할 수 있어요.","err");}
+    loading=null;render();
+  }
+  function toggle(c){
+    if(typeof draft==="undefined"||!draft)return;
+    const max=(state&&state.max)||5,p=parse(c);
+    if(draft.codes.includes(c)){draft.codes=draft.codes.filter(x=>x!==c);toast((nameOf(p.b)||p.b)+" 을(를) 뺐어요");}
+    else{if(draft.codes.length>=max){setMsg("coinMsg","종목은 최대 "+max+"개까지예요. 하나를 빼고 추가해 주세요.","err");return;}
+      draft.codes.push(c);toast((nameOf(p.b)||p.b)+" "+p.b+"/"+p.q+" 을(를) 추가했어요");}
+    draft.cnames=cnamesFor(draft.codes);setMsg("coinMsg","");markDirty();render();
+  }
+  g("exTabs").onclick=e=>{const b=e.target.closest("[data-ex]");if(b&&b.dataset.ex!==ex)show(b.dataset.ex);};
+  g("quoteChips").onclick=e=>{const b=e.target.closest("[data-q]");if(!b)return;quote=b.dataset.q;chips();render();};
+  g("coinList").onclick=e=>{const li=e.target.closest("[data-c]");if(li&&!e.target.closest("button:disabled"))toggle(li.dataset.c);};
+  g("custom").oninput=()=>{g("coinClear").classList.toggle("hidden",!g("custom").value);render();};
+  g("coinClear").onclick=()=>{g("custom").value="";g("custom").oninput();g("custom").focus();};
+  return {parse,nameOf,learnState,cnamesFor,show,render,first(){const li=g("coinList").querySelector("[data-c] .cadd:not(.on):not(:disabled)");return li?li.closest("[data-c]").dataset.c:null;},toggle,
+    get ex(){return ex;},exName:k=>EXN[k]||k};
+})();
+
 let logoTried={}, shownLogo=null;
 window.MARKET={
   key:"base", inputId:"custom", msgId:"coinMsg",
-  chips:["BTC","ETH","SOL","XRP","BNB","DOGE","ADA","TRX","LINK","AVAX","SUI","PEPE"].map(b=>[b,b]),
-  normalize:r=>{r=(r||"").trim().toUpperCase().replace(/USDT$/,"");return /^[A-Z0-9]{1,12}$/.test(r)?r:null;},
-  invalidMsg:"심볼은 영문/숫자 1~12자예요.",
-  label:s=>s.base+s.quote, pendingLabel:v=>v+"USDT",
-  slotLabel:sl=>sl.code+"USDT", slotSub:sl=>sl.hasLogo?'<span class="badge">로고</span>':"",
-  slotMoney:sl=>{const p=sl.price;return p>=1000?"$"+Math.round(p).toLocaleString():p>=1?"$"+p.toFixed(2):p>=0.01?"$"+p.toFixed(4):"$"+p.toFixed(8);},
-  render(s){  // 히어로 없음 (v2.3.0). 보이는 코인의 로고만 챙긴다
-    if(!s.base)return;
+  chips:[], names:{},
+  // 목록 밖에서 들어온 값(Enter·직접 입력): "UPBIT:KRW-BTC" 그대로, 심볼만 오면 지금 탭·첫 통화로
+  normalize:r=>{r=(r||"").trim().toUpperCase();if(COIN.parse(r)&&r.includes(":"))return r;return /^[A-Z0-9]{1,10}$/.test(r)?COIN.ex+":"+(r==="BTC"&&COIN.ex==="BINANCE"?"USDT":({UPBIT:"KRW",BITHUMB:"KRW",COINONE:"KRW",KORBIT:"KRW",BINANCE:"USDT"})[COIN.ex])+"-"+r:null;},
+  invalidMsg:"목록에서 고르거나 심볼(영문·숫자)을 입력해 주세요.",
+  label:s=>s.base?s.base+"/"+s.quote:"",
+  pendingLabel(v){const p=COIN.parse(v);return p?(COIN.nameOf(p.b)||p.b)+" "+p.b+"/"+p.q:v;},
+  slotLabel(sl){const p=COIN.parse(sl.code)||{};const b=sl.base||p.b,q=sl.quote||p.q;const n=sl.name||COIN.nameOf(b);return n?n+" "+b+"/"+q:b+"/"+q;},
+  slotSub(sl){const p=COIN.parse(sl.code)||{};const e=sl.ex||p.ex||"";return `<span class="badge cx">${esc(COIN.exName(e))}</span>`+(sl.hasLogo?' <span class="badge">로고</span>':"");},
+  slotMoney(sl){const p=sl.price,q=sl.currency||(COIN.parse(sl.code)||{}).q||"USDT";if(!(p>0))return "-";
+    const d=q==="BTC"?(p>=1?4:8):p>=1000?0:q==="KRW"&&p>=100?1:p>=1?2:p>=0.01?4:8,t=p.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+    return q==="KRW"?t+" 원":q==="USDT"?"$"+t:t+" "+q;},
+  render(s){
+    COIN.learnState(s);
+    if(!s.base)return;   // 로고: 보이는 코인만 (LAN)
     if(!s.hasLogo&&!logoTried[s.base]){logoTried[s.base]=true;fetchLogo(s.base);}
     else if(s.hasLogo&&shownLogo!==s.base){shownLogo=s.base;showStoredLogo(s.base);}
   },
-  onApplied(v){logoTried[v]=true;fetchLogo(v);}
+  onApplied(v){const p=COIN.parse(v);if(p){logoTried[p.b]=true;fetchLogo(p.b);}if(typeof draft!=="undefined"&&draft)draft.cnames=COIN.cnamesFor(draft.codes);},
+  onEnter(v){const c=COIN.first();if(c)COIN.toggle(c);else addSymbol(v);},
+  onPage(){COIN.show(COIN.ex);}
 };
 
 async function showStoredLogo(base){
@@ -362,9 +462,9 @@ async function uploadLogo(base,bytes){
 function logoMsg(t,err){const m=document.getElementById("logoMsg");m.textContent=t;m.style.color=err?"var(--danger)":"";}
 async function fetchLogo(base){
   if(window.CLOUD)return false;  // 클라우드 모드: 로고 업로드는 기기 옆에서만
-  if(!base)return false;  // 상태가 아직 없거나 코인 기기가 아닐 때
+  if(!base)return false;
   const b=base.toLowerCase();
-  const sources=[`https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/128/color/${b}.png`,
+  const sources=[`https://static.upbit.com/logos/${base}.png`,`https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/128/color/${b}.png`,
                  `https://cdn.jsdelivr.net/gh/ErikThiart/cryptocurrency-icons@master/64/${b}.png`];
   logoMsg(base+" 로고 받는 중...");
   for(const src of sources){
@@ -428,9 +528,11 @@ function measure(x,t,font){const w=tw(t,font);if(w!=null)return w;x.font=FALLBAC
 function fitEll(x,t,font,maxW){t=String(t);if(measure(x,t,font)<=maxW)return t;while(t.length>1&&measure(x,t+"…",font)>maxW)t=t.slice(0,-1);return t+"…";}
 
 function money(sl,variant){const p=sl.price;if(!(p>0))return "-";
-  if(variant==="coin")return p>=1000?"$"+Math.round(p).toLocaleString():p>=1?"$"+p.toFixed(2):p>=0.01?"$"+p.toFixed(4):"$"+p.toFixed(8);
+  if(variant==="coin"){const q=sl.currency||"USDT";   // 펌웨어 market_coin.cpp decimalsFor/formatIn 과 같게 (2.10.0): 원화·BTC 는 숫자만, USDT 는 $
+    const d=q==="BTC"?(p>=1?4:8):p>=1000?0:q==="KRW"&&p>=100?1:p>=1?2:p>=0.01?4:8;
+    return (q==="USDT"?"$":"")+p.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});}
   const cur=sl.currency||"KRW";return cur==="KRW"||p>=10000?Math.round(p).toLocaleString():p.toFixed(2);}
-function compact(sl,variant){const p=sl.price;if(!(p>=10000))return money(sl,variant);const pre=variant==="coin"?"$":"";
+function compact(sl,variant){const p=sl.price;if(!(p>=10000))return money(sl,variant);const pre=variant==="coin"&&(sl.currency||"USDT")==="USDT"?"$":"";
   return pre+(p>=1e9?(p/1e9).toFixed(2)+"B":p>=1e6?(p/1e6).toFixed(2)+"M":p>=1e5?Math.round(p/1e3)+"K":(p/1e3).toFixed(1)+"K");}
 // 전일 대비 (펌웨어 marketSlotDiff: 원화이거나 1만 이상이면 정수, 아니면 소수 둘째 자리). 코인은 없음
 function diffText(sl,variant){if(variant==="coin"||sl.diff==null)return "";const d=Number(sl.diff),dec=(sl.currency||"KRW")==="KRW"||sl.price>=10000?0:2;
@@ -442,16 +544,23 @@ function fakeSeries(code,up,n){let h=0;for(const c of code)h=(Math.imul(h,31)+c.
   for(let i=0;i<n;i++){h=(Math.imul(h,1103515245)+12345)>>>0;v+=(h>>>16)%11-5;a.push(v);}
   const d=a[n-1]-a[0],t=(up?1:-1)*(Math.abs(d)+n/2);return a.map((y,i)=>y+(t-d)*i/(n-1));}
 
+// 코인 한글 이름: "BTC=비트코인;ETH=이더리움" 에서 base 를 찾는다 (기기 cnames 와 같은 형식)
+function coinName(cn,base){const m=new RegExp("(?:^|;)"+base+"=([^;]*)").exec(cn||"");return m?m[1]:"";}
 // 상태 정규화: 슬롯 라벨(해외/코인 티커, 국내 주식은 한글명), 색, 시각
 function norm(s){
-  const kr=(s.colors||(s.variant==="kstock"?"kr":"global"))==="kr",tone=kr?KR:GL;
+  const s0=(s.slots||[])[0],krCoin=!s0||/:KRW-/i.test(s0.code||"")||s0.quote==="KRW";   // 코인 기본 색: 첫 종목이 원화면 한국식 (펌웨어 krDefault, 2.10.0)
+  const kr=(s.colors||(s.variant==="kstock"||krCoin?"kr":"global"))==="kr",tone=kr?KR:GL;
+  const coin=s.variant!=="kstock";
   const slots=(s.slots||[]).slice(0,5).map(sl=>{const dom=/^[0-9][0-9A-Z]{5}$/.test(sl.code);
-    return {code:sl.code,label:s.variant==="kstock"?(dom?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):sl.code,
-      name:s.variant==="kstock"?(sl.stockName||sl.code):sl.code+"USDT",ok:!!sl.ok,price:sl.price,currency:sl.currency,change:sl.change||0,
+    // 코인 (2.10.0): 코드 "UPBIT:KRW-BTC". 상태에 base/quote/ex/name 이 오고, 아직 없으면(방금 추가) 코드에서 푼다. 이름 옵션(cname)이 켜져 있으면 한글 이름
+    const m=coin?/^(?:([A-Z]+):)?([A-Z]+)-([A-Z0-9]+)$/.exec(String(sl.code||"").toUpperCase()):null;
+    const base=sl.base||(m?m[3]:sl.code),quote=sl.quote||(m?m[2]:"USDT"),cnm=coin&&s.cname?(sl.name||coinName(s.cnames,base)):"";
+    return {code:sl.code,label:s.variant==="kstock"?(dom?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):(cnm||base),
+      name:s.variant==="kstock"?(sl.stockName||sl.code):base+quote,ok:!!sl.ok,price:sl.price,currency:coin?(sl.currency||quote):sl.currency,change:sl.change||0,
       up:(sl.change||0)>=0,color:sl.ok?((sl.change||0)>=0?tone.up:tone.down):C.dim,exchange:sl.exchange||"",market:sl.market||"",diff:sl.diff,
       spark:typeof sl.spark==="string"?(sl.spark.match(/\d\d/g)||[]).map(Number):null,
-      tick:s.variant==="kstock"?(sl.symbolCode||sl.code):sl.code,full:s.variant==="kstock"?(sl.stockName||sl.symbolCode||sl.code):sl.code+"/USDT",
-      ex:s.variant==="kstock"?(sl.exchange||""):"BINANCE",dayOpen:sl.dayOpen||"",dayHigh:sl.dayHigh||"",dayLow:sl.dayLow||"",diffText:diffText(sl,s.variant)};});
+      tick:s.variant==="kstock"?(sl.symbolCode||sl.code):base,full:s.variant==="kstock"?(sl.stockName||sl.symbolCode||sl.code):(cnm||base+"/"+quote),
+      ex:s.variant==="kstock"?(sl.exchange||""):(sl.ex||(m&&m[1])||"BINANCE"),dayOpen:sl.dayOpen||"",dayHigh:sl.dayHigh||"",dayLow:sl.dayLow||"",diffText:diffText(sl,s.variant)};});
   const sh0=s.show||{};let t=(s.time||"").slice(0,5);const synced=!!s.timeSynced;let d=new Date();
   const hms=(s.time||"").split(":").map(Number);
   const secs=(s.time||"").slice(6,8)||"--";let ampm="";
@@ -683,7 +792,8 @@ let draft=null, applying=null;   // applying: {since, target} 명령을 보냈�
 let sendTimer=null, sendFails=0;
 function extract(s){return {codes:codesOf(s).slice(),layout:s.layout||"S01",theme:s.theme||"stock",colors:s.colors||"",tz:s.tz||"",dateFmt:s.dateFmt||0,rotate:s.rotate==null?5:s.rotate,
   chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true,seconds:false,h12:false,id:true},s.show||{}),
-  night:s.night?{on:!!s.night.on,from:s.night.from|0,to:s.night.to|0,mode:s.night.mode|0}:null};}   // night: 2.6.24 부터 (옛 펌웨어는 null → 행을 숨긴다). active 는 상태라 초안에 넣지 않는다
+  night:s.night?{on:!!s.night.on,from:s.night.from|0,to:s.night.to|0,mode:s.night.mode|0}:null,
+  cname:s.cname|0,cnames:s.cnames||"",cint:s.cint||"1d"};}   // 코인 이름 표시·한글 이름·봉 간격 (2.10.0, 주식은 cnames 가 비어 있다)   // night: 2.6.24 부터 (옛 펌웨어는 null → 행을 숨긴다). active 는 상태라 초안에 넣지 않는다
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 // base(기기 상태 또는 직전에 보낸 목표)와 다른 초안 항목 → /api/settings 쿼리 조각. 보내지 않는 키는 바뀌지 않는다
 function diffParams(base){
@@ -700,6 +810,9 @@ function diffParams(base){
   if(draft.night&&base.night){const n=draft.night,b=base.night;
     if(n.on!==b.on)p.push("night="+(n.on?1:0));if(n.from!==b.from)p.push("nfrom="+n.from);if(n.to!==b.to)p.push("nto="+n.to);if(n.mode!==b.mode)p.push("nmode="+n.mode);}
   for(const k of ["price","change","spark","date","seconds","h12"])if(!!draft.show[k]!==!!base.show[k])p.push(k+"="+(draft.show[k]?1:0));
+  if(draft.cname!==base.cname)p.push("cname="+draft.cname);
+  if(draft.cnames!==base.cnames)p.push("cnames="+encodeURIComponent(draft.cnames));
+  if(draft.cint!==base.cint)p.push("cint="+draft.cint);
   return p;
 }
 // 화면에 그릴 때 쓰는 상태: 기기 상태 위에 초안을 덮은 것 (아직 없는 종목은 빈 슬롯으로)
@@ -707,7 +820,7 @@ function view(){
   if(!state)return null;
   if(!draft)return state;
   const slots=(state.slots||[]);
-  const v=Object.assign({},state,{codes:draft.codes,layout:draft.layout,theme:draft.theme,colors:draft.colors,tz:draft.tz,dateFmt:draft.dateFmt,rotate:draft.rotate,showChart:draft.chart,brightness:draft.bl,show:draft.show,night:draft.night});
+  const v=Object.assign({},state,{codes:draft.codes,layout:draft.layout,theme:draft.theme,colors:draft.colors,tz:draft.tz,dateFmt:draft.dateFmt,rotate:draft.rotate,showChart:draft.chart,brightness:draft.bl,show:draft.show,night:draft.night,cname:draft.cname,cnames:draft.cnames,cint:draft.cint});
   v.slots=draft.codes.map(c=>slots.find(x=>x.code===c)||{code:c,price:0,change:0,ok:false,validating:false,error:"",pending:true});
   const lay=(layouts||[]).find(l=>l.id===draft.layout);if(lay){v.layoutName=lay.name;v.theme=lay.theme;}
   v.active=Math.min(state.active||0,Math.max(0,v.slots.length-1));
@@ -776,7 +889,7 @@ function route(){
   document.title=p==="/"?"차트토템 설정":h.textContent+" · 차트토템";
   scrollTo(0,0);
   if(p!=="/"&&h)h.focus({preventScroll:true});
-  if(p==="/screen/add"){const inp=$(MARKET.inputId);if(inp)setTimeout(()=>inp.focus(),50);}
+  if(p==="/screen/add"){const inp=$(MARKET.inputId);if(inp)setTimeout(()=>inp.focus(),50);if(changed&&MARKET.onPage)MARKET.onPage();}
   if(state)renderPage(p);
 }
 function back(){const p=page()||"/";const up=PARENT[p]||"/";if(prevPage===up)history.back();else go(up);}
@@ -884,6 +997,10 @@ function renderScreen(s){
   SHOW_KEYS.forEach(([id,k])=>{const el=$(id);if(document.activeElement!==el)el.checked=show[k]!==false;});
   $("showSparkRow").classList.toggle("hidden",clock||s.layout==="S07");   // TAPE 는 라인 차트가 없다
   $("showDateRow").classList.toggle("hidden",!clock);
+  const coin=MARKET.key==="base";   // 코인: 이름 표시(심볼/한글)·봉 간격 (2.10.0)
+  $("cnameRow").classList.toggle("hidden",!coin);$("cintRow").classList.toggle("hidden",!coin||clock);
+  $("cnameSeg").querySelectorAll("button").forEach(b=>{const on=+b.dataset.value===(s.cname|0);b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
+  const ci=$("cint");if(document.activeElement!==ci)ci.value=s.cint||"1d";
   // 화면 전환 간격: 종목을 하나씩 돌려 보여 주는 레이아웃(single: HERO·CHART·SPLIT·HANDS·STACK)에서만. 전체를 한 화면에 보이는 레이아웃은 숨김
   const lay=(layouts||[]).find(l=>l.id===s.layout);const single=lay?lay.single:["S01","S03","S06","C02","C05"].includes(s.layout);  // 목록이 오기 전엔 알려진 ID 로 판단 (깜빡임 방지)
   $("rotateRow").classList.toggle("hidden",!single);
@@ -1041,6 +1158,8 @@ $("nightFrom").onchange=e=>{if(!draft||!draft.night)return;draft.night.from=+e.t
 $("nightTo").onchange=e=>{if(!draft||!draft.night)return;draft.night.to=+e.target.value;markDirty();};
 $("nightSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft||!draft.night)return;draft.night.mode=+b.dataset.value;markDirty();};
 $("blSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.bl=+b.dataset.value;markDirty();};
+$("cnameSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.cname=+b.dataset.value;markDirty();};
+$("cint").onchange=e=>{if(!draft)return;draft.cint=e.target.value;markDirty();};
 $("colorsSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.colors=b.dataset.value;document.body.classList.toggle("kr",draft.colors==="kr");markDirty();};
 // 테마 설명은 (i) 를 누를 때만 말풍선으로
 $("themeInfo").onclick=e=>{e.stopPropagation();const tip=$("themeTip");tip.classList.toggle("on");clearTimeout(tip._t);if(tip.classList.contains("on"))tip._t=setTimeout(()=>tip.classList.remove("on"),4000);};

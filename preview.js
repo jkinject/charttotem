@@ -47,9 +47,11 @@ function measure(x,t,font){const w=tw(t,font);if(w!=null)return w;x.font=FALLBAC
 function fitEll(x,t,font,maxW){t=String(t);if(measure(x,t,font)<=maxW)return t;while(t.length>1&&measure(x,t+"…",font)>maxW)t=t.slice(0,-1);return t+"…";}
 
 function money(sl,variant){const p=sl.price;if(!(p>0))return "-";
-  if(variant==="coin")return p>=1000?"$"+Math.round(p).toLocaleString():p>=1?"$"+p.toFixed(2):p>=0.01?"$"+p.toFixed(4):"$"+p.toFixed(8);
+  if(variant==="coin"){const q=sl.currency||"USDT";   // 펌웨어 market_coin.cpp decimalsFor/formatIn 과 같게 (2.10.0): 원화·BTC 는 숫자만, USDT 는 $
+    const d=q==="BTC"?(p>=1?4:8):p>=1000?0:q==="KRW"&&p>=100?1:p>=1?2:p>=0.01?4:8;
+    return (q==="USDT"?"$":"")+p.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});}
   const cur=sl.currency||"KRW";return cur==="KRW"||p>=10000?Math.round(p).toLocaleString():p.toFixed(2);}
-function compact(sl,variant){const p=sl.price;if(!(p>=10000))return money(sl,variant);const pre=variant==="coin"?"$":"";
+function compact(sl,variant){const p=sl.price;if(!(p>=10000))return money(sl,variant);const pre=variant==="coin"&&(sl.currency||"USDT")==="USDT"?"$":"";
   return pre+(p>=1e9?(p/1e9).toFixed(2)+"B":p>=1e6?(p/1e6).toFixed(2)+"M":p>=1e5?Math.round(p/1e3)+"K":(p/1e3).toFixed(1)+"K");}
 // 전일 대비 (펌웨어 marketSlotDiff: 원화이거나 1만 이상이면 정수, 아니면 소수 둘째 자리). 코인은 없음
 function diffText(sl,variant){if(variant==="coin"||sl.diff==null)return "";const d=Number(sl.diff),dec=(sl.currency||"KRW")==="KRW"||sl.price>=10000?0:2;
@@ -61,16 +63,23 @@ function fakeSeries(code,up,n){let h=0;for(const c of code)h=(Math.imul(h,31)+c.
   for(let i=0;i<n;i++){h=(Math.imul(h,1103515245)+12345)>>>0;v+=(h>>>16)%11-5;a.push(v);}
   const d=a[n-1]-a[0],t=(up?1:-1)*(Math.abs(d)+n/2);return a.map((y,i)=>y+(t-d)*i/(n-1));}
 
+// 코인 한글 이름: "BTC=비트코인;ETH=이더리움" 에서 base 를 찾는다 (기기 cnames 와 같은 형식)
+function coinName(cn,base){const m=new RegExp("(?:^|;)"+base+"=([^;]*)").exec(cn||"");return m?m[1]:"";}
 // 상태 정규화: 슬롯 라벨(해외/코인 티커, 국내 주식은 한글명), 색, 시각
 function norm(s){
-  const kr=(s.colors||(s.variant==="kstock"?"kr":"global"))==="kr",tone=kr?KR:GL;
+  const s0=(s.slots||[])[0],krCoin=!s0||/:KRW-/i.test(s0.code||"")||s0.quote==="KRW";   // 코인 기본 색: 첫 종목이 원화면 한국식 (펌웨어 krDefault, 2.10.0)
+  const kr=(s.colors||(s.variant==="kstock"||krCoin?"kr":"global"))==="kr",tone=kr?KR:GL;
+  const coin=s.variant!=="kstock";
   const slots=(s.slots||[]).slice(0,5).map(sl=>{const dom=/^[0-9][0-9A-Z]{5}$/.test(sl.code);
-    return {code:sl.code,label:s.variant==="kstock"?(dom?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):sl.code,
-      name:s.variant==="kstock"?(sl.stockName||sl.code):sl.code+"USDT",ok:!!sl.ok,price:sl.price,currency:sl.currency,change:sl.change||0,
+    // 코인 (2.10.0): 코드 "UPBIT:KRW-BTC". 상태에 base/quote/ex/name 이 오고, 아직 없으면(방금 추가) 코드에서 푼다. 이름 옵션(cname)이 켜져 있으면 한글 이름
+    const m=coin?/^(?:([A-Z]+):)?([A-Z]+)-([A-Z0-9]+)$/.exec(String(sl.code||"").toUpperCase()):null;
+    const base=sl.base||(m?m[3]:sl.code),quote=sl.quote||(m?m[2]:"USDT"),cnm=coin&&s.cname?(sl.name||coinName(s.cnames,base)):"";
+    return {code:sl.code,label:s.variant==="kstock"?(dom?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):(cnm||base),
+      name:s.variant==="kstock"?(sl.stockName||sl.code):base+quote,ok:!!sl.ok,price:sl.price,currency:coin?(sl.currency||quote):sl.currency,change:sl.change||0,
       up:(sl.change||0)>=0,color:sl.ok?((sl.change||0)>=0?tone.up:tone.down):C.dim,exchange:sl.exchange||"",market:sl.market||"",diff:sl.diff,
       spark:typeof sl.spark==="string"?(sl.spark.match(/\d\d/g)||[]).map(Number):null,
-      tick:s.variant==="kstock"?(sl.symbolCode||sl.code):sl.code,full:s.variant==="kstock"?(sl.stockName||sl.symbolCode||sl.code):sl.code+"/USDT",
-      ex:s.variant==="kstock"?(sl.exchange||""):"BINANCE",dayOpen:sl.dayOpen||"",dayHigh:sl.dayHigh||"",dayLow:sl.dayLow||"",diffText:diffText(sl,s.variant)};});
+      tick:s.variant==="kstock"?(sl.symbolCode||sl.code):base,full:s.variant==="kstock"?(sl.stockName||sl.symbolCode||sl.code):(cnm||base+"/"+quote),
+      ex:s.variant==="kstock"?(sl.exchange||""):(sl.ex||(m&&m[1])||"BINANCE"),dayOpen:sl.dayOpen||"",dayHigh:sl.dayHigh||"",dayLow:sl.dayLow||"",diffText:diffText(sl,s.variant)};});
   const sh0=s.show||{};let t=(s.time||"").slice(0,5);const synced=!!s.timeSynced;let d=new Date();
   const hms=(s.time||"").split(":").map(Number);
   const secs=(s.time||"").slice(6,8)||"--";let ampm="";
