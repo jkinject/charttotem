@@ -329,9 +329,9 @@ function openTotemPicker(d, name, onPick) {
 const COIN=(()=>{
   const g=id=>document.getElementById(id);
   const API="https://charttotem-cloud.jkinject.workers.dev";
-  const EXS=[["UPBIT","업비트","#093687"],["BITHUMB","빗썸","#f37321"],["COINONE","코인원","#0062df"],["KORBIT","코빗","#2350d8"],["BINANCE","바이낸스","#f0b90b"]];
+  const EXS=[["UPBIT","업비트","#093687"],["BITHUMB","빗썸","#f37321"],["COINONE","코인원","#0062df"],["BINANCE","바이낸스","#f0b90b"]];
   const EXN=Object.fromEntries(EXS.map(([k,n])=>[k,n]));
-  const QUOTES={UPBIT:["KRW","USDT","BTC"],BITHUMB:["KRW","BTC"],COINONE:["KRW"],KORBIT:["KRW"],BINANCE:["USDT","BTC"]};
+  const QUOTES={UPBIT:["KRW","USDT","BTC"],BITHUMB:["KRW","BTC"],COINONE:["KRW"],BINANCE:["USDT","BTC"]};
   const NAMES={};            // 기초 심볼 → 한글 이름 (목록·기기 cnames 에서 모은다)
   const lists={};            // 거래소 → [{q,b,ko,en}]
   let ex=localStorage.getItem("ct.coinEx")||"UPBIT", quote="", items=[], loading=null;
@@ -345,7 +345,7 @@ const COIN=(()=>{
     for(const sl of (s&&s.slots)||[])if(sl.base&&sl.name&&!NAMES[sl.base])NAMES[sl.base]=sl.name;}
   // 기기에 보낼 한글 이름: 지금 목록에 든 코인만
   function cnamesFor(codes){const seen={},out=[];for(const c of codes){const p=parse(c);if(p&&!seen[p.b]&&NAMES[p.b]){seen[p.b]=1;out.push(p.b+"="+clean(NAMES[p.b]));}}return out.join(";");}
-  // ---- 목록 받기: 서버(6시간 캐시) → 실패하면 바이낸스는 브라우저가 직접, 코빗은 런처에 든 파일 ----
+  // ---- 목록 받기: 서버(6시간 캐시) → 실패하면 바이낸스는 브라우저가 직접 ----
   const LS="ct.coinList.";
   function fromLocal(e){try{const v=JSON.parse(localStorage.getItem(LS+e)||"null");if(v&&Date.now()-v.at<6*3600e3)return v.items;}catch(_){}return null;}
   function toLocal(e,it){try{localStorage.setItem(LS+e,JSON.stringify({at:Date.now(),items:it}));}catch(_){}}
@@ -363,7 +363,6 @@ const COIN=(()=>{
     let it=null;
     try{const r=await (await fetch(API+"/coin/markets?ex="+e.toLowerCase())).json();if(r.ok)it=r.items;}catch(_){}
     if(!it&&e==="BINANCE")it=await binanceDirect().catch(()=>null);
-    if(!it&&e==="KORBIT"){try{it=(await (await fetch("https://charttotem.lalatap.kr/coin-korbit.json")).json()).items;}catch(_){}}   // 코빗은 서버 요청을 막는다 → 런처에 든 목록 (cloud/tools/coin_static.py)
     if(!it)throw new Error("list");
     learn(it);toLocal(e,it);return lists[e]=it;
   }
@@ -417,7 +416,7 @@ window.MARKET={
   key:"base", inputId:"custom", msgId:"coinMsg",
   chips:[], names:{},
   // 목록 밖에서 들어온 값(Enter·직접 입력): "UPBIT:KRW-BTC" 그대로, 심볼만 오면 지금 탭·첫 통화로
-  normalize:r=>{r=(r||"").trim().toUpperCase();if(COIN.parse(r)&&r.includes(":"))return r;return /^[A-Z0-9]{1,10}$/.test(r)?COIN.ex+":"+(r==="BTC"&&COIN.ex==="BINANCE"?"USDT":({UPBIT:"KRW",BITHUMB:"KRW",COINONE:"KRW",KORBIT:"KRW",BINANCE:"USDT"})[COIN.ex])+"-"+r:null;},
+  normalize:r=>{r=(r||"").trim().toUpperCase();if(COIN.parse(r)&&r.includes(":"))return r;return /^[A-Z0-9]{1,10}$/.test(r)?COIN.ex+":"+(r==="BTC"&&COIN.ex==="BINANCE"?"USDT":({UPBIT:"KRW",BITHUMB:"KRW",COINONE:"KRW",BINANCE:"USDT"})[COIN.ex])+"-"+r:null;},
   invalidMsg:"목록에서 고르거나 심볼(영문·숫자)을 입력해 주세요.",
   label:s=>s.base?s.base+"/"+s.quote:"",
   pendingLabel(v){const p=COIN.parse(v);return p?(COIN.nameOf(p.b)||p.b)+" "+p.b+"/"+p.q:v;},
