@@ -137,9 +137,15 @@ function tileRect(i,n){if(i===0)return [4,10,232,80];const k=n-1,j=i-1,row=Math.
 function heatRect(i,n){if(n<=1)return [4,10,232,226];if(i<2)return [i?146:4,10,i?90:138,n===2?226:118];const k=n-2,j=i-2;
   if(k===1)return [4,132,232,104];if(k===2)return [4+j*118,132,114,104];return [[4,82,162][j],132,[74,76,74][j],104];}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
+// 코인 로고 이미지 캐시: 처음엔 없고(글자 동그라미), 받아지면 다음 그리기(상태 폴링 몇 초)부터 보인다
+const LOGOS={};
+function coinLogo(b){if(!b)return null;let e=LOGOS[b];if(!e){const im=new Image();e=LOGOS[b]={im,ok:false};im.onload=()=>{e.ok=true;};
+  im.onerror=()=>{if(!e.alt){e.alt=1;im.src="https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/128/color/"+b.toLowerCase()+".png";}};im.src="https://static.upbit.com/logos/"+b+".png";}
+  return e.ok?e.im:null;}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
   if(S.v==="kstock"){text(x,fitEll(x,sl.name,"ko24",S.show.id?190:228),6,4,"ko24",C.title);text(x,(sl.code)+"  "+sl.exchange,6,40,"f2",C.dim);}
-  else{dot(x,26,24,19,C.accent);text(x,sl.tick.slice(0,3),26,18,"f2",C.bg,"center");   // 코인: 펌웨어 marketDrawTitle 과 같게 — 이름(한글 옵션) 또는 "BTC/KRW", 아래 작게 거래소
+  else{const lg=coinLogo(sl.tick);if(lg){x.save();x.beginPath();x.arc(26,24,20,0,Math.PI*2);x.clip();x.fillStyle="#000";x.fillRect(6,4,40,40);x.drawImage(lg,6,4,40,40);x.restore();}   // 코인 로고 (기기와 같은 업비트 로고, 2.10.2)
+    else{dot(x,26,24,19,C.accent);text(x,sl.tick.slice(0,3),26,18,"f2",C.bg,"center");}   // 로고를 못 받으면 기기처럼 글자 동그라미. 코인: 펌웨어 marketDrawTitle 과 같게 — 이름(한글 옵션) 또는 "BTC/KRW", 아래 작게 거래소
     const maxW=S.show.id?142:182,ko=!isAscii(sl.full);if(ko)text(x,fitEll(x,sl.full,"ko24",maxW),52,4,"ko24",C.title);else text(x,sl.full,52,6,fitBold(x,sl.full,maxW,12),C.title);
     text(x,sl.ex+(ko?"  "+sl.tick+"/"+(sl.currency||""):""),52,34,"f1",C.dim);}}
 // 종목 한 행 (primitives drawSlotRow 근사): flags {spark,name,colorPrice,stack,rule}
