@@ -88,7 +88,7 @@ function norm(s){
   if(s.date){const m=/(\d+)-(\d+)-(\d+)/.exec(s.date);if(m)d=new Date(+m[1],+m[2]-1,+m[3]);}
   const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false,id:true},s.show||{});
   return {chart:s.chart||{},indices:s.indices||[],id:s.id||"",hms,v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
-    date:synced?(window.fmtDate?fmtDate(s.dateFmt||0,d):MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]):"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
+    date:synced?(window.fmtDate?fmtDate(s.dateFmt||0,d):MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]):"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||(coin?String(s.cint||"1d").replace(/^(\d+)([hd])$/,(m,a,b)=>a+b.toUpperCase()):"1D")};   // 코인은 기기 marketCandleLabel 처럼 cint 로 ("4H", "15m")
 }
 // 종가 선: 2.6.25 부터 기기가 slots[].spark(0~99 두 자리씩, 기기가 그리는 봉 종가)를 보낸다 → 기기와 같은 모양. 옛 펌웨어는 코드 해시 의사 난수 선
 function seriesOf(sl,n){return sl&&sl.spark?sl.spark:fakeSeries(sl?sl.code:"x",!!(sl&&sl.up),n);}
@@ -139,7 +139,9 @@ function heatRect(i,n){if(n<=1)return [4,10,232,226];if(i<2)return [i?146:4,10,i
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
   if(S.v==="kstock"){text(x,fitEll(x,sl.name,"ko24",S.show.id?190:228),6,4,"ko24",C.title);text(x,(sl.code)+"  "+sl.exchange,6,40,"f2",C.dim);}
-  else{dot(x,26,24,19,C.accent);text(x,sl.code.slice(0,3),26,18,"f2",C.bg,"center");text(x,sl.name,52,12,"f4",C.title);}}
+  else{dot(x,26,24,19,C.accent);text(x,sl.tick.slice(0,3),26,18,"f2",C.bg,"center");   // 코인: 펌웨어 marketDrawTitle 과 같게 — 이름(한글 옵션) 또는 "BTC/KRW", 아래 작게 거래소
+    const maxW=S.show.id?142:182,ko=!isAscii(sl.full);if(ko)text(x,fitEll(x,sl.full,"ko24",maxW),52,4,"ko24",C.title);else text(x,sl.full,52,6,fitBold(x,sl.full,maxW,12),C.title);
+    text(x,sl.ex+(ko?"  "+sl.tick+"/"+(sl.currency||""):""),52,34,"f1",C.dim);}}
 // 종목 한 행 (primitives drawSlotRow 근사): flags {spark,name,colorPrice,stack,rule}
 function row(x,S,sl,px,py,w,h,f){if(!sl)return;if(f.rule){x.fillStyle=C.bar;x.fillRect(px+2,py+h-1,w-4,1);}
   const priceC=f.colorPrice?sl.color:(sl.ok?C.white:C.dim),p=S.show.price?(sl.ok?money(sl,S.v):"-"):"",c=S.show.change?pct(sl):"";
@@ -157,8 +159,9 @@ function columns(x,S,py,h){const n=S.slots.length;if(!n)return;const cw=240/n;S.
 
 const L={
  S01(x,S){const sl=S.slots[S.active];title(x,S);if(!sl)return;const col=sl.color;
-  if(S.show.price)text(x,sl.ok?money(sl,S.v):"loading...",6,56,"b24",sl.ok?C.white:C.dim);
-  if(S.show.change){text(x,pct(sl),6,103,"f2",col);text(x,sl.diff!=null?(sl.diff>=0?"+":"")+Number(sl.diff).toLocaleString():"24h",6+measure(x,pct(sl),"f2")+12,103,"f2",C.dim);
+  if(S.show.price){const p=sl.ok?money(sl,S.v):"loading...";text(x,p,6,56,fitBold(x,p,228,24),sl.ok?C.white:C.dim);}   // 펌웨어처럼 228px 에 맞춰 글꼴을 줄인다 (원화 9자리)
+  if(S.show.change){const sfx=S.v==="coin"?(sl.ex==="BINANCE"||sl.ex==="COINONE"?"24h":""):(sl.diff!=null?(sl.diff>=0?"+":"")+Number(sl.diff).toLocaleString():"");   // 코인 「24h」는 바이낸스·코인원만 (marketChangeSuffix)
+    text(x,pct(sl),6,103,"f2",col);if(sfx)text(x,sfx,6+measure(x,pct(sl),"f2")+12,103,"f2",C.dim);
     text(x,S.candleLabel,234,103,"f2",C.dim,"right");}
   if(S.show.spark){text(x,"high",6,128,"f1",C.dim);text(x,"low",6,214,"f1",C.dim);spark(x,6,138,228,74,seriesOf(sl,36),col);}   // 기간 탭(1D 1W..)은 2.8.0 에서 뺐다
   if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,214,"f1",C.dim,"right");},

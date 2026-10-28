@@ -18,6 +18,8 @@
 <symbol id="i-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></symbol>
 <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></symbol>
+<symbol id="i-percent" viewBox="0 0 24 24"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></symbol>
+<symbol id="i-chart-line" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></symbol>
 <symbol id="i-candlestick" viewBox="0 0 24 24"><path d="M9 5v4"/><rect width="4" height="6" x="7" y="9" rx="1"/><path d="M9 15v2"/><path d="M17 3v2"/><rect width="4" height="8" x="15" y="5" rx="1"/><path d="M17 13v3"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/></symbol>
 <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></symbol>
 <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
@@ -78,13 +80,13 @@
  <div class="band"></div>
  <div class="caption">표시 항목</div>
  <div class="list">
+ <div class="setrow hidden" id="cnameRow"><svg class="ic" aria-hidden="true"><use href="#i-coins"/></svg><span class="mtext"><span class="mlbl">코인 이름</span><span class="msub">기기 화면에 보일 이름</span></span><div class="seg" id="cnameSeg" role="radiogroup" aria-label="코인 이름"><button role="radio" data-value="0">심볼</button><button role="radio" data-value="1">한글 이름</button></div></div>
  <div class="setrow" id="showPriceRow"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg><span class="mtext"><span class="mlbl">가격</span><span class="msub">종목 현재가</span></span><label class="switch"><input id="showPrice" type="checkbox"><i></i></label></div>
- <div class="setrow" id="showChangeRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">등락률</span><span class="msub">전일 대비 %</span></span><label class="switch"><input id="showChange" type="checkbox"><i></i></label></div>
- <div class="setrow" id="showSparkRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">라인 차트</span><span class="msub">레이아웃의 종가 선</span></span><label class="switch"><input id="showSpark" type="checkbox"><i></i></label></div>
+ <div class="setrow" id="showChangeRow"><svg class="ic" aria-hidden="true"><use href="#i-percent"/></svg><span class="mtext"><span class="mlbl">등락률</span><span class="msub">전일 대비 %</span></span><label class="switch"><input id="showChange" type="checkbox"><i></i></label></div>
+ <div class="setrow" id="showSparkRow"><svg class="ic" aria-hidden="true"><use href="#i-chart-line"/></svg><span class="mtext"><span class="mlbl">라인 차트</span><span class="msub">최근 가격 흐름을 선으로</span></span><label class="switch"><input id="showSpark" type="checkbox"><i></i></label></div>
  <div class="setrow" id="showSecondsRow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">초 표시</span><span class="msub">시:분:초 로 표시</span></span><label class="switch"><input id="showSeconds" type="checkbox"><i></i></label></div>
  <div class="setrow" id="show12hRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">12시간제</span><span class="msub">AM · PM 을 표시</span></span><label class="switch"><input id="show12h" type="checkbox"><i></i></label></div>
- <div class="setrow hidden" id="cnameRow"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg><span class="mtext"><span class="mlbl">코인 이름</span><span class="msub">기기 화면에 보일 이름</span></span><div class="seg" id="cnameSeg" role="radiogroup" aria-label="코인 이름"><button role="radio" data-value="0">심볼</button><button role="radio" data-value="1">한글 이름</button></div></div>
- <div class="setrow hidden" id="cintRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">봉 간격</span><span class="msub">차트·라인의 봉 하나</span></span><select id="cint" class="val" aria-label="봉 간격"><option value="1m">1분</option><option value="5m">5분</option><option value="15m">15분</option><option value="1h">1시간</option><option value="4h">4시간</option><option value="1d">1일</option></select></div>
+ <div class="setrow hidden" id="cintRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">차트 간격</span><span class="msub">차트의 점 하나가 몇 분·몇 시간인지</span></span><select id="cint" class="val" aria-label="차트 간격"><option value="1m">1분</option><option value="5m">5분</option><option value="15m">15분</option><option value="1h">1시간</option><option value="4h">4시간</option><option value="1d">1일</option></select></div>
  <div class="setrow" id="showDateRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">날짜</span><span class="msub">오늘 날짜 표시</span></span><label class="switch"><input id="showDate" type="checkbox"><i></i></label></div>
  </div>
  <div class="band"></div>
@@ -572,7 +574,7 @@ function norm(s){
   if(s.date){const m=/(\d+)-(\d+)-(\d+)/.exec(s.date);if(m)d=new Date(+m[1],+m[2]-1,+m[3]);}
   const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false,id:true},s.show||{});
   return {chart:s.chart||{},indices:s.indices||[],id:s.id||"",hms,v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
-    date:synced?(window.fmtDate?fmtDate(s.dateFmt||0,d):MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]):"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||"1m"};
+    date:synced?(window.fmtDate?fmtDate(s.dateFmt||0,d):MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]):"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||(coin?String(s.cint||"1d").replace(/^(\d+)([hd])$/,(m,a,b)=>a+b.toUpperCase()):"1D")};   // 코인은 기기 marketCandleLabel 처럼 cint 로 ("4H", "15m")
 }
 // 종가 선: 2.6.25 부터 기기가 slots[].spark(0~99 두 자리씩, 기기가 그리는 봉 종가)를 보낸다 → 기기와 같은 모양. 옛 펌웨어는 코드 해시 의사 난수 선
 function seriesOf(sl,n){return sl&&sl.spark?sl.spark:fakeSeries(sl?sl.code:"x",!!(sl&&sl.up),n);}
@@ -623,7 +625,9 @@ function heatRect(i,n){if(n<=1)return [4,10,232,226];if(i<2)return [i?146:4,10,i
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
   if(S.v==="kstock"){text(x,fitEll(x,sl.name,"ko24",S.show.id?190:228),6,4,"ko24",C.title);text(x,(sl.code)+"  "+sl.exchange,6,40,"f2",C.dim);}
-  else{dot(x,26,24,19,C.accent);text(x,sl.code.slice(0,3),26,18,"f2",C.bg,"center");text(x,sl.name,52,12,"f4",C.title);}}
+  else{dot(x,26,24,19,C.accent);text(x,sl.tick.slice(0,3),26,18,"f2",C.bg,"center");   // 코인: 펌웨어 marketDrawTitle 과 같게 — 이름(한글 옵션) 또는 "BTC/KRW", 아래 작게 거래소
+    const maxW=S.show.id?142:182,ko=!isAscii(sl.full);if(ko)text(x,fitEll(x,sl.full,"ko24",maxW),52,4,"ko24",C.title);else text(x,sl.full,52,6,fitBold(x,sl.full,maxW,12),C.title);
+    text(x,sl.ex+(ko?"  "+sl.tick+"/"+(sl.currency||""):""),52,34,"f1",C.dim);}}
 // 종목 한 행 (primitives drawSlotRow 근사): flags {spark,name,colorPrice,stack,rule}
 function row(x,S,sl,px,py,w,h,f){if(!sl)return;if(f.rule){x.fillStyle=C.bar;x.fillRect(px+2,py+h-1,w-4,1);}
   const priceC=f.colorPrice?sl.color:(sl.ok?C.white:C.dim),p=S.show.price?(sl.ok?money(sl,S.v):"-"):"",c=S.show.change?pct(sl):"";
@@ -641,8 +645,9 @@ function columns(x,S,py,h){const n=S.slots.length;if(!n)return;const cw=240/n;S.
 
 const L={
  S01(x,S){const sl=S.slots[S.active];title(x,S);if(!sl)return;const col=sl.color;
-  if(S.show.price)text(x,sl.ok?money(sl,S.v):"loading...",6,56,"b24",sl.ok?C.white:C.dim);
-  if(S.show.change){text(x,pct(sl),6,103,"f2",col);text(x,sl.diff!=null?(sl.diff>=0?"+":"")+Number(sl.diff).toLocaleString():"24h",6+measure(x,pct(sl),"f2")+12,103,"f2",C.dim);
+  if(S.show.price){const p=sl.ok?money(sl,S.v):"loading...";text(x,p,6,56,fitBold(x,p,228,24),sl.ok?C.white:C.dim);}   // 펌웨어처럼 228px 에 맞춰 글꼴을 줄인다 (원화 9자리)
+  if(S.show.change){const sfx=S.v==="coin"?(sl.ex==="BINANCE"||sl.ex==="COINONE"?"24h":""):(sl.diff!=null?(sl.diff>=0?"+":"")+Number(sl.diff).toLocaleString():"");   // 코인 「24h」는 바이낸스·코인원만 (marketChangeSuffix)
+    text(x,pct(sl),6,103,"f2",col);if(sfx)text(x,sfx,6+measure(x,pct(sl),"f2")+12,103,"f2",C.dim);
     text(x,S.candleLabel,234,103,"f2",C.dim,"right");}
   if(S.show.spark){text(x,"high",6,128,"f1",C.dim);text(x,"low",6,214,"f1",C.dim);spark(x,6,138,228,74,seriesOf(sl,36),col);}   // 기간 탭(1D 1W..)은 2.8.0 에서 뺐다
   if(S.slots.length>1)text(x,(S.active+1)+"/"+S.slots.length,234,214,"f1",C.dim,"right");},
