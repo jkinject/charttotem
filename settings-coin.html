@@ -561,7 +561,8 @@ function norm(s){
     const m=coin?/^(?:([A-Z]+):)?([A-Z]+)-([A-Z0-9]+)$/.exec(String(sl.code||"").toUpperCase()):null;
     const base=sl.base||(m?m[3]:sl.code),quote=sl.quote||(m?m[2]:"USDT"),cnm=coin&&s.cname?(sl.name||coinName(s.cnames,base)):"";
     return {code:sl.code,label:s.variant==="kstock"?(dom?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):(cnm||base),
-      name:s.variant==="kstock"?(sl.stockName||sl.code):base+quote,ok:!!sl.ok,price:sl.price,currency:coin?(sl.currency||quote):sl.currency,change:sl.change||0,
+      // name — 코인: 기기 marketDrawSlotName 처럼 한글 이름(옵션) 또는 심볼 (전엔 "BTCUSDT" — WATCHLIST·STACK 이 이름 옵션을 무시했다)
+      name:s.variant==="kstock"?(sl.stockName||sl.code):(cnm||base),ok:!!sl.ok,price:sl.price,currency:coin?(sl.currency||quote):sl.currency,change:sl.change||0,
       up:(sl.change||0)>=0,color:sl.ok?((sl.change||0)>=0?tone.up:tone.down):C.dim,exchange:sl.exchange||"",market:sl.market||"",diff:sl.diff,
       spark:typeof sl.spark==="string"?(sl.spark.match(/\d\d/g)||[]).map(Number):null,
       tick:s.variant==="kstock"?(sl.symbolCode||sl.code):base,full:s.variant==="kstock"?(sl.stockName||sl.symbolCode||sl.code):(cnm||base+"/"+quote),
