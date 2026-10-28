@@ -141,7 +141,9 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 .cadd .ic{width:24px;height:24px}
 .cadd.on span{line-height:1.2}
 .cadd:disabled{color:var(--ln)}
-.badge.cx{background:var(--bg2);color:var(--tx)}
+.exmark{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--mut)}
+.exmark img,.exmark i{width:16px;height:16px;border-radius:50%;flex:none}
+.exmark i{color:#fff;font-style:normal;font-size:9px;font-weight:800;display:grid;place-items:center}
 .logo-row canvas{width:40px;height:40px;border-radius:50%;background:var(--bg2);flex:none}
 .pvstick{--pw:min(240px,64vw);position:sticky;top:calc(56px - var(--pw)/2);z-index:5;background:var(--bg);padding:4px 0 6px;box-shadow:0 8px 12px -10px #0003}   /* 화면 페이지: 아래 설정을 고치는 동안 미리보기가 위에 붙어 있게 (0.7.25). 2.6.1: 스크롤하면 반 크기까지 줄어 헤더(56px) 아래에 붙는다 — 레이아웃 높이는 그대로 두고(top 을 음수로 헤더 뒤로 밀어 넣음) 미리보기만 transform 으로 축소해 떨림 없이 */
 .preview{width:var(--pw);aspect-ratio:1;margin:4px auto 4px;background:var(--screen);border-radius:18px;padding:8px;transform-origin:50% 100%;transform:scale(var(--pvk,1));will-change:transform}

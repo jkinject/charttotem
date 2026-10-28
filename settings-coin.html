@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=d9a1c131">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=b8f1b4b7">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -411,7 +411,7 @@ const COIN=(()=>{
   g("custom").oninput=()=>{g("coinClear").classList.toggle("hidden",!g("custom").value);render();};
   g("coinClear").onclick=()=>{g("custom").value="";g("custom").oninput();g("custom").focus();};
   return {parse,nameOf,learnState,cnamesFor,show,render,first(){const li=g("coinList").querySelector("[data-c] .cadd:not(.on):not(:disabled)");return li?li.closest("[data-c]").dataset.c:null;},toggle,
-    get ex(){return ex;},exName:k=>EXN[k]||k};
+    get ex(){return ex;},exName:k=>EXN[k]||k,exLogo:k=>LOGO+String(k||"").toLowerCase()+".png"};
 })();
 
 let logoTried={}, shownLogo=null;
@@ -424,7 +424,8 @@ window.MARKET={
   label:s=>s.base?s.base+"/"+s.quote:"",
   pendingLabel(v){const p=COIN.parse(v);return p?(COIN.nameOf(p.b)||p.b)+" "+p.b+"/"+p.q:v;},
   slotLabel(sl){const p=COIN.parse(sl.code)||{};const b=sl.base||p.b,q=sl.quote||p.q;const n=sl.name||COIN.nameOf(b);return n?n+" "+b+"/"+q:b+"/"+q;},
-  slotSub(sl){const p=COIN.parse(sl.code)||{};const e=sl.ex||p.ex||"";return `<span class="badge cx">${esc(COIN.exName(e))}</span>`+(sl.hasLogo?' <span class="badge">로고</span>':"");},
+  // 종목 행 아래 줄: 거래소 로고 + 이름 (0.8.2. 전엔 「업비트」 배지와, 기기에 코인 로고 파일이 있다는 뜻의 「로고」 배지 — 사용자에게 의미가 없어 뺐다)
+  slotSub(sl){const p=COIN.parse(sl.code)||{};const e=sl.ex||p.ex||"";return `<span class="exmark"><img src="${COIN.exLogo(e)}" data-k="${esc(e)}" alt="" width="16" height="16" onerror="exLogoErr(this)">${esc(COIN.exName(e))}</span>`;},
   slotMoney(sl){const p=sl.price,q=sl.currency||(COIN.parse(sl.code)||{}).q||"USDT";if(!(p>0))return "-";
     const d=q==="BTC"?(p>=1?4:8):p>=1000?0:q==="KRW"&&p>=100?1:p>=1?2:p>=0.01?4:8,t=p.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
     return q==="KRW"?t+" 원":q==="USDT"?"$"+t:t+" "+q;},
