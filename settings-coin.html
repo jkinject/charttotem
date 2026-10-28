@@ -592,10 +592,14 @@ function seg7(x,s,px,py,color){const {w,h,t}=S7,L=(h-3*t)/2;x.fillStyle=color;
     const m=c>="0"&&c<="9"?S7.map[+c]:0,R=(a,b,c2,d)=>x.fillRect(px+1+a,py+b,c2,d);
     if(m&1)R(t+1,0,w-2*t-2,t);if(m&2)R(w-t,t+1,t,L-2);if(m&4)R(w-t,2*t+L+1,t,L-2);if(m&8)R(t+1,h-t,w-2*t-2,t);if(m&16)R(0,2*t+L+1,t,L-2);if(m&32)R(0,t+1,t,L-2);if(m&64)R(t+1,t+L,w-2*t-2,t);px+=S7.adv;}}
 function bigTime(x,S,cy,color,compact){const sec=S.show.seconds,small=sec&&compact,apAbove=compact&&S.show.h12;   // 펌웨어 drawBigTime 과 같은 배치
-  const wS=small?seg7W(S.time):measure(x,S.time,"f7t"),apW=S.show.h12&&!apAbove?28:0,xc=Math.round(120-(apW+wS)/2),ty=small?cy+7:cy;
+  const wS=small?seg7W(S.time):measure(x,S.time,"f7t"),apW=S.show.h12&&!apAbove?28:0,ty=small?cy+7:cy;
+  // 잉크 맞춤 (펌웨어 inkLeft/inkRight, 2.10.8): 7세그 「1」은 칸 왼쪽이 비어 칸 폭으로 가운데에 두면 오른쪽으로 치우쳐 보였다
+  const t=String(S.time),c0=t[0]||"",cN=t[t.length-1]||"",advN=small?(cN===":"?S7.colon:S7.adv):(cN===":"?10:30);
+  const lead=small?(c0==="1"?17:(c0==="7"||c0==="3")?6:1):(c0==="1"?23:c0==="7"?6:c0==="3"?4:c0===":"?3:2);
+  const inkW=wS-advN+(small?(cN===":"?6:21):(cN===":"?8:29))-lead,xc=Math.round(120-(apW+inkW)/2),x0=xc+apW-lead;
   if(S.show.h12){if(apAbove)text(x,S.ampm,120,ty-18,"f2",color,"center");   // compact(ORBIT): 고리를 덮지 않게 시각 위 가운데 (펌웨어 apAbove)
     else text(x,S.ampm,xc,small?ty+34-16:cy+28,"f2",color);}   // 숫자 아래선에 맞춘 Font2 (16px)
-  if(small)seg7(x,S.time,xc+apW,ty,color);else text(x,S.time,xc+apW,ty,"f7t",color,"left");}
+  if(small)seg7(x,S.time,x0,ty,color);else text(x,S.time,x0,ty,"f7t",color,"left");}
 function bigDate(x,S,cy,color){if(S.show.date)text(x,S.date,120,cy,"f2",color,"center");}
 // 좁은 칸용 두 줄 날짜 [날짜, 요일]: 다섯 형식 모두 마지막 공백 앞/뒤 (펌웨어 dateTwoLines). 날짜 토글이 꺼져 있으면 ["",""]
 function dateTwo(S){if(!S.show.date||!S.synced)return ["",""];const d=S.date.trim(),i=d.lastIndexOf(" ");return i<0?[d,""]:[d.slice(0,i).trim(),d.slice(i+1).trim()];}
