@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=0c7ca999">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=d9a1c131">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -367,7 +367,10 @@ const COIN=(()=>{
     learn(it);toLocal(e,it);return lists[e]=it;
   }
   // ---- 화면 ----
-  function tabs(){g("exTabs").innerHTML=EXS.map(([k,n,c])=>`<button role="tab" class="extab${k===ex?" on":""}" data-ex="${k}" aria-selected="${k===ex}"><i style="background:${c}">${n[0]}</i>${n}</button>`).join("");}
+  // 거래소 로고: 런처 icons/ex/<거래소>.png (64px, 각 거래소 파비콘. 바이낸스는 BNB 로고). LAN 개발 페이지에서도 보이게 절대 주소. 못 받으면 색 동그라미 + 첫 글자
+  const LOGO="https://charttotem.lalatap.kr/icons/ex/";
+  window.exLogoErr=img=>{const k=img.dataset.k,e=EXS.find(x=>x[0]===k)||["","?","#888"];const i=document.createElement("i");i.style.background=e[2];i.textContent=e[1][0];img.replaceWith(i);};
+  function tabs(){g("exTabs").innerHTML=EXS.map(([k,n])=>`<button role="tab" class="extab${k===ex?" on":""}" data-ex="${k}" aria-selected="${k===ex}"><img src="${LOGO}${k.toLowerCase()}.png" data-k="${k}" alt="" width="20" height="20" onerror="exLogoErr(this)">${n}</button>`).join("");}
   function chips(){const qs=QUOTES[ex];g("quoteRow").classList.toggle("hidden",qs.length<2);
     g("quoteChips").innerHTML=["",...qs].map(q=>`<button class="chip${q===quote?" on":""}" data-q="${q}">${q===quote?"✓ ":""}${q||"전체"}</button>`).join("");}
   const icon=b=>`https://static.upbit.com/logos/${b}.png`;

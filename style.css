@@ -122,7 +122,8 @@ select.val{appearance:none;-webkit-appearance:none;border:0;background:transpare
 .extabs{display:flex;gap:8px;overflow-x:auto;padding:10px 20px 6px;scrollbar-width:none}
 .extabs::-webkit-scrollbar{display:none}
 .extab{flex:none;display:flex;align-items:center;gap:6px;border:1.5px solid var(--ln);border-radius:12px;background:var(--bg);padding:8px 12px;font-size:14px;font-weight:600;color:var(--tx)}
-.extab i{width:18px;height:18px;border-radius:50%;color:#fff;font-style:normal;font-size:10px;font-weight:800;display:grid;place-items:center}
+.extab img,.extab i{width:20px;height:20px;border-radius:50%;flex:none}
+.extab i{color:#fff;font-style:normal;font-size:10px;font-weight:800;display:grid;place-items:center}
 .extab.on{border-color:var(--ac);background:var(--ac2)}
 .qrow{display:flex;align-items:center;gap:4px;padding:6px 0 0 20px}
 .qrow .qlbl{font-size:13px;color:var(--mut);flex:none}
