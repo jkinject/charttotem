@@ -1078,9 +1078,8 @@ $("fwUpdate").onclick=()=>{const fw=(state&&state.fw)||{};if(!fw.available)retur
   $("fwUpdate").disabled=true;
   post("/api/settings?update=1").then(()=>{fwInstalling={from:state.version,to:fw.latest,since:Date.now()};renderFw(state);toast("업데이트를 시작했어요");pollSoon(CLOUD?5000:3000);})
     .catch(e=>{$("fwUpdate").disabled=false;toast("시작하지 못했어요: "+e.message);});};
-// ---- 앱 전환 (v2.9.0): /api/state 의 apps(권한)·variant·fw.switching. 권한에 다른 앱이 있으면 「바꾸기」(OTA 약 1분), 없으면 「추가하기」(스토어 업그레이드) ----
+// ---- 앱 전환 (v2.9.0): /api/state 의 apps(권한)·variant·fw.switching. 전환형 기기(권한에 두 앱)만 「바꾸기」(OTA 약 1분). 주식만·코인만 기기는 행을 숨긴다 (2026-10-28 사용자: 업그레이드 판매 안 함) ----
 const APP_NAME={kstock:"주식",coin:"코인"};
-const UPGRADE_URL="https://smartstore.naver.com/lalalandkr/products/13823635426";   // 업그레이드 상품이 생기면 그 주소로
 let appSwitching=null;   // {from, to, since}
 function renderApp(s){
   const row=$("appRow"),sub=$("appSub"),btn=$("appSwitch");if(!row)return;
@@ -1090,12 +1089,10 @@ function renderApp(s){
   const sw=(s.fw&&s.fw.switching)||"";
   if(appSwitching&&s.variant&&s.variant!==appSwitching.from){appSwitching=null;toast(APP_NAME[s.variant]+" 앱으로 바뀌었어요");}
   if(sw||appSwitching){sub.textContent=APP_NAME[cur]+" → "+APP_NAME[sw||appSwitching.to]+" 앱으로 바꾸는 중… 약 1분, 기기 화면을 보세요";btn.classList.add("hidden");return;}
-  if(s.locked){sub.textContent="이 기기는 "+APP_NAME[other]+" 전용이에요 · "+APP_NAME[cur]+" 앱 권한이 없어요";btn.textContent=APP_NAME[other]+"으로 돌아가기";btn.dataset.mode="switch";btn.classList.remove("hidden");btn.disabled=false;return;}
-  if(apps.includes(other)){sub.textContent="지금 "+APP_NAME[cur]+" 앱 · "+APP_NAME[other]+" 앱으로 바꿀 수 있어요";btn.textContent=APP_NAME[other]+"으로 바꾸기";btn.dataset.mode="switch";}
-  else{sub.textContent="지금 "+APP_NAME[cur]+" 앱 · "+APP_NAME[other]+" 앱은 업그레이드(5,000원)로 추가할 수 있어요";btn.textContent="추가하기";btn.dataset.mode="buy";}
+  if(!apps.includes(other)){row.classList.add("hidden");return;}   // 전환형이 아니면 숨긴다
+  sub.textContent="지금 "+APP_NAME[cur]+" 앱 · "+APP_NAME[other]+" 앱으로 바꿀 수 있어요";btn.textContent=APP_NAME[other]+"으로 바꾸기";btn.dataset.mode="switch";
   btn.classList.remove("hidden");btn.disabled=false;}
 $("appSwitch").onclick=()=>{const s=state||{},btn=$("appSwitch");if(!s.variant)return;const other=s.variant==="coin"?"kstock":"coin";
-  if(btn.dataset.mode==="buy"){if(confirm(APP_NAME[other]+" 앱 업그레이드는 스토어에서 구매해요.\n\n구매 메모에 기기 ID "+(s.id||"")+" 를 적어 주시면 권한을 켜 드려요. 스토어로 갈까요?"))window.open(UPGRADE_URL,"_blank");return;}
   if(!confirm(APP_NAME[other]+" 앱으로 바꿀까요?\n\n약 1분 걸리고 기기가 다시 시작해요. Wi-Fi·앱 연결·두 앱의 종목은 그대로 남아요."))return;
   btn.disabled=true;
   post("/api/settings?app="+other).then(()=>{appSwitching={from:s.variant,to:other,since:Date.now()};renderApp(state);toast(APP_NAME[other]+" 앱으로 바꾸기 시작했어요");pollSoon(CLOUD?5000:3000);})
