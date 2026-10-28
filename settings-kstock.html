@@ -915,7 +915,8 @@ function renderScreen(s){
   $("showSparkRow").classList.toggle("hidden",clock||s.layout==="S07");   // TAPE 는 라인 차트가 없다
   $("showDateRow").classList.toggle("hidden",!clock);
   const coin=MARKET.key==="base";   // 코인: 이름 표시(심볼/한글)·봉 간격 (2.10.0)
-  $("cnameRow").classList.toggle("hidden",!coin);$("cintRow").classList.toggle("hidden",!coin||clock);
+  $("cnameRow").classList.toggle("hidden",!coin);const charted=["S01","S02","S03","S04","S05","S06"].includes(s.layout);   // 봉(차트·라인)을 쓰는 레이아웃만 (펌웨어 LAYOUTS 의 wantCandles). TAPE·시계 테마는 차트가 없다
+  $("cintRow").classList.toggle("hidden",!coin||!charted);
   $("cnameSeg").querySelectorAll("button").forEach(b=>{const on=+b.dataset.value===(s.cname|0);b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
   const ci=$("cint");if(document.activeElement!==ci)ci.value=s.cint||"1d";
   // 화면 전환 간격: 종목을 하나씩 돌려 보여 주는 레이아웃(single: HERO·CHART·SPLIT·HANDS·STACK)에서만. 전체를 한 화면에 보이는 레이아웃은 숨김
