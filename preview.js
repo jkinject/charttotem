@@ -222,9 +222,9 @@ const L={
     if(S.show.price){let pr=ok2?money(o,S.v):"-";if(measure(x,pr,"f2")>72)pr=compact(o,S.v);text(x,pr,164,y+18,"f2",ok2?C.white:C.dim);}
     if(ok2&&S.show.change)text(x,pct(o),164,y+(S.show.price?34:18),"f2",o.color);});},
  // S07 TAPE: 지수 3칸 + 전체 종목 시세판 (등락 삼각형만, 강조 없음). 2.7.0 전 펌웨어는 indices 가 없어 이름만
- S07(x,S){(S.indices.length?S.indices:(S.v==="coin"?["BTC","ETH","SOL"]:["KOSPI","NASDAQ","S&P 500"]).map(label=>({label,ok:false}))).slice(0,3).forEach((m,i)=>{const px=i*80+6,tone=m.change>=0?S.tone.up:S.tone.down;
+ S07(x,S){(S.indices.length?S.indices:(S.v==="coin"?["MCAP","BTC.D","F&G"]:["KOSPI","NASDAQ","S&P 500"]).map(label=>({label,ok:false}))).slice(0,3).forEach((m,i)=>{const px=i*80+6,tone=m.change>=0?S.tone.up:S.tone.down;
     if(i){x.fillStyle=C.bar;x.fillRect(i*80,12,1,42);}text(x,m.label,px,10,"f2",C.dim);text(x,m.ok?m.price:"-",px,26,"f2",m.ok?C.white:C.dim);
-    if(m.ok)text(x,(m.change>=0?"+":"")+Number(m.change).toFixed(2)+"%",px,42,"f2",tone);});
+    if(m.ok)text(x,m.sub?m.sub:(m.change>=0?"+":"")+Number(m.change).toFixed(2)+"%",px,42,"f2",m.sub&&!m.change?C.dim:tone);});   // sub: 코인 공포·탐욕 단계 글자 (2.10.4, 기기와 같게)
   x.fillStyle=C.frame;x.fillRect(4,58,232,1);
   S.slots.slice(0,5).forEach((sl,i)=>{const y=62+i*35,cy=y+17,ok=sl.ok,tone=sl.color;
     if(ok)tri(x,11,cy,sl.change>=0,tone);
