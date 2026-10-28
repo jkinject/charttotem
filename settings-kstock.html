@@ -592,7 +592,7 @@ const L={
    const t=ok?Math.floor(Math.min(217,77+Math.abs(sl.change)*28)):60,bg=blend("#000000",tone,t),soft=blend(tone,"#ffffff",170);fillRR(x,px,py,w,h,4,bg);
    nlabel(x,sl,px+6,py+6,16,w-12,C.white,S);const pr=S.show.price?(ok?money(sl,S.v):"-"):"",tall=big&&h>=150,p=ok&&S.show.change?pct(sl):"";
    if(big&&!tall&&p&&w<200){const f=fitBold(x,pr,w-12,24);text(x,pr,px+6,py+30,f,C.white);text(x,p,px+6,py+66,"b12",C.white);}   // 위 왼쪽 칸(138x118): 등락률 12px 을 가격 아래
-   else if(big&&!tall&&p){const pw=measure(x,p,"b12"),f=fitBold(x,pr,w-12-pw-8,24),fh={b24:35,b18:25,b12:17,b9:13,f2:16,f1:8};text(x,p,px+w-6,py+60-fh.b12,"b12",C.white,"right");text(x,pr,px+6,py+60-(fh[f]||16),f,C.white);}   // 낮은 큰 칸: 등락률은 가격 줄 오른쪽, 둘 다 아래선 y+60 (기기 BR/BL_DATUM 과 같게)
+   else if(big&&!tall&&p){const pw=measure(x,p,"b12"),f=fitBold(x,pr,w-12-pw-8,24),fh={b24:35,b18:25,b12:17,b9:13,f2:16,f1:8};text(x,pr,px+6,py+30,f,C.white);text(x,p,px+w-6,py+30+(fh[f]||16)-fh.b12,"b12",C.white,"right");}   // 낮은 큰 칸: 가격 윗선 y+30, 등락률은 같은 줄 오른쪽에 가격 아랫선 맞춤 (기기 2.10.3 과 같게)
    else{const f=fitBold(x,pr,w-12,big?24:12);text(x,pr,px+6,py+(big?30:28),f,C.white);if(p){const f2=fitBold(x,p,w-12,big?18:9);text(x,p,px+6,py+(big?72:50),f2,C.white);}}
    const sh=big?26:22;if(S.show.spark&&h>=90)spark(x,px+6,py+h-sh-6,w-12,sh,seriesOf(sl,36),soft);});},
  // S06 SPLIT: 왼쪽 활성 종목 + 오른쪽 나머지 목록
