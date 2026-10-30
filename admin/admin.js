@@ -89,7 +89,10 @@ async function enter() {
   await loadAll();
   schedule();
 }
-function schedule() { clearInterval(timer); if ($("auto").checked) timer = setInterval(loadAll, 60000); }
+// 자동 새로고침은 5분 (새로고침 한 번 = KV 읽기 1 + 기기 수만큼 DO 요청. 1분이면 100대에서 하루 14만 건으로 한도를 넘는다). 탭이 숨겨져 있으면 쉰다
+function schedule() { clearInterval(timer); if ($("auto").checked) timer = setInterval(() => { if (!document.hidden) loadAll(); }, 300000); }
+document.addEventListener("visibilitychange", () => { if (!document.hidden && pw && !$("app").classList.contains("hidden") && Date.now() - lastLoadAt > 120000) loadAll(); });
+let lastLoadAt = 0;
 $("auto").onchange = schedule;
 $("refresh").onclick = loadAll;
 $("usageRefresh").onclick = () => loadUsage(true);
@@ -101,7 +104,7 @@ async function loadAll() {
   $("refresh").disabled = true; $("topMsg").textContent = "";
   try {
     const [, devs] = await Promise.all([loadLatestFw(), loadDevices()]);
-    if (devs) { devices = devs; renderChips(); renderTable(); renderActivity(); $("updated").textContent = "갱신 " + fmtTs(now(), true); }
+    if (devs) { devices = devs; lastLoadAt = Date.now(); renderChips(); renderTable(); renderActivity(); $("updated").textContent = "갱신 " + fmtTs(now(), true); }
     loadUsage(false);
   } finally { loading = false; $("refresh").disabled = false; }
 }
@@ -384,8 +387,8 @@ async function loadUsage(fresh) {
     </div>
     <div class="dim" style="font-size:12px">오늘 시간대별 Worker 요청 (UTC)</div>
     <div class="hours">${r.hours.map((h) => `<i style="height:${Math.max(4, h.requests / maxH * 100).toFixed(0)}%" class="${h.hour.slice(0, 13) === curHour ? "now" : ""}" data-t="${esc(h.hour.slice(11, 16))} · ${esc(num(h.requests))}건${h.errors ? " · 오류 " + h.errors : ""}"></i>`).join("")}</div>
-    <table class="days"><thead><tr><th>날짜 (UTC)</th><th>요청</th><th>오류</th><th>CPU p50</th><th>DO 요청</th><th>DO 오류</th><th>DO GB-s</th><th>KV 읽기</th><th>KV 쓰기</th></tr></thead>
-    <tbody>${r.days.slice().reverse().map((x) => `<tr class="${x.date === r.today ? "today" : ""}"><td>${esc(x.date)}</td><td>${num(x.requests)}</td><td>${num(x.errors)}</td><td>${x.cpuP50 ? (x.cpuP50 / 1000).toFixed(1) + "ms" : "-"}</td><td>${num(x.doRequests)}</td><td>${num(x.doErrors)}</td><td>${esc(x.doGbs)}</td><td>${num(x.kv.read || 0)}</td><td>${num(x.kv.write || 0)}</td></tr>`).join("")}</tbody></table>
+    <table class="days"><thead><tr><th>날짜 (UTC)</th><th>요청</th><th>오류</th><th>CPU p50</th><th>DO 요청</th><th>DO 오류</th><th>DO GB-s</th><th>KV 읽기</th><th>KV 쓰기</th><th>KV 목록</th></tr></thead>
+    <tbody>${r.days.slice().reverse().map((x) => `<tr class="${x.date === r.today ? "today" : ""}"><td>${esc(x.date)}</td><td>${num(x.requests)}</td><td>${num(x.errors)}</td><td>${x.cpuP50 ? (x.cpuP50 / 1000).toFixed(1) + "ms" : "-"}</td><td>${num(x.doRequests)}</td><td>${num(x.doErrors)}</td><td>${esc(x.doGbs)}</td><td>${num(x.kv.read || 0)}</td><td class="${(x.kv.write || 0) > 900 ? "down" : ""}">${num(x.kv.write || 0)}</td><td class="${(x.kv.list || 0) > 900 ? "down" : ""}">${num(x.kv.list || 0)}</td></tr>`).join("")}</tbody></table>
     <div class="dim" style="font-size:12px;margin-top:8px">무료 한도: 요청 10만/일 · DO 요청 10만/일 · DO 활성 13,000 GB-s/일 · KV 읽기 10만/일, 쓰기·삭제·목록 1,000/일 · DO 저장 5GB. 5분 캐시 (갱신 ${esc(fmtTs(r.ts, true))}).</div>`;
 }
 
