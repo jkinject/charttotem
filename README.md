@@ -91,7 +91,7 @@ GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인.
 ## 0.7.32 — 펌웨어 업데이트 (펌웨어 2.6.1)
 
 - 설정 홈 「시스템」 행에 새 펌웨어가 있으면 **NEW** 표시와 "새 펌웨어 v2.6.2" 부제. 「시스템」 페이지의 펌웨어 버전 행 오른쪽에 민트 알약 「업데이트」 버튼 → 확인 → `/api/settings?update=1` → 기기가 GitHub Release 에서 받아 설치하고 재시작(화면에 진행률). 페이지는 버전이 바뀌면 "업데이트됐어요" 토스트.
-- 기기는 부팅 때 새 버전이 있으면 스스로 업데이트하고, 평소엔 6시간마다 확인만 한다. 릴리스는 `firmware/tools/release.py` 가 이 저장소(jkinject/charttotem)의 Release `fw-v<버전>` 으로 올린다 (바이너리·매니페스트만. 소스는 비공개 charttotem-core).
+- 기기는 부팅 때 새 버전이 있으면 스스로 업데이트하고, 평소엔 6시간마다 확인해 자동 업데이트(기본 켬, 펌웨어 2.11.0)면 기기 시간대 새벽 5시대에 설치한다. 릴리스는 `firmware/tools/release.py` 가 이 저장소(jkinject/charttotem)의 Release `fw-v<버전>` 으로 올린다 (바이너리·매니페스트만. 소스는 비공개 charttotem-core).
 
 ## 0.7.33
 

@@ -235,7 +235,7 @@ function evText(l) {
   if (l.ev === "cmd") return cmdText(l.d);
   return l.d || "";
 }
-const CMD = { add: "종목 추가", remove: "종목 삭제", codes: "종목 목록", rotate: "전환 간격", layout: "화면", theme: "테마", name: "이름", bl: "밝기", night: "야간 모드", restart: "재시작", update: "펌웨어 설치", fwcheck: "업데이트 확인", reset: "기기 초기화", app: "앱 전환", wssid: "Wi-Fi 등록", wforget: "Wi-Fi 삭제", wconnect: "Wi-Fi 전환", wscan: "Wi-Fi 검색", setup: "세팅 표시", tz: "시간대", colors: "색", base: "기준", code: "코드" };
+const CMD = { add: "종목 추가", remove: "종목 삭제", codes: "종목 목록", rotate: "전환 간격", layout: "화면", theme: "테마", name: "이름", bl: "밝기", night: "야간 모드", restart: "재시작", update: "펌웨어 설치", fwcheck: "업데이트 확인", autoup: "자동 업데이트", reset: "기기 초기화", app: "앱 전환", wssid: "Wi-Fi 등록", wforget: "Wi-Fi 삭제", wconnect: "Wi-Fi 전환", wscan: "Wi-Fi 검색", setup: "세팅 표시", tz: "시간대", colors: "색", base: "기준", code: "코드" };
 function cmdText(q) {
   const admin = q.startsWith("[관리자] ");
   const parts = (admin ? q.slice(6) : q).split("&").filter(Boolean).map((p) => { const i = p.indexOf("="); const k = i < 0 ? p : p.slice(0, i); let v = i < 0 ? "" : p.slice(i + 1); try { v = decodeURIComponent(v.replace(/\+/g, " ")); } catch (e) {} return (CMD[k] || k) + (v && v !== "1" ? " " + v : ""); });
@@ -313,7 +313,7 @@ function renderDetail(d, raw, layouts = []) {
       <dt>마지막 연결</dt><dd>${esc(fmtTs(d.lastSync, true))} <span class="dim">(${esc(ago(d.lastSync))})</span></dd>
       <dt>등록</dt><dd>${esc(fmtTs(d.registeredAt, true))}</dd>
       <dt>채널</dt><dd>${d.ws ? "포크 채널 붙음 (" + esc(d.wsLive) + ")" : "HTTP 폴링"} · 주기 ${esc(d.pollSec || "-")}초</dd>
-      <dt>펌웨어</dt><dd>${esc(d.fw || "-")}${fwi.latest ? ` <span class="dim">· 기기가 본 최신 ${esc(fwi.latest)}${fwi.available ? " (설치 가능)" : ""}${fwi.checked != null ? ", " + esc(dur(fwi.checked)) + " 전 확인" : ""}</span>` : ""}${isOld(d) ? ` <span class="tag warn">서버 최신 ${esc(latestFw)}</span>` : ""}</dd>
+      <dt>펌웨어</dt><dd>${esc(d.fw || "-")}${fwi.latest ? ` <span class="dim">· 기기가 본 최신 ${esc(fwi.latest)}${fwi.available ? " (설치 가능)" : ""}${fwi.checked != null ? ", " + esc(dur(fwi.checked)) + " 전 확인" : ""}</span>` : ""}${typeof fwi.auto === "boolean" ? ` <span class="dim">· 자동 업데이트 ${fwi.auto ? "켬 (새벽 " + esc(fwi.autoAt || "5시") + ")" : "꺼짐"}</span>` : ""}${isOld(d) ? ` <span class="tag warn">서버 최신 ${esc(latestFw)}</span>` : ""}</dd>
       <dt>앱 권한</dt><dd><div class="appsel">${["kstock", "coin"].map((a) => `<label class="chk"><input type="checkbox" data-app="${a}" ${(d.apps || []).includes(a) ? "checked" : ""} ${d.registered ? "" : "disabled"}> ${variantName(a)}</label>`).join("")}<span class="dim">지금 ${esc(variantName(d.variant))}</span></div></dd>
       <dt>대기 명령</dt><dd>${d.pending && d.pending.length ? d.pending.map((c) => `<div class="mono" style="font-size:12px">#${c.seq} ${esc(c.q)} <span class="dim">${esc(ago(c.at))}</span></div>`).join("") : '<span class="dim">없음</span>'}</dd>
       <dt>연결 코드</dt><dd>${d.pairing ? (d.pairing === "shown" ? "기기 화면에 표시 중" : "기기가 받기 전") : '<span class="dim">진행 중 아님</span>'}</dd>
