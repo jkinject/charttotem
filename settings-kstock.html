@@ -809,7 +809,7 @@ const codesOf=s=>s&&s.codes?s.codes:(s?[s[MARKET.key]]:[]);
 let draft=null, applying=null;   // applying: {since, target} 명령을 보냈고 기기 상태가 target(보낸 시점의 초안)에 닿기를 기다리는 중
 let sendTimer=null, sendFails=0;
 function extract(s){return {codes:codesOf(s).slice(),layout:s.layout||"S01",theme:s.theme||"stock",colors:s.colors||"",tz:s.tz||"",dateFmt:s.dateFmt||0,rotate:s.rotate==null?5:s.rotate,
-  app:s.app||s.variant||MARKET.key==="base"?(s.app||"coin"):(s.app||"kstock"),tb:s.tb==null?null:s.tb|0,dd:s.dd||"",lays:String(s.lays||"").split(","),   // v3.0.0: 지금 앱 · 티커 바 · 디데이 목록 · 앱별 레이아웃 (옛 펌웨어는 tb null → 숨김)
+  app:s.app||(MARKET.key==="base"?"coin":"kstock"),tb:s.tb==null?null:s.tb|0,dd:s.dd||"",lays:String(s.lays||"").split(","),   // v3.0.0: 지금 앱 · 티커 바 · 디데이 목록 · 앱별 레이아웃 (옛 펌웨어는 tb null → 숨김)
   chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true,seconds:false,h12:false,id:true},s.show||{}),
   night:s.night?{on:!!s.night.on,from:s.night.from|0,to:s.night.to|0,mode:s.night.mode|0}:null,
   cname:s.cname|0,cnames:s.cnames||"",cint:s.cint||"1d",   // 코인 이름 표시·한글 이름·봉 간격 (2.10.0, 주식은 cnames 가 비어 있다)   // night: 2.6.24 부터 (옛 펌웨어는 null → 행을 숨긴다). active 는 상태라 초안에 넣지 않는다
