@@ -291,10 +291,15 @@ function ddOrder(list){const idx=list.map((_,i)=>i);if(list.some(x=>x.n==null))r
   return idx.sort((a,b)=>{const x=list[a].n,y=list[b].n;if(x>=0&&y>=0)return x-y;if(x<0&&y<0)return y-x;return x<0?1:-1;});}
 function ddParts(it){if(it.n==null)return ["D","--"];if(it.n===0)return ["D-DAY",""];if(it.n>0)return ["D","-"+it.n];return ["D+",String(-it.n)];}
 const DC={cream:"#F3E3B0",dim:"#8C8C8C",mint:"#4FBF9A",track:"#25262B",white:"#FFFDF7",dotOff:"#3A3A42",barBg:"#111115"};
-// 큰 값: 글자(D, D+, D-DAY)는 FreeSansBold18 2배, 숫자는 Font7. 밑선 baseY 에 가운데 cx
-function ddBig(x,cx,baseY,pre,digits,color){const wPre=measure(x,pre,"b18")*2,wDig=digits?measure(x,digits,"f7"):0,gap=digits?4:0,x0=Math.round(cx-(wPre+gap+wDig)/2);
-  const asc=(BF.b18&&BF.b18.asc)||25;x.save();x.scale(2,2);text(x,pre,x0/2,baseY/2-asc,"b18",color);x.restore();
-  if(digits)text(x,digits,x0+wPre+gap,baseY-((BF.f7&&BF.f7.h)||48),"f7",color);}
+// 큰 값: 숫자는 Font7, 「D」는 7세그 굵기(7px)의 둥근 사각으로 직접 (펌웨어 drawBigD 와 같은 치수: 높이 48, 폭 30, 획 7, 간격 6)
+function ddBigD(x,px,py,c){x.fillStyle=c;fillRR(x,px,py,30,48,14,c);fillRR(x,px+7,py+7,16,34,7,C.bg);x.fillStyle=c;x.fillRect(px,py,11,48);x.fillStyle=C.bg;x.fillRect(px+7,py+7,4,34);}
+function ddBig(x,cx,baseY,pre,digits,color,compact){const y=baseY-48;
+  if(compact){text(x,pre+digits,cx,midY("b24",baseY-6-17),"b24",color,"center");return;}   // RING 안: FreeSansBold24 한 줄 (펌웨어와 같게)
+  if(pre==="D-DAY"){text(x,"D-DAY",cx,midY("b24",baseY-4-17),"b24",color,"center");return;}
+  const plus=pre==="D+",wDig=digits?measure(x,digits,"f7"):0,gap=6,total=30+(plus?gap+24:0)+(wDig?gap+wDig:0);let px=Math.round(cx-total/2);
+  ddBigD(x,px,y,color);px+=30+gap;
+  if(plus){x.fillStyle=color;x.fillRect(px,y+24-3,24,7);x.fillRect(px+12-3,y+12,7,24);px+=24+gap;}
+  if(wDig)text(x,digits,px,y,"f7",color);}
 function ddDate(it,ko){const s=`${it.ty}.${String(it.m).padStart(2,"0")}.${String(it.d).padStart(2,"0")}`;const w=new Date(it.ty,it.m-1,it.d).getDay();return ko?s+" ("+KWD7[w]+")":s+" "+WD[w];}
 function ddEmpty(x,ay,ah){text(x,"폰에서 디데이를 추가하세요",120,ay+ah/2-7,"ko14",DC.dim,"center");}
 function areaY(S){return S.tb===3?24:0;}function areaH(S){return S.tb?216:240;}
@@ -329,7 +334,7 @@ Object.assign(L,{
  D03(x,S){const ay=areaY(S),list=S.dd;if(!list.length){ddEmpty(x,ay,areaH(S));return;}const ord=ddOrder(list);let it=list[ord[0]];for(const k of ord)if(list[k].sy){it=list[k];break;}
   const cx=120,cy=ay+88;x.lineWidth=8;x.strokeStyle=DC.track;x.beginPath();x.arc(cx,cy,66,0,Math.PI*2);x.stroke();
   if(it.p>0){x.strokeStyle=DC.mint;x.lineCap="round";x.beginPath();x.arc(cx,cy,66,-Math.PI/2,-Math.PI/2+Math.PI*2*it.p/100);x.stroke();x.lineCap="butt";}
-  const [pre,dg]=ddParts(it);ddBig(x,cx,cy+20,pre,dg,it.n===0?DC.mint:DC.cream);if(it.p>=0)text(x,it.elapsed+"일째",cx,cy+25,"ko14",DC.dim,"center");
+  const [pre,dg]=ddParts(it);ddBig(x,cx,cy+16,pre,dg,it.n===0?DC.mint:DC.cream,true);if(it.p>=0)text(x,it.elapsed+"일째",cx,cy+25,"ko14",DC.dim,"center");
   text(x,fitEll(x,it.t,"ko14",200),cx,ay+178,"ko14",DC.white,"center");},
 });
 function draw(canvas,layoutId,state){const px=canvas.width;const x=canvas.getContext("2d");x.setTransform(1,0,0,1,0,0);x.fillStyle=C.bg;x.fillRect(0,0,px,canvas.height);
