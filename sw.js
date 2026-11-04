@@ -12,9 +12,11 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return;   // 기기 요청 등은 통과
-  // 앱 셸: 네트워크 우선(업데이트 반영), 실패하면 캐시(오프라인)
+  // 앱 셸: 네트워크 우선(업데이트 반영), 실패하면 캐시(오프라인).
+  // GET 은 브라우저 HTTP 캐시를 거치지 않고(no-cache: ETag 로 재검증) 받는다 — 커스텀 도메인이 max-age 4시간을 붙여 새 버전이 몇 시간 늦게 보이던 것(0.10.4)
+  const req = e.request.method === "GET" ? new Request(e.request.url, { cache: "no-cache", credentials: "same-origin", headers: e.request.headers }) : e.request;
   e.respondWith(
-    fetch(e.request).then((r) => { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return r; })
+    fetch(req).then((r) => { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return r; })
       .catch(() => caches.match(e.request, { ignoreSearch: true }).then((r) => r || caches.match("index.html")))
   );
 });
