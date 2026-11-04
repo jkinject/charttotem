@@ -14,9 +14,14 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== location.origin) return;   // 기기 요청 등은 통과
   // 앱 셸: 네트워크 우선(업데이트 반영), 실패하면 캐시(오프라인).
   // GET 은 브라우저 HTTP 캐시를 거치지 않고(no-cache: ETag 로 재검증) 받는다 — 커스텀 도메인이 max-age 4시간을 붙여 새 버전이 몇 시간 늦게 보이던 것(0.10.4)
-  const req = e.request.method === "GET" ? new Request(e.request.url, { cache: "no-cache", credentials: "same-origin", headers: e.request.headers }) : e.request;
+  // 페이지 이동(navigate)은 리다이렉트(Pages 가 .html → 깨끗한 주소로 308)를 따라간 응답을 그대로 주면 브라우저가 거부(ERR_FAILED)하므로 본문만 새 Response 로 옮긴다
+  const fresh = () => {
+    if (e.request.method !== "GET") return fetch(e.request);
+    const p = fetch(e.request.url, { cache: "no-cache", credentials: "same-origin" });
+    return e.request.mode === "navigate" ? p.then((r) => new Response(r.body, { status: r.status, statusText: r.statusText, headers: r.headers })) : p;
+  };
   e.respondWith(
-    fetch(req).then((r) => { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return r; })
+    fresh().then((r) => { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return r; })
       .catch(() => caches.match(e.request, { ignoreSearch: true }).then((r) => r || caches.match("index.html")))
   );
 });
