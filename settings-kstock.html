@@ -81,11 +81,13 @@
  </div>
  <div class="msg hidden" id="optNone">이 앱에는 따로 고를 옵션이 없어요. 아래 공통 옵션은 모든 앱에 적용돼요.</div>
  <div id="commonOpts">
+ <div id="tbBlock">
  <div class="band"></div>
  <div class="caption">공통 · 티커 바</div>
  <div class="list">
   <div class="setrow hidden" id="tbRow"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg><span class="mtext"><span class="mlbl">종목 시세 줄</span><span class="msub wrap" id="tbHint">디데이 같은 앱에서도 아래 한 줄에 시세가 돌아요</span></span></div>
   <div class="segrow hidden" id="tbSegRow"><div class="seg wide" id="tbSeg" role="radiogroup" aria-label="티커 바 모양"><button role="radio" data-value="1">아래 한 줄</button><button role="radio" data-value="2">두 종목</button><button role="radio" data-value="3">위쪽 + 띠</button><button role="radio" data-value="0">끄기</button></div></div>
+ </div>
  </div>
  <div class="band"></div>
  <div class="caption">공통 · 시계 · 색</div>
@@ -1022,7 +1024,8 @@ $("ddAdd").onclick=()=>{if(!draft)return;if(!ensureRunning())return;const t=$("d
   setMsg("ddMsg","최대 8개 · 제목은 12자까지. 기기 화면에는 가까운 날짜부터 보여요.");markDirty();toast(t+" 을(를) 추가했어요");};
 // ---- 공통 (화면 · 시계): 티커 바 · 시간대 · 날짜 형식 · 색 · 밝기 · 야간 ----
 function renderCommon(s){
-  const tb=s.tb==null?null:s.tb|0;$("tbRow").classList.toggle("hidden",tb===null);$("tbSegRow").classList.toggle("hidden",tb===null);
+  const tb=s.tb==null?null:s.tb|0,tbApp=THEME_OF[selApp||s.app]!=="stock";   // 티커 바는 시계·디데이(생활 앱)에만 나오니 그 앱의 옵션에서만 (주식·코인 앱은 숨김, 3.0.1)
+  $("tbBlock").classList.toggle("hidden",tb===null||!tbApp);$("tbRow").classList.toggle("hidden",tb===null);$("tbSegRow").classList.toggle("hidden",tb===null);
   if(tb!==null){$("tbSeg").querySelectorAll("button").forEach(b=>{const on=+b.dataset.value===tb;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
     $("tbHint").textContent=tb===0?"꺼짐 · 디데이 같은 앱에서 시세가 안 보여요":tb===1?"아래 한 줄 · 종목명 · 가격 · 등락률이 차례로 돌아요":tb===2?"아래 두 종목씩 나란히":"위쪽 한 줄 · 등락색 띠 · 작은 차트";}
   const colors=s.colors||"kr";
