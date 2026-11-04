@@ -919,6 +919,7 @@ function page(){let p=location.hash.slice(1)||"/screen";if(p==="/"||p==="/symbol
 function setAppRoute(){const h="#/screen/"+(selApp||"")+"/"+appTab;lastHash=h;history.replaceState(null,"",location.pathname+location.search+h);}
 function route(){
   let p=page();if(!p){history.replaceState(null,"",location.pathname+location.search+"#/screen");p="/screen";}
+  else if(location.hash&&location.hash!=="#"+p&&!location.hash.startsWith("#/screen/"))history.replaceState(null,"",location.pathname+location.search+"#"+p);   // 옛 해시(#/, #/common, #/symbols)는 #/screen 으로 정리 (앱·탭 해시는 setAppRoute 가)
   const changed=p!==curPage;
   if(changed){prevPage=curPage;curPage=p;}
   if(changed&&p==="/wifi/add")waEnter();
