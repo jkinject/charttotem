@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.10.3";   // 0.10: 앱 플랫폼 홈 (기기 화면 미리보기 · 앱 아이콘 줄 · 공통 메뉴). 0.10.2: 설정 홈을 없애고 정보 문서·Wi-Fi/펌웨어 상태를 여기로. 0.10.3: 이름 바꾸기 낙관적 갱신
+const APP_VERSION = "0.10.4";   // 0.10: 앱 플랫폼 홈 (기기 화면 미리보기 · 앱 아이콘 줄 · 공통 메뉴). 0.10.2: 설정 홈을 없애고 정보 문서·Wi-Fi/펌웨어 상태를 여기로. 0.10.3: 이름 바꾸기 낙관적 갱신. 0.10.4: 공통 칸 → 해당 옵션 행으로 이동·강조
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -75,8 +75,8 @@ const APP_NAMES = { kstock: "주식", coin: "코인", clock: "시계", dday: "�
 const APP_ICON = { kstock: "candlestick", coin: "coins", clock: "clock", dday: "calendar" };
 const GENERIC = ["clock", "dday"];   // 펌웨어 안에서 즉시 바뀌는 앱. 주식↔코인은 OTA (약 30초)
 // 공통 메뉴: 설정 페이지의 해시. 종목은 그 기기의 시세 앱 데이터 탭으로
-const COMMON = (d) => [["layers", "종목", `/screen/${d.variant === "coin" ? "coin" : "kstock"}/data`], ["list", "티커 바", "/screen/options"], ["clock", "시계 · 시간대", "/screen/options"], ["moon", "야간 모드", "/screen/options"],
-  ["sun", "밝기", "/screen/options"], ["wifi", "Wi-Fi", "/wifi", "wifi"], ["google", "구글 계정", null], ["settings", "시스템", "/system", "system"]];   // 공통 옵션은 앱 페이지 옵션 탭 아래(0.10.1). 넷째 값: 상태 줄 키(renderDevState 가 채움)
+const COMMON = (d) => [["layers", "종목", `/screen/${d.variant === "coin" ? "coin" : "kstock"}/data`], ["list", "티커 바", "/screen/options?at=tbRow"], ["clock", "시계 · 시간대", "/screen/options?at=tzRow"], ["moon", "야간 모드", "/screen/options?at=nightRow"],
+  ["sun", "밝기", "/screen/options?at=blRow"], ["wifi", "Wi-Fi", "/wifi", "wifi"], ["google", "구글 계정", null], ["settings", "시스템", "/system", "system"]];   // 공통 옵션은 앱 페이지 옵션 탭 아래(0.10.1), ?at= 은 그 행으로 스크롤·강조(0.10.4). 넷째 값: 상태 줄 키(renderDevState 가 채움)
 const commonHtml = (d) => COMMON(d).map(([ic, l, h, k]) => `<a class="cbtn${h ? "" : " off"}" ${h ? `href="${settingsUrl(d, h)}"` : ""}${k ? ` data-c="${k}"` : ""}>${I(ic)}<span>${l}${k ? '<small class="sub"></small>' : ""}</span>${h ? "" : '<small>준비 중</small>'}</a>`).join("");
 // 미리보기(preview.js)의 날짜 줄용 (설정 페이지 settings.js 와 같은 형식)
 const KWD = ["일", "월", "화", "수", "목", "금", "토"], WD3 = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"], WDM = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MON3 = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];

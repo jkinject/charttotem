@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=457dc06e">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=9467de02">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -92,7 +92,7 @@
  <div class="band"></div>
  <div class="caption">공통 · 시계 · 색</div>
  <div class="list">
-  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span class="mtext"><span class="mlbl">시간대</span></span><select id="tz" class="val" aria-label="시간대"></select></div>
+  <div class="setrow" id="tzRow"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span class="mtext"><span class="mlbl">시간대</span></span><select id="tz" class="val" aria-label="시간대"></select></div>
   <div class="setrow hidden" id="tzCustomRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><input class="text" id="tzCustom" placeholder="POSIX TZ (예: KST-9)" maxlength="47" aria-label="직접 시간대"><button class="textbtn" id="tzSave"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>저장</button></div>
   <div class="setrow" id="dateFmtRow"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg><span class="mtext"><span class="mlbl">날짜 형식</span></span><select id="dateFmt" class="val" aria-label="날짜 형식"></select></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg><span class="mtext"><span class="mlbl">상승·하락 색</span></span><div class="seg" id="colorsSeg" role="radiogroup" aria-label="상승·하락 색"><button role="radio" data-value="kr"><span class="updn"><b class="u" style="color:#e5383b">▲</b><b class="d" style="color:#2f6fe4">▼</b></span>한국식</button><button role="radio" data-value="global"><span class="updn"><b class="u" style="color:#22a55b">▲</b><b class="d" style="color:#e5383b">▼</b></span>글로벌</button></div></div>
@@ -100,7 +100,7 @@
  <div class="band"></div>
  <div class="caption">공통 · 밝기 · 야간</div>
  <div class="list">
-  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">밝기</span></span><div class="seg" id="blSeg" role="radiogroup" aria-label="밝기"><button role="radio" data-value="1">어둡게</button><button role="radio" data-value="50">보통</button><button role="radio" data-value="75">밝게</button></div></div>
+  <div class="setrow" id="blRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">밝기</span></span><div class="seg" id="blSeg" role="radiogroup" aria-label="밝기"><button role="radio" data-value="1">어둡게</button><button role="radio" data-value="50">보통</button><button role="radio" data-value="75">밝게</button></div></div>
   <div class="setrow hidden" id="nightRow"><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg><span class="mtext"><span class="mlbl">야간 모드</span><span class="msub" id="nightHint"></span></span><label class="switch"><input id="night" type="checkbox" aria-label="야간 모드"><i></i></label></div>
   <div class="setrow hidden" id="nightFromRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">시작 시간</span></span><select id="nightFrom" class="val" aria-label="야간 모드 시작 시간"></select></div>
   <div class="setrow hidden" id="nightToRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">끝 시간</span></span><select id="nightTo" class="val" aria-label="야간 모드 끝 시간"></select></div>
@@ -780,6 +780,7 @@ const APP_ICON={kstock:"candlestick",coin:"coins",clock:"clock",dday:"calendar"}
 const APP_NAMES={kstock:"주식",coin:"코인",clock:"시계",dday:"디데이"};
 const THEME_OF={kstock:"stock",coin:"stock",clock:"clock",dday:"dday"},THEME_IDX={stock:0,clock:1,dday:2};
 let selApp=null, appTab="layout";   // 앱 페이지에서 보고 있는 앱(기본: 기기에 켜진 앱)과 탭
+let jumpTo=null;   // 런처 홈 공통 칸에서 #/screen/options?at=행id 로 들어오면 그 행으로 스크롤하고 잠깐 강조한다 (한 번만)
 const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"],["showSeconds","seconds"],["show12h","h12"]];   // 기기 ID 배지는 항상 켜 둔다 (토글 없음)   // symbols 비트는 UI 에서 뺐다 (항상 켬)
 let prevPage=null, curPage=null;
 const TZ_PRESETS=[["KST-9","서울 (KST)"],["JST-9","도쿄 (JST)"],["HKT-8","홍콩 (HKT)"],["CST-8","상하이 · 싱가포르"],["IST-5:30","뭄바이 (IST)"],
@@ -912,8 +913,8 @@ function go(p){location.hash="#"+p;}
 function waEnter(){WA.sel=null;WA.manual=false;WA.sent=null;WA.seenSeq=-1;$("waStatus").classList.add("hidden");$("waPick").classList.remove("hidden");$("waForm").classList.add("hidden");$("waPass").value="";$("waSsid").value="";$("waNow").checked=true;if(state)waScan();else WA.waitSeq=-2;}
 let lastHash=null;
 function page(){let p=location.hash.slice(1)||"/screen";if(p==="/"||p==="/symbols"||p==="/screen/layout"||p==="/common")p="/screen";
-  const m=/^\/screen(?:\/(kstock|coin|clock|dday))?(?:\/(layout|options|data))?$/.exec(p);
-  if(m){if(location.hash!==lastHash){lastHash=location.hash;if(m[1])selApp=m[1];if(m[2])appTab=m[2];}p="/screen";}   // 런처 홈에서 앱·탭을 지정해 들어온다. 같은 해시를 다시 읽을 땐 그대로
+  const m=/^\/screen(?:\/(kstock|coin|clock|dday))?(?:\/(layout|options|data))?(?:\?at=([A-Za-z0-9_]+))?$/.exec(p);
+  if(m){if(location.hash!==lastHash){lastHash=location.hash;if(m[1])selApp=m[1];if(m[2])appTab=m[2];if(m[3])jumpTo=m[3];}p="/screen";}   // 런처 홈에서 앱·탭을 지정해 들어온다. 같은 해시를 다시 읽을 땐 그대로
   return PAGES.includes(p)?p:null;}
 function setAppRoute(){const h="#/screen/"+(selApp||"")+"/"+appTab;lastHash=h;history.replaceState(null,"",location.pathname+location.search+h);}
 function route(){
@@ -1218,9 +1219,18 @@ function waTrack(s){const w=WA.sent;if(!w)return;const known=(s.wifiKnown||[]).i
   pollSoon(CLOUD?4000:2000);}
 
 // ---- 페이지 그리기 / 상태 폴링 ----
+// 런처 홈 공통 칸(시계·시간대, 밝기, 야간 모드, 티커 바)에서 들어온 경우: 옵션 탭의 그 행을 가운데로 스크롤하고 1.8초 강조.
+// 티커 바는 주식·코인 앱 옵션엔 없으니 시계·디데이 같은 생활 앱으로 바꿔서 보여 준다. 해시의 ?at= 은 지워 새로고침·뒤로 때 다시 안 뛴다
+function jumpOpt(s){
+  const id=jumpTo;jumpTo=null;const el=$(id);if(!el)return;
+  if(id==="tbRow"&&THEME_OF[selApp]==="stock"){const g=appIds(s).find(a=>THEME_OF[a]!=="stock");if(g){selApp=g;appTab="options";renderScreen(s);}}
+  setAppRoute();
+  if(el.classList.contains("hidden")||el.closest(".hidden"))return;
+  setTimeout(()=>{el.scrollIntoView({block:"center",behavior:"smooth"});el.classList.remove("hl");void el.offsetWidth;el.classList.add("hl");el.addEventListener("animationend",()=>el.classList.remove("hl"),{once:true});},120);
+}
 function renderPage(p){
   const s=view();if(!s)return;
-  if(p==="/screen")renderScreen(s);
+  if(p==="/screen"){renderScreen(s);if(jumpTo)jumpOpt(s);}
   else if(p==="/screen/add")renderList(s);
   else if(p==="/wifi/add"){if(WA.sent)waTrack(s);else renderWifiAdd(s);}
   else if(p==="/wifi"){$("wifiState").innerHTML=s.ssid?'<span class="ok">연결됨</span>':"연결 안 됨";$("wifiSsid").textContent=s.ssid||"-";$("wifiIp").textContent=s.ip||"-";renderWifiKnown(s);}
