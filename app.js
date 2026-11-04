@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.10.2";   // 0.10: 앱 플랫폼 홈 (기기 화면 미리보기 · 앱 아이콘 줄 · 공통 메뉴). 0.10.2: 설정 홈을 없애고 정보 문서·Wi-Fi/펌웨어 상태를 여기로
+const APP_VERSION = "0.10.3";   // 0.10: 앱 플랫폼 홈 (기기 화면 미리보기 · 앱 아이콘 줄 · 공통 메뉴). 0.10.2: 설정 홈을 없애고 정보 문서·Wi-Fi/펌웨어 상태를 여기로. 0.10.3: 이름 바꾸기 낙관적 갱신
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -136,7 +136,12 @@ async function refreshDevice(d) {
   }
   if (!info.ok) { setStatus(el, "wait", "확인 중"); m.className = "msg"; m.textContent = "서버에 닿지 않아요. 인터넷 연결을 확인해 주세요."; return; }
   d.lost = false;
-  if (info.name !== undefined && info.name !== d.name) d.name = info.name;
+  // 기기 이름: 방금 여기서 바꿨으면(pendingName) 기기가 아직 옛 이름을 보고하는 동안 그 값으로 덮지 않는다 (낙관적 갱신).
+  // 기기가 새 이름을 보고하거나, 다른 곳에서 또 다른 이름으로 바꿨으면 대기를 풀고 서버 값을 따른다
+  if (info.name !== undefined) {
+    if (d.pendingName !== undefined && info.name === d.pendingFrom) { /* 아직 옛 이름 → 기다린다 */ }
+    else { delete d.pendingName; delete d.pendingFrom; if (info.name !== d.name) d.name = info.name; }
+  }
   if (info.variant && info.variant !== d.variant) { d.variant = info.variant; el.querySelector('[data-r="common"]').innerHTML = commonHtml(d); }
   d.fw = info.fw; d.online = info.online; d.age = info.age; d.lastSeen = Date.now();
   save(KEY_CLOUD, cloudDevices);
@@ -223,9 +228,17 @@ function renameDevice(d) {
     if (done) return; done = true;
     const v = inp.value.trim().slice(0, 24);
     if (!commit || v === cur) { el.textContent = fmtName(d); return; }
-    d.name = v; save(KEY_CLOUD, cloudDevices); renderDevices();
-    api(`/p/${d.id}/settings?name=${encodeURIComponent(v)}`, { method: "POST", token: d.token }).then((r) => { if (r.ok) toast("이름을 바꿨어요. 기기에 곧 반영돼요"); });
-    refreshAll();
+    // 낙관적 갱신: 화면은 바로 새 이름. 기기가 반영해 보고할 때까지 폴링이 옛 이름으로 덮지 않게 pendingName/From 을 둔다 (refreshDevice)
+    const from = d.pendingName !== undefined ? d.pendingFrom : cur;
+    d.name = v; d.pendingName = v; d.pendingFrom = from; save(KEY_CLOUD, cloudDevices);
+    el.textContent = fmtName(d);
+    api(`/p/${d.id}/settings?name=${encodeURIComponent(v)}`, { method: "POST", token: d.token }).then((r) => {
+      if (r.ok) { toast("이름을 바꿨어요. 기기에 곧 반영돼요"); return; }
+      // 서버에 못 보냈으면 되돌린다 (이때만 옛 이름으로)
+      d.name = from; delete d.pendingName; delete d.pendingFrom; save(KEY_CLOUD, cloudDevices);
+      const n = cardOf(d)?.querySelector('[data-r="name"]'); if (n && !n.querySelector("input")) n.textContent = fmtName(d);
+      toast(r._status === 401 ? "연결이 해제돼 이름을 바꾸지 못했어요" : "이름을 바꾸지 못했어요. 인터넷 연결을 확인해 주세요");
+    });
   };
   btn.onclick = () => finish(true);
   inp.onkeydown = (e) => { if (e.key === "Enter") finish(true); else if (e.key === "Escape") finish(false); };
