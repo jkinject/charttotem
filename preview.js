@@ -88,7 +88,10 @@ function norm(s){
   if(sh0.seconds)t+=":"+secs;
   if(s.date){const m=/(\d+)-(\d+)-(\d+)/.exec(s.date);if(m)d=new Date(+m[1],+m[2]-1,+m[3]);}
   const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false,id:true},s.show||{});
-  return {chart:s.chart||{},indices:s.indices||[],id:s.id||"",hms,v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
+  // v3.0.0 앱 플랫폼: app(지금 앱)·tb(티커 바 모양 0~3)·dd(디데이 목록 원문 → 항목, 남은 날은 기기 날짜 기준)
+  const dd=parseDd(s.dd||"",synced?d:null);
+  return {app:s.app||s.variant||"kstock",tb:s.tb==null?1:s.tb|0,dd,lays:String(s.lays||"").split(","),
+    chart:s.chart||{},indices:s.indices||[],id:s.id||"",hms,v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
     date:synced?(window.fmtDate?fmtDate(s.dateFmt||0,d):MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]):"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||(coin?String(s.cint||"1d").replace(/^(\d+)([hd])$/,(m,a,b)=>a+b.toUpperCase()):"1D")};   // 코인은 기기 marketCandleLabel 처럼 cint 로 ("4H", "15m")
 }
 // 종가 선: 2.6.25 부터 기기가 slots[].spark(0~99 두 자리씩, 기기가 그리는 봉 종가)를 보낸다 → 기기와 같은 모양. 옛 펌웨어는 코드 해시 의사 난수 선
@@ -142,9 +145,9 @@ function tileRect(i,n){if(i===0)return [4,10,232,80];const k=n-1,j=i-1,row=Math.
 function heatRect(i,n){if(n<=1)return [4,10,232,226];if(i<2)return [i?146:4,10,i?90:138,n===2?226:118];const k=n-2,j=i-2;
   if(k===1)return [4,132,232,104];if(k===2)return [4+j*118,132,114,104];return [[4,82,162][j],132,[74,76,74][j],104];}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
-// 코인 로고 이미지 캐시: 처음엔 없고(글자 동그라미), 받아지면 다음 그리기(상태 폴링 몇 초)부터 보인다
-const LOGOS={};
-function coinLogo(b){if(!b)return null;let e=LOGOS[b];if(!e){const im=new Image();e=LOGOS[b]={im,ok:false};im.onload=()=>{e.ok=true;};
+// 코인 로고 이미지 캐시: 처음엔 없고(글자 동그라미), 받아지면 다음 그리기(상태 폴링 몇 초)부터 보인다. 폴링이 없는 페이지(관리자)는 PREVIEW.onLogo 로 도착을 듣고 다시 그린다
+const LOGOS={},logoCbs=[];
+function coinLogo(b){if(!b)return null;let e=LOGOS[b];if(!e){const im=new Image();e=LOGOS[b]={im,ok:false};im.onload=()=>{e.ok=true;logoCbs.forEach(cb=>{try{cb(b);}catch(err){}});};
   im.onerror=()=>{if(!e.alt){e.alt=1;im.src="https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/128/color/"+b.toLowerCase()+".png";}};im.src="https://static.upbit.com/logos/"+b+".png";}
   return e.ok?e.im:null;}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
@@ -272,8 +275,65 @@ const L={
  C08(x,S){bigTime(x,S,10,C.amber);bigDate(x,S,64,C.amberDim);if(!S.show.symbols)return;x.fillStyle=C.rule;x.fillRect(0,92,240,1);if(S.slots.length>3)x.fillRect(120,98,1,128);
   S.slots.forEach((sl,i)=>{const col=i<3?0:1,r=i<3?i:i-3;row(x,S,sl,col?122:4,98+r*44,114,44,{colorPrice:1,stack:1});});},
 };
+// ---- v3.0.0 디데이 (펌웨어 layout_dday.cpp 와 같은 규칙) ----
+const KWD7=["일","월","화","수","목","금","토"];
+function civil(y,m,d){return Math.round(Date.UTC(y,m-1,d)/86400000);}
+// "제목|2026-12-11|y|2026-10-01;..." → [{t,y,m,d,yearly,sy,sm,sd,n,p,ty,elapsed}]. today: 기기 날짜(Date) 또는 null(미동기)
+function parseDd(spec,today){const out=[];if(!spec)return out;const td=today?civil(today.getFullYear(),today.getMonth()+1,today.getDate()):null;
+  for(const item of String(spec).split(";")){if(!item.trim())continue;const f=item.split("|");const m1=/^(\d{4})-(\d{2})-(\d{2})$/.exec(f[1]||"");if(!f[0]||!m1)continue;
+    const it={t:f[0],y:+m1[1],m:+m1[2],d:+m1[3],yearly:f[2]==="y"||f[2]==="1",sy:0,sm:0,sd:0,n:null,p:-1,ty:+m1[1],elapsed:0};
+    const m2=/^(\d{4})-(\d{2})-(\d{2})$/.exec(f[3]||"");if(m2){it.sy=+m2[1];it.sm=+m2[2];it.sd=+m2[3];}
+    if(td!=null){let ty=it.y;if(it.yearly){ty=today.getFullYear();if(civil(ty,it.m,it.d)<td)ty++;}it.ty=ty;it.n=civil(ty,it.m,it.d)-td;
+      if(it.sy){const st=civil(it.sy,it.sm,it.sd),en=td+it.n;it.elapsed=td-st+1;it.p=en<=st?100:Math.max(0,Math.min(100,Math.floor((td-st)*100/(en-st))));}}
+    out.push(it);if(out.length>=8)break;}
+  return out;}
+function ddOrder(list){const idx=list.map((_,i)=>i);if(list.some(x=>x.n==null))return idx;
+  return idx.sort((a,b)=>{const x=list[a].n,y=list[b].n;if(x>=0&&y>=0)return x-y;if(x<0&&y<0)return y-x;return x<0?1:-1;});}
+function ddParts(it){if(it.n==null)return ["D","--"];if(it.n===0)return ["D-DAY",""];if(it.n>0)return ["D","-"+it.n];return ["D+",String(-it.n)];}
+const DC={cream:"#F3E3B0",dim:"#8C8C8C",mint:"#4FBF9A",track:"#25262B",white:"#FFFDF7",dotOff:"#3A3A42",barBg:"#111115"};
+// 큰 값: 글자(D, D+, D-DAY)는 FreeSansBold18 2배, 숫자는 Font7. 밑선 baseY 에 가운데 cx
+function ddBig(x,cx,baseY,pre,digits,color){const wPre=measure(x,pre,"b18")*2,wDig=digits?measure(x,digits,"f7"):0,gap=digits?4:0,x0=Math.round(cx-(wPre+gap+wDig)/2);
+  const asc=(BF.b18&&BF.b18.asc)||25;x.save();x.scale(2,2);text(x,pre,x0/2,baseY/2-asc,"b18",color);x.restore();
+  if(digits)text(x,digits,x0+wPre+gap,baseY-((BF.f7&&BF.f7.h)||48),"f7",color);}
+function ddDate(it,ko){const s=`${it.ty}.${String(it.m).padStart(2,"0")}.${String(it.d).padStart(2,"0")}`;const w=new Date(it.ty,it.m-1,it.d).getDay();return ko?s+" ("+KWD7[w]+")":s+" "+WD[w];}
+function ddEmpty(x,ay,ah){text(x,"폰에서 디데이를 추가하세요",120,ay+ah/2-7,"ko14",DC.dim,"center");}
+function areaY(S){return S.tb===3?24:0;}function areaH(S){return S.tb?216:240;}
+// 티커 바 (펌웨어 tickerbar.cpp): 1 LINE 아래 한 줄 / 2 PAIR 두 종목 / 3 TOP 위 + 등락 띠 + 순번 + 스파크라인
+function tri(x,px,cy,up,c){x.fillStyle=c;x.beginPath();if(up){x.moveTo(px,cy+3);x.lineTo(px+7,cy+3);x.lineTo(px+3.5,cy-3);}else{x.moveTo(px,cy-3);x.lineTo(px+7,cy-3);x.lineTo(px+3.5,cy+3);}x.fill();}
+function barQuote(x,S,sl,px,py,w,compact){const ok=sl.ok,tone=ok?sl.color:DC.dim,price=ok?money(sl,S.v):"-",pc=ok&&!compact?Math.abs(sl.change).toFixed(1)+"%":"";
+  const wPrice=measure(x,price,"f2"),wPc=pc?measure(x,pc,"f2"):0,tail=6+wPrice+(ok?6+8+(wPc?2+wPc:0):0);
+  const nm=fitEll(x,sl.full,isAscii(sl.full)?"f2":"ko14",Math.max(24,w-tail));text(x,nm,px,py+(isAscii(nm)?4:5),"f2",DC.white);let cx=px+measure(x,nm,isAscii(nm)?"f2":"ko14")+6;
+  let pr=price;if(compact&&cx+tail-6>px+w)pr=compact?compact_(sl,S.v):price;text(x,pr,cx,py+4,"f2",DC.cream);cx+=measure(x,pr,"f2")+6;
+  if(!ok)return;tri(x,cx,py+12,sl.change>=0,tone);cx+=10;if(pc)text(x,pc,cx,py+4,"f2",tone);}
+const compact_=compact;
+function bar(x,S){if(!S.tb)return;const by=S.tb===3?0:216,n=S.slots.length,cur=Math.min(S.active,Math.max(0,n-1));
+  x.fillStyle=DC.barBg;x.fillRect(0,by,240,24);x.fillStyle=DC.track;x.fillRect(0,S.tb===3?by+23:by,240,1);
+  if(!n){text(x,"종목을 추가하세요",120,by+5,"ko14",DC.dim,"center");return;}
+  if(S.tb===2){x.fillStyle=DC.track;x.fillRect(119,by+1,1,23);barQuote(x,S,S.slots[cur],4,by,112,true);if(n>1)barQuote(x,S,S.slots[(cur+1)%n],124,by,112,true);return;}
+  if(S.tb===3){const sl=S.slots[cur];x.fillStyle=sl.ok?sl.color:"#4A4A52";x.fillRect(0,by,4,24);const ord=(cur+1)+"/"+n,sp=sl.spark&&sl.spark.length>=2?36:0;
+    text(x,ord,236-(sp?sp+6:0),by+8,"f1",DC.dim,"right");const ow=measure(x,ord,"f1");if(sp)spark(x,200,by+6,36,12,sl.spark,sl.ok?sl.color:DC.dim);
+    barQuote(x,S,sl,8,by,240-16-ow-(sp?sp+6:0)-6,false);return;}
+  barQuote(x,S,S.slots[cur],8,by,240-8-n*7-10,false);for(let i=0;i<n;i++)dot(x,232-2-(n-1-i)*7,by+12,2,i===cur?DC.white:DC.dotOff);}
+Object.assign(L,{
+ // D01 BIG: 제목 24px 흐린 · 큰 값 · 날짜 · 페이지 점 (항목은 가까운 순 첫 번째. 기기는 rotateSec 마다 넘긴다)
+ D01(x,S){const ay=areaY(S),list=S.dd;if(!list.length){ddEmpty(x,ay,areaH(S));return;}const it=list[ddOrder(list)[0]];
+  text(x,fitEll(x,it.t,"ko24",224),120,ay+24,"ko24",DC.dim,"center");const [pre,dg]=ddParts(it);ddBig(x,120,ay+108,pre,dg,it.n===0?DC.mint:DC.cream);
+  text(x,ddDate(it,true),120,ay+145,"ko14",DC.dim,"center");if(list.length>1)for(let i=0;i<list.length;i++)dot(x,120-(list.length-1)*3.5+i*7,ay+190,2,i===0?DC.white:DC.dotOff);},
+ // D02 LIST: 38px 행 x 5
+ D02(x,S){const ay=areaY(S),list=S.dd;if(!list.length){ddEmpty(x,ay,areaH(S));return;}const ord=ddOrder(list).slice(0,5);
+  ord.forEach((k,r)=>{const it=list[k],y=ay+6+r*38,[pre,dg]=ddParts(it),v=pre+dg,vc=it.n==null?DC.dim:it.n===0?DC.mint:it.n<0?DC.dim:DC.cream;
+    text(x,v,232,midY("b12",y+19),"b12",vc,"right");const vw=measure(x,v,"b12");if(r===0&&it.n!=null&&it.n>=0){x.fillStyle=DC.mint;x.fillRect(8,y+2,3,34);}
+    text(x,fitEll(x,it.t,"ko14",232-vw-26),16,y+3,"ko14",DC.white);text(x,ddDate(it,false)+(it.yearly?"  yearly":""),16,y+23,"f1",DC.dim);
+    if(r<ord.length-1){x.fillStyle=DC.track;x.fillRect(8,y+38,224,1);}});},
+ // D03 RING: 시작일이 있는 항목의 진행률 링 (중심 120, ay+88, r 70, 두께 8)
+ D03(x,S){const ay=areaY(S),list=S.dd;if(!list.length){ddEmpty(x,ay,areaH(S));return;}const ord=ddOrder(list);let it=list[ord[0]];for(const k of ord)if(list[k].sy){it=list[k];break;}
+  const cx=120,cy=ay+88;x.lineWidth=8;x.strokeStyle=DC.track;x.beginPath();x.arc(cx,cy,66,0,Math.PI*2);x.stroke();
+  if(it.p>0){x.strokeStyle=DC.mint;x.lineCap="round";x.beginPath();x.arc(cx,cy,66,-Math.PI/2,-Math.PI/2+Math.PI*2*it.p/100);x.stroke();x.lineCap="butt";}
+  const [pre,dg]=ddParts(it);ddBig(x,cx,cy+20,pre,dg,it.n===0?DC.mint:DC.cream);if(it.p>=0)text(x,it.elapsed+"일째",cx,cy+25,"ko14",DC.dim,"center");
+  text(x,fitEll(x,it.t,"ko14",200),cx,ay+178,"ko14",DC.white,"center");},
+});
 function draw(canvas,layoutId,state){const px=canvas.width;const x=canvas.getContext("2d");x.setTransform(1,0,0,1,0,0);x.fillStyle=C.bg;x.fillRect(0,0,px,canvas.height);
-  x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S01)(x,S);}catch(e){text(x,"preview error",120,110,"f2",C.dim,"center");}
+  x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S01)(x,S);if(/^D/.test(layoutId))bar(x,S);}catch(e){text(x,"preview error",120,110,"f2",C.dim,"center");}   // 생활 앱(D..)은 티커 바까지
   if(S.show.id&&S.id)text(x,S.id,238,1,"f1",C.dim,"right");}  // 오른쪽 위 기기 ID 배지 (펌웨어 Font1 6x8)
-return {draw,ids:Object.keys(L),onReady(cb){if(fontsReady)cb();else readyCbs.push(cb);},get fontsReady(){return fontsReady;}};
+return {draw,ids:Object.keys(L),parseDd,onReady(cb){if(fontsReady)cb();else readyCbs.push(cb);},onLogo(cb){logoCbs.push(cb);},get fontsReady(){return fontsReady;}};
 })();

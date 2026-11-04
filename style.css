@@ -237,6 +237,18 @@ body.cloud .local-only{display:none !important}
 .pillbtn{flex:none;background:var(--ac);color:#fff;font-weight:700;font-size:14px;padding:9px 14px;border-radius:999px}
 .pillbtn:disabled{opacity:.5}
 
+/* ---- v3.0.0 앱 플랫폼: 앱 페이지(칩 · 탭), 공통 페이지, 디데이 편집 ---- */
+.appchips{display:flex;gap:8px;padding:8px 20px 6px;overflow-x:auto;scrollbar-width:none}.appchips::-webkit-scrollbar{display:none}
+.appchip{flex:none;display:flex;align-items:center;gap:6px;padding:7px 12px 7px 8px;border-radius:999px;background:var(--bg2);color:var(--mut);font-weight:600;font-size:14px;border:2px solid transparent;white-space:nowrap}
+.appchip .ic{width:18px;height:18px}.appchip.on{background:#fff;color:var(--tx);border-color:var(--ac)}.appchip.run i{width:7px;height:7px;border-radius:50%;background:var(--ac)}
+.appchip.locked{opacity:.5}
+.onchip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#2e8f6e;white-space:nowrap}.onchip .dot{width:8px;height:8px;border-radius:50%;background:var(--ac)}
+.tabs{display:flex;margin:4px 20px 0;border-bottom:1px solid var(--ln)}
+.tabs button{flex:1;padding:12px 0;font-weight:700;font-size:15px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--ac);border-color:var(--ac)}
+.formrow .lbl{font-size:14px;color:var(--mut);flex:none;min-width:48px}
+.ddrow .dv{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;flex:none}.ddrow .dv.past{color:var(--mut)}.ddrow .dv.today{color:var(--ac)}
+
 /* 런처 전용 스타일. tools/gen_launcher.py 가 firmware/tools/web/settings.css 뒤에 이어 붙여 style.css 를 만든다 (직접 style.css 를 고치지 말 것). */
 /* ---- 런처 전용 ---- */
 .menu.disabled{pointer-events:none;color:#b5b2ad}
@@ -365,3 +377,25 @@ body.cloud .local-only{display:none !important}
 .faq-q .qic.danger .ic{color:var(--danger)}
 .faq-item.open .faq-q .qic .ic{transform:none}
 .faq-a.doc{padding-left:72px}
+
+/* ---- 0.10 앱 플랫폼 홈: 미리보기 + 켜진 앱 · 앱 아이콘 줄 · 공통 2열 (시안 B) ---- */
+.devbody.disabled{opacity:.45;pointer-events:none}
+.devprev{display:flex;align-items:center;gap:16px;padding:4px 20px 8px}
+.devprev .scr{width:150px;height:150px;flex:none;background:var(--screen);border-radius:16px;padding:6px}
+.devprev canvas{width:100%;height:100%;display:block;border-radius:9px}
+.pinfo{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.papp{font-size:19px;font-weight:700;line-height:1.25}.play{font-size:13px;color:var(--mut)}
+.btnpill{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;background:var(--ac);color:#fff;font-weight:700;font-size:15px;padding:10px 22px;border-radius:999px;text-decoration:none;margin-top:4px}
+.approw{display:flex;gap:12px;padding:2px 20px 10px;overflow-x:auto;scrollbar-width:none}.approw::-webkit-scrollbar{display:none}
+.appbtn{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;width:66px;font-size:12px;color:var(--tx);position:relative}
+.appbtn .tileic{width:56px;height:56px;border-radius:17px;display:grid;place-items:center;background:var(--bg2);border:2px solid transparent;color:var(--tx)}
+.appbtn .tileic .ic{width:26px;height:26px}
+.tileic.kstock{background:#FBE3DA}.tileic.coin{background:#FBF1C7}.tileic.clock{background:#E6E4F7}.tileic.dday{background:#DDEBF9}
+.appbtn.on .tileic{border-color:var(--ac);box-shadow:0 0 0 3px var(--ac2)}.appbtn.on span{color:#2e8f6e;font-weight:700}
+.appbtn.on:after{content:"";position:absolute;top:4px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--ac);border:2px solid #fff}
+.appbtn small{font-size:10px;color:var(--mut);margin-top:-4px}
+.common2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:2px 20px 18px}
+.cbtn{display:flex;align-items:center;gap:10px;padding:13px 12px;border-radius:12px;background:var(--bg2);color:var(--tx);text-decoration:none;font-weight:600;font-size:15px;min-height:50px}
+.cbtn .ic{width:20px;height:20px;color:var(--tx);flex:none}.cbtn span{flex:1;min-width:0;font-size:14px;line-height:1.2;word-break:keep-all}.cbtn small{font-size:11px;color:var(--mut);flex:none}
+.cbtn.off{opacity:.5}.cbtn:active{background:var(--ac2)}
+.page.home .caption{padding:10px 20px 6px}

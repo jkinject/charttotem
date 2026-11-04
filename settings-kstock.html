@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=b8f1b4b7">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=1b2c87e1">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -52,6 +52,7 @@
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
 <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
 <symbol id="i-house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></symbol>
 </svg>
 
 <div class="offline" role="alert"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg><b class="ttl">기기와 연결이 끊겼어요</b><button id="retry"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>다시 시도</button></div>
@@ -71,37 +72,47 @@
 </section>
 
 <section class="page" data-page="/screen">
- <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">화면</h1></header>
- <div class="pvstick"><div class="preview"><canvas id="mainPreview" width="480" height="480" role="img" aria-label="현재 기기 화면 미리보기"></canvas></div></div>
- <nav class="list"><button class="setrow" data-go="/screen/layout"><svg class="ic" aria-hidden="true"><use href="#i-layout-grid"/></svg><span class="mtext"><span class="mlbl">레이아웃</span><span class="msub" id="layoutValue">-</span></span><span class="chev"><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></button></nav>
- <div class="band"></div>
- <div class="caption">종목 <span class="cnt" id="listCount"></span><button class="textbtn" id="addBtn" data-go="/screen/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>추가</button></div>
- <div class="list" id="symList"></div>
- <div class="band"></div>
- <div class="caption">표시 항목</div>
- <div class="list">
- <div class="setrow hidden" id="cnameRow"><svg class="ic" aria-hidden="true"><use href="#i-coins"/></svg><span class="mtext"><span class="mlbl">코인 이름</span><span class="msub">기기 화면에 보일 이름</span></span><div class="seg" id="cnameSeg" role="radiogroup" aria-label="코인 이름"><button role="radio" data-value="0">심볼</button><button role="radio" data-value="1">한글 이름</button></div></div>
- <div class="setrow" id="showPriceRow"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg><span class="mtext"><span class="mlbl">가격</span><span class="msub">종목 현재가</span></span><label class="switch"><input id="showPrice" type="checkbox"><i></i></label></div>
- <div class="setrow" id="showChangeRow"><svg class="ic" aria-hidden="true"><use href="#i-percent"/></svg><span class="mtext"><span class="mlbl">등락률</span><span class="msub">전일 대비 %</span></span><label class="switch"><input id="showChange" type="checkbox"><i></i></label></div>
- <div class="setrow" id="showSparkRow"><svg class="ic" aria-hidden="true"><use href="#i-chart-line"/></svg><span class="mtext"><span class="mlbl">라인 차트</span><span class="msub">최근 가격 흐름을 선으로</span></span><label class="switch"><input id="showSpark" type="checkbox"><i></i></label></div>
- <div class="setrow" id="showSecondsRow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">초 표시</span><span class="msub">시:분:초 로 표시</span></span><label class="switch"><input id="showSeconds" type="checkbox"><i></i></label></div>
- <div class="setrow" id="show12hRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">12시간제</span><span class="msub">AM · PM 을 표시</span></span><label class="switch"><input id="show12h" type="checkbox"><i></i></label></div>
- <div class="setrow hidden" id="cintRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">차트 간격</span><span class="msub">차트의 점 하나가 몇 분·몇 시간인지</span></span><select id="cint" class="val" aria-label="차트 간격"><option value="1m">1분</option><option value="5m">5분</option><option value="15m">15분</option><option value="1h">1시간</option><option value="4h">4시간</option><option value="1d">1일</option></select></div>
- <div class="setrow" id="showDateRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">날짜</span><span class="msub">오늘 날짜 표시</span></span><label class="switch"><input id="showDate" type="checkbox"><i></i></label></div>
+ <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">앱</h1><button class="pillbtn hidden" id="appUse">이 앱으로 전환</button><span class="onchip hidden" id="appOn"><i class="dot"></i>기기에 켜짐</span></header>
+ <div class="appchips" id="appChips" role="tablist" aria-label="앱"></div>
+ <div class="pvstick"><div class="preview"><canvas id="mainPreview" width="480" height="480" role="img" aria-label="기기 화면 미리보기"></canvas></div></div>
+ <div class="msg hidden" id="appOtaMsg"></div>
+ <div class="tabs" id="appTabs" role="tablist"><button role="tab" data-tab="layout" class="on">레이아웃</button><button role="tab" data-tab="options">옵션</button><button role="tab" data-tab="data">데이터</button></div>
+ <div id="tabLayout">
+  <div class="grid" id="layoutGrid"></div>
+  <div class="hint" id="layoutMsg"></div>
  </div>
- <div class="band"></div>
- <div class="caption">설정</div>
+ <div id="tabOptions" class="hidden">
  <div class="list">
   <div class="setrow" id="rotateRow"><svg class="ic" aria-hidden="true"><use href="#i-repeat"/></svg><span class="mtext"><span class="mlbl">화면 전환 간격</span><span class="msub" id="rotateHint"></span></span><select id="rotate" class="val" aria-label="화면 전환 간격"><option value="0">끄기</option><option value="3">3초</option><option value="5">5초</option><option value="10">10초</option><option value="15">15초</option><option value="30">30초</option><option value="60">60초</option></select></div>
-  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg><span class="mtext"><span class="mlbl">상승·하락 색</span></span><div class="seg" id="colorsSeg" role="radiogroup" aria-label="상승·하락 색"><button role="radio" data-value="kr"><span class="updn"><b class="u" style="color:#e5383b">▲</b><b class="d" style="color:#2f6fe4">▼</b></span>한국식</button><button role="radio" data-value="global"><span class="updn"><b class="u" style="color:#22a55b">▲</b><b class="d" style="color:#e5383b">▼</b></span>글로벌</button></div></div>
-  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span class="mtext"><span class="mlbl">시간대</span></span><select id="tz" class="val" aria-label="시간대"></select></div>
-  <div class="setrow hidden" id="tzCustomRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><input class="text" id="tzCustom" placeholder="POSIX TZ (예: KST-9)" maxlength="47" aria-label="직접 시간대"><button class="textbtn" id="tzSave"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>저장</button></div>
-  <div class="setrow" id="dateFmtRow"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg><span class="mtext"><span class="mlbl">날짜 형식</span></span><select id="dateFmt" class="val" aria-label="날짜 형식"></select></div>
-  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">밝기</span></span><div class="seg" id="blSeg" role="radiogroup" aria-label="밝기"><button role="radio" data-value="1">어둡게</button><button role="radio" data-value="50">보통</button><button role="radio" data-value="75">밝게</button></div></div>
-  <div class="setrow hidden" id="nightRow"><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg><span class="mtext"><span class="mlbl">야간 모드</span><span class="msub" id="nightHint"></span></span><label class="switch"><input id="night" type="checkbox" aria-label="야간 모드"><i></i></label></div>
-  <div class="setrow hidden" id="nightFromRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">시작 시간</span></span><select id="nightFrom" class="val" aria-label="야간 모드 시작 시간"></select></div>
-  <div class="setrow hidden" id="nightToRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">끝 시간</span></span><select id="nightTo" class="val" aria-label="야간 모드 끝 시간"></select></div>
-  <div class="setrow hidden" id="nightModeRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">화면 밝기</span></span><div class="seg" id="nightSeg" role="radiogroup" aria-label="야간 화면 밝기"><button role="radio" data-value="0">끄기</button><button role="radio" data-value="1">어둡게</button><button role="radio" data-value="2">그대로</button></div></div>
+  <div class="setrow hidden" id="cnameRow"><svg class="ic" aria-hidden="true"><use href="#i-coins"/></svg><span class="mtext"><span class="mlbl">코인 이름</span><span class="msub">기기 화면에 보일 이름</span></span><div class="seg" id="cnameSeg" role="radiogroup" aria-label="코인 이름"><button role="radio" data-value="0">심볼</button><button role="radio" data-value="1">한글 이름</button></div></div>
+  <div class="setrow" id="showPriceRow"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg><span class="mtext"><span class="mlbl">가격</span><span class="msub">종목 현재가</span></span><label class="switch"><input id="showPrice" type="checkbox"><i></i></label></div>
+  <div class="setrow" id="showChangeRow"><svg class="ic" aria-hidden="true"><use href="#i-percent"/></svg><span class="mtext"><span class="mlbl">등락률</span><span class="msub">전일 대비 %</span></span><label class="switch"><input id="showChange" type="checkbox"><i></i></label></div>
+  <div class="setrow" id="showSparkRow"><svg class="ic" aria-hidden="true"><use href="#i-chart-line"/></svg><span class="mtext"><span class="mlbl">라인 차트</span><span class="msub">최근 가격 흐름을 선으로</span></span><label class="switch"><input id="showSpark" type="checkbox"><i></i></label></div>
+  <div class="setrow hidden" id="cintRow"><svg class="ic" aria-hidden="true"><use href="#i-candlestick"/></svg><span class="mtext"><span class="mlbl">차트 간격</span><span class="msub">차트의 점 하나가 몇 분·몇 시간인지</span></span><select id="cint" class="val" aria-label="차트 간격"><option value="1m">1분</option><option value="5m">5분</option><option value="15m">15분</option><option value="1h">1시간</option><option value="4h">4시간</option><option value="1d">1일</option></select></div>
+  <div class="setrow" id="showDateRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">날짜</span><span class="msub">오늘 날짜 표시</span></span><label class="switch"><input id="showDate" type="checkbox"><i></i></label></div>
+  <div class="setrow" id="showSecondsRow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">초 표시</span><span class="msub">시:분:초 로 표시</span></span><label class="switch"><input id="showSeconds" type="checkbox"><i></i></label></div>
+  <div class="setrow" id="show12hRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">12시간제</span><span class="msub">AM · PM 을 표시</span></span><label class="switch"><input id="show12h" type="checkbox"><i></i></label></div>
+ </div>
+ <div class="msg hidden" id="optNone">이 앱에는 따로 고를 옵션이 없어요. 티커 바·시간대·밝기는 「화면 · 시계」에 있어요.</div>
+ </div>
+ <div id="tabData" class="hidden">
+  <div id="symBox">
+   <div class="caption">종목 <span class="cnt" id="listCount"></span><button class="textbtn" id="addBtn" data-go="/screen/add"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>추가</button></div>
+   <div class="list" id="symList"></div>
+  </div>
+  <div id="ddayBox" class="hidden">
+   <div class="caption">디데이 <span class="cnt" id="ddCount"></span></div>
+   <div class="list" id="ddList"></div>
+   <div class="caption">추가</div>
+   <div class="formrow"><input class="text" id="ddTitle" placeholder="제목 (예: 제주 여행)" maxlength="12" autocomplete="off"></div>
+   <div class="formrow"><label class="lbl" for="ddDate">날짜</label><input class="text" id="ddDate" type="date" aria-label="날짜"></div>
+   <div class="formrow"><label class="chk"><input type="checkbox" id="ddYearly"> 매년 반복 (생일 · 기념일)</label></div>
+   <div class="formrow"><label class="chk"><input type="checkbox" id="ddHasStart"> 시작일부터 진행률 (RING 레이아웃)</label></div>
+   <div class="formrow hidden" id="ddStartRow"><label class="lbl" for="ddStart">시작일</label><input class="text" id="ddStart" type="date" aria-label="시작일"></div>
+   <div class="formrow"><button class="sbtn wide" id="ddAdd">추가</button></div>
+   <div class="msg" id="ddMsg">최대 8개 · 제목은 12자까지. 기기 화면에는 가까운 날짜부터 보여요.</div>
+  </div>
+  <div class="msg hidden" id="dataNone">이 앱은 따로 넣을 데이터가 없어요.</div>
  </div>
  <div class="hint" id="screenMsg"></div>
 </section>
@@ -119,11 +130,30 @@
  <div class="msg" id="stockMsg">종목명이나 코드를 검색해 추가하세요. 코스피·코스닥과 미국 등 해외 주식을 섞어도 돼요. 네이버 증권 시세예요.</div>
 </section>
 
-<section class="page" data-page="/screen/layout">
- <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">레이아웃 선택</h1></header>
- <div class="segrow"><div class="seg wide" id="themeSeg" role="radiogroup" aria-label="테마"><button role="radio" data-value="stock">주식</button><button role="radio" data-value="clock">시계</button></div><button class="info" id="themeInfo" aria-label="테마 설명"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg></button><div class="tip" id="themeTip" role="tooltip"></div></div>
- <div class="grid" id="layoutGrid"></div>
- <div class="hint" id="layoutMsg"></div>
+<section class="page" data-page="/common">
+ <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">화면 · 시계</h1></header>
+ <div class="caption">티커 바</div>
+ <div class="list">
+  <div class="setrow hidden" id="tbRow"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg><span class="mtext"><span class="mlbl">종목 시세 줄</span><span class="msub wrap" id="tbHint">디데이 같은 앱에서도 아래 한 줄에 시세가 돌아요</span></span></div>
+  <div class="segrow hidden" id="tbSegRow"><div class="seg wide" id="tbSeg" role="radiogroup" aria-label="티커 바 모양"><button role="radio" data-value="1">아래 한 줄</button><button role="radio" data-value="2">두 종목</button><button role="radio" data-value="3">위쪽 + 띠</button><button role="radio" data-value="0">끄기</button></div></div>
+ </div>
+ <div class="band"></div>
+ <div class="caption">시계 · 색</div>
+ <div class="list">
+  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span class="mtext"><span class="mlbl">시간대</span></span><select id="tz" class="val" aria-label="시간대"></select></div>
+  <div class="setrow hidden" id="tzCustomRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><input class="text" id="tzCustom" placeholder="POSIX TZ (예: KST-9)" maxlength="47" aria-label="직접 시간대"><button class="textbtn" id="tzSave"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>저장</button></div>
+  <div class="setrow" id="dateFmtRow"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg><span class="mtext"><span class="mlbl">날짜 형식</span></span><select id="dateFmt" class="val" aria-label="날짜 형식"></select></div>
+  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg><span class="mtext"><span class="mlbl">상승·하락 색</span></span><div class="seg" id="colorsSeg" role="radiogroup" aria-label="상승·하락 색"><button role="radio" data-value="kr"><span class="updn"><b class="u" style="color:#e5383b">▲</b><b class="d" style="color:#2f6fe4">▼</b></span>한국식</button><button role="radio" data-value="global"><span class="updn"><b class="u" style="color:#22a55b">▲</b><b class="d" style="color:#e5383b">▼</b></span>글로벌</button></div></div>
+ </div>
+ <div class="band"></div>
+ <div class="caption">밝기 · 야간</div>
+ <div class="list">
+  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">밝기</span></span><div class="seg" id="blSeg" role="radiogroup" aria-label="밝기"><button role="radio" data-value="1">어둡게</button><button role="radio" data-value="50">보통</button><button role="radio" data-value="75">밝게</button></div></div>
+  <div class="setrow hidden" id="nightRow"><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg><span class="mtext"><span class="mlbl">야간 모드</span><span class="msub" id="nightHint"></span></span><label class="switch"><input id="night" type="checkbox" aria-label="야간 모드"><i></i></label></div>
+  <div class="setrow hidden" id="nightFromRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">시작 시간</span></span><select id="nightFrom" class="val" aria-label="야간 모드 시작 시간"></select></div>
+  <div class="setrow hidden" id="nightToRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">끝 시간</span></span><select id="nightTo" class="val" aria-label="야간 모드 끝 시간"></select></div>
+  <div class="setrow hidden" id="nightModeRow"><svg class="ic" aria-hidden="true"><use href="#i-sun"/></svg><span class="mtext"><span class="mlbl">화면 밝기</span></span><div class="seg" id="nightSeg" role="radiogroup" aria-label="야간 화면 밝기"><button role="radio" data-value="0">끄기</button><button role="radio" data-value="1">어둡게</button><button role="radio" data-value="2">그대로</button></div></div>
+ </div>
 </section>
 
 <section class="page" data-page="/wifi">
@@ -477,7 +507,10 @@ function norm(s){
   if(sh0.seconds)t+=":"+secs;
   if(s.date){const m=/(\d+)-(\d+)-(\d+)/.exec(s.date);if(m)d=new Date(+m[1],+m[2]-1,+m[3]);}
   const sh=Object.assign({price:true,change:true,spark:true,date:true,symbols:true,seconds:false,h12:false,id:true},s.show||{});
-  return {chart:s.chart||{},indices:s.indices||[],id:s.id||"",hms,v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
+  // v3.0.0 앱 플랫폼: app(지금 앱)·tb(티커 바 모양 0~3)·dd(디데이 목록 원문 → 항목, 남은 날은 기기 날짜 기준)
+  const dd=parseDd(s.dd||"",synced?d:null);
+  return {app:s.app||s.variant||"kstock",tb:s.tb==null?1:s.tb|0,dd,lays:String(s.lays||"").split(","),
+    chart:s.chart||{},indices:s.indices||[],id:s.id||"",hms,v:s.variant||"kstock",slots,active:Math.min(s.active||0,Math.max(0,slots.length-1)),time:synced?t:"--:--",synced,d,show:sh,ampm,secs:synced?secs:"--",
     date:synced?(window.fmtDate?fmtDate(s.dateFmt||0,d):MON[d.getMonth()]+" "+d.getDate()+"  "+WD[d.getDay()]):"waiting for time",tone,showChart:s.showChart!==false,candleLabel:s.candleLabel||(coin?String(s.cint||"1d").replace(/^(\d+)([hd])$/,(m,a,b)=>a+b.toUpperCase()):"1D")};   // 코인은 기기 marketCandleLabel 처럼 cint 로 ("4H", "15m")
 }
 // 종가 선: 2.6.25 부터 기기가 slots[].spark(0~99 두 자리씩, 기기가 그리는 봉 종가)를 보낸다 → 기기와 같은 모양. 옛 펌웨어는 코드 해시 의사 난수 선
@@ -531,9 +564,9 @@ function tileRect(i,n){if(i===0)return [4,10,232,80];const k=n-1,j=i-1,row=Math.
 function heatRect(i,n){if(n<=1)return [4,10,232,226];if(i<2)return [i?146:4,10,i?90:138,n===2?226:118];const k=n-2,j=i-2;
   if(k===1)return [4,132,232,104];if(k===2)return [4+j*118,132,114,104];return [[4,82,162][j],132,[74,76,74][j],104];}
 function dot(x,cx,cy,r,color){x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();}
-// 코인 로고 이미지 캐시: 처음엔 없고(글자 동그라미), 받아지면 다음 그리기(상태 폴링 몇 초)부터 보인다
-const LOGOS={};
-function coinLogo(b){if(!b)return null;let e=LOGOS[b];if(!e){const im=new Image();e=LOGOS[b]={im,ok:false};im.onload=()=>{e.ok=true;};
+// 코인 로고 이미지 캐시: 처음엔 없고(글자 동그라미), 받아지면 다음 그리기(상태 폴링 몇 초)부터 보인다. 폴링이 없는 페이지(관리자)는 PREVIEW.onLogo 로 도착을 듣고 다시 그린다
+const LOGOS={},logoCbs=[];
+function coinLogo(b){if(!b)return null;let e=LOGOS[b];if(!e){const im=new Image();e=LOGOS[b]={im,ok:false};im.onload=()=>{e.ok=true;logoCbs.forEach(cb=>{try{cb(b);}catch(err){}});};
   im.onerror=()=>{if(!e.alt){e.alt=1;im.src="https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/128/color/"+b.toLowerCase()+".png";}};im.src="https://static.upbit.com/logos/"+b+".png";}
   return e.ok?e.im:null;}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
@@ -661,10 +694,67 @@ const L={
  C08(x,S){bigTime(x,S,10,C.amber);bigDate(x,S,64,C.amberDim);if(!S.show.symbols)return;x.fillStyle=C.rule;x.fillRect(0,92,240,1);if(S.slots.length>3)x.fillRect(120,98,1,128);
   S.slots.forEach((sl,i)=>{const col=i<3?0:1,r=i<3?i:i-3;row(x,S,sl,col?122:4,98+r*44,114,44,{colorPrice:1,stack:1});});},
 };
+// ---- v3.0.0 디데이 (펌웨어 layout_dday.cpp 와 같은 규칙) ----
+const KWD7=["일","월","화","수","목","금","토"];
+function civil(y,m,d){return Math.round(Date.UTC(y,m-1,d)/86400000);}
+// "제목|2026-12-11|y|2026-10-01;..." → [{t,y,m,d,yearly,sy,sm,sd,n,p,ty,elapsed}]. today: 기기 날짜(Date) 또는 null(미동기)
+function parseDd(spec,today){const out=[];if(!spec)return out;const td=today?civil(today.getFullYear(),today.getMonth()+1,today.getDate()):null;
+  for(const item of String(spec).split(";")){if(!item.trim())continue;const f=item.split("|");const m1=/^(\d{4})-(\d{2})-(\d{2})$/.exec(f[1]||"");if(!f[0]||!m1)continue;
+    const it={t:f[0],y:+m1[1],m:+m1[2],d:+m1[3],yearly:f[2]==="y"||f[2]==="1",sy:0,sm:0,sd:0,n:null,p:-1,ty:+m1[1],elapsed:0};
+    const m2=/^(\d{4})-(\d{2})-(\d{2})$/.exec(f[3]||"");if(m2){it.sy=+m2[1];it.sm=+m2[2];it.sd=+m2[3];}
+    if(td!=null){let ty=it.y;if(it.yearly){ty=today.getFullYear();if(civil(ty,it.m,it.d)<td)ty++;}it.ty=ty;it.n=civil(ty,it.m,it.d)-td;
+      if(it.sy){const st=civil(it.sy,it.sm,it.sd),en=td+it.n;it.elapsed=td-st+1;it.p=en<=st?100:Math.max(0,Math.min(100,Math.floor((td-st)*100/(en-st))));}}
+    out.push(it);if(out.length>=8)break;}
+  return out;}
+function ddOrder(list){const idx=list.map((_,i)=>i);if(list.some(x=>x.n==null))return idx;
+  return idx.sort((a,b)=>{const x=list[a].n,y=list[b].n;if(x>=0&&y>=0)return x-y;if(x<0&&y<0)return y-x;return x<0?1:-1;});}
+function ddParts(it){if(it.n==null)return ["D","--"];if(it.n===0)return ["D-DAY",""];if(it.n>0)return ["D","-"+it.n];return ["D+",String(-it.n)];}
+const DC={cream:"#F3E3B0",dim:"#8C8C8C",mint:"#4FBF9A",track:"#25262B",white:"#FFFDF7",dotOff:"#3A3A42",barBg:"#111115"};
+// 큰 값: 글자(D, D+, D-DAY)는 FreeSansBold18 2배, 숫자는 Font7. 밑선 baseY 에 가운데 cx
+function ddBig(x,cx,baseY,pre,digits,color){const wPre=measure(x,pre,"b18")*2,wDig=digits?measure(x,digits,"f7"):0,gap=digits?4:0,x0=Math.round(cx-(wPre+gap+wDig)/2);
+  const asc=(BF.b18&&BF.b18.asc)||25;x.save();x.scale(2,2);text(x,pre,x0/2,baseY/2-asc,"b18",color);x.restore();
+  if(digits)text(x,digits,x0+wPre+gap,baseY-((BF.f7&&BF.f7.h)||48),"f7",color);}
+function ddDate(it,ko){const s=`${it.ty}.${String(it.m).padStart(2,"0")}.${String(it.d).padStart(2,"0")}`;const w=new Date(it.ty,it.m-1,it.d).getDay();return ko?s+" ("+KWD7[w]+")":s+" "+WD[w];}
+function ddEmpty(x,ay,ah){text(x,"폰에서 디데이를 추가하세요",120,ay+ah/2-7,"ko14",DC.dim,"center");}
+function areaY(S){return S.tb===3?24:0;}function areaH(S){return S.tb?216:240;}
+// 티커 바 (펌웨어 tickerbar.cpp): 1 LINE 아래 한 줄 / 2 PAIR 두 종목 / 3 TOP 위 + 등락 띠 + 순번 + 스파크라인
+function tri(x,px,cy,up,c){x.fillStyle=c;x.beginPath();if(up){x.moveTo(px,cy+3);x.lineTo(px+7,cy+3);x.lineTo(px+3.5,cy-3);}else{x.moveTo(px,cy-3);x.lineTo(px+7,cy-3);x.lineTo(px+3.5,cy+3);}x.fill();}
+function barQuote(x,S,sl,px,py,w,compact){const ok=sl.ok,tone=ok?sl.color:DC.dim,price=ok?money(sl,S.v):"-",pc=ok&&!compact?Math.abs(sl.change).toFixed(1)+"%":"";
+  const wPrice=measure(x,price,"f2"),wPc=pc?measure(x,pc,"f2"):0,tail=6+wPrice+(ok?6+8+(wPc?2+wPc:0):0);
+  const nm=fitEll(x,sl.full,isAscii(sl.full)?"f2":"ko14",Math.max(24,w-tail));text(x,nm,px,py+(isAscii(nm)?4:5),"f2",DC.white);let cx=px+measure(x,nm,isAscii(nm)?"f2":"ko14")+6;
+  let pr=price;if(compact&&cx+tail-6>px+w)pr=compact?compact_(sl,S.v):price;text(x,pr,cx,py+4,"f2",DC.cream);cx+=measure(x,pr,"f2")+6;
+  if(!ok)return;tri(x,cx,py+12,sl.change>=0,tone);cx+=10;if(pc)text(x,pc,cx,py+4,"f2",tone);}
+const compact_=compact;
+function bar(x,S){if(!S.tb)return;const by=S.tb===3?0:216,n=S.slots.length,cur=Math.min(S.active,Math.max(0,n-1));
+  x.fillStyle=DC.barBg;x.fillRect(0,by,240,24);x.fillStyle=DC.track;x.fillRect(0,S.tb===3?by+23:by,240,1);
+  if(!n){text(x,"종목을 추가하세요",120,by+5,"ko14",DC.dim,"center");return;}
+  if(S.tb===2){x.fillStyle=DC.track;x.fillRect(119,by+1,1,23);barQuote(x,S,S.slots[cur],4,by,112,true);if(n>1)barQuote(x,S,S.slots[(cur+1)%n],124,by,112,true);return;}
+  if(S.tb===3){const sl=S.slots[cur];x.fillStyle=sl.ok?sl.color:"#4A4A52";x.fillRect(0,by,4,24);const ord=(cur+1)+"/"+n,sp=sl.spark&&sl.spark.length>=2?36:0;
+    text(x,ord,236-(sp?sp+6:0),by+8,"f1",DC.dim,"right");const ow=measure(x,ord,"f1");if(sp)spark(x,200,by+6,36,12,sl.spark,sl.ok?sl.color:DC.dim);
+    barQuote(x,S,sl,8,by,240-16-ow-(sp?sp+6:0)-6,false);return;}
+  barQuote(x,S,S.slots[cur],8,by,240-8-n*7-10,false);for(let i=0;i<n;i++)dot(x,232-2-(n-1-i)*7,by+12,2,i===cur?DC.white:DC.dotOff);}
+Object.assign(L,{
+ // D01 BIG: 제목 24px 흐린 · 큰 값 · 날짜 · 페이지 점 (항목은 가까운 순 첫 번째. 기기는 rotateSec 마다 넘긴다)
+ D01(x,S){const ay=areaY(S),list=S.dd;if(!list.length){ddEmpty(x,ay,areaH(S));return;}const it=list[ddOrder(list)[0]];
+  text(x,fitEll(x,it.t,"ko24",224),120,ay+24,"ko24",DC.dim,"center");const [pre,dg]=ddParts(it);ddBig(x,120,ay+108,pre,dg,it.n===0?DC.mint:DC.cream);
+  text(x,ddDate(it,true),120,ay+145,"ko14",DC.dim,"center");if(list.length>1)for(let i=0;i<list.length;i++)dot(x,120-(list.length-1)*3.5+i*7,ay+190,2,i===0?DC.white:DC.dotOff);},
+ // D02 LIST: 38px 행 x 5
+ D02(x,S){const ay=areaY(S),list=S.dd;if(!list.length){ddEmpty(x,ay,areaH(S));return;}const ord=ddOrder(list).slice(0,5);
+  ord.forEach((k,r)=>{const it=list[k],y=ay+6+r*38,[pre,dg]=ddParts(it),v=pre+dg,vc=it.n==null?DC.dim:it.n===0?DC.mint:it.n<0?DC.dim:DC.cream;
+    text(x,v,232,midY("b12",y+19),"b12",vc,"right");const vw=measure(x,v,"b12");if(r===0&&it.n!=null&&it.n>=0){x.fillStyle=DC.mint;x.fillRect(8,y+2,3,34);}
+    text(x,fitEll(x,it.t,"ko14",232-vw-26),16,y+3,"ko14",DC.white);text(x,ddDate(it,false)+(it.yearly?"  yearly":""),16,y+23,"f1",DC.dim);
+    if(r<ord.length-1){x.fillStyle=DC.track;x.fillRect(8,y+38,224,1);}});},
+ // D03 RING: 시작일이 있는 항목의 진행률 링 (중심 120, ay+88, r 70, 두께 8)
+ D03(x,S){const ay=areaY(S),list=S.dd;if(!list.length){ddEmpty(x,ay,areaH(S));return;}const ord=ddOrder(list);let it=list[ord[0]];for(const k of ord)if(list[k].sy){it=list[k];break;}
+  const cx=120,cy=ay+88;x.lineWidth=8;x.strokeStyle=DC.track;x.beginPath();x.arc(cx,cy,66,0,Math.PI*2);x.stroke();
+  if(it.p>0){x.strokeStyle=DC.mint;x.lineCap="round";x.beginPath();x.arc(cx,cy,66,-Math.PI/2,-Math.PI/2+Math.PI*2*it.p/100);x.stroke();x.lineCap="butt";}
+  const [pre,dg]=ddParts(it);ddBig(x,cx,cy+20,pre,dg,it.n===0?DC.mint:DC.cream);if(it.p>=0)text(x,it.elapsed+"일째",cx,cy+25,"ko14",DC.dim,"center");
+  text(x,fitEll(x,it.t,"ko14",200),cx,ay+178,"ko14",DC.white,"center");},
+});
 function draw(canvas,layoutId,state){const px=canvas.width;const x=canvas.getContext("2d");x.setTransform(1,0,0,1,0,0);x.fillStyle=C.bg;x.fillRect(0,0,px,canvas.height);
-  x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S01)(x,S);}catch(e){text(x,"preview error",120,110,"f2",C.dim,"center");}
+  x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S01)(x,S);if(/^D/.test(layoutId))bar(x,S);}catch(e){text(x,"preview error",120,110,"f2",C.dim,"center");}   // 생활 앱(D..)은 티커 바까지
   if(S.show.id&&S.id)text(x,S.id,238,1,"f1",C.dim,"right");}  // 오른쪽 위 기기 ID 배지 (펌웨어 Font1 6x8)
-return {draw,ids:Object.keys(L),onReady(cb){if(fontsReady)cb();else readyCbs.push(cb);},get fontsReady(){return fontsReady;}};
+return {draw,ids:Object.keys(L),parseDd,onReady(cb){if(fontsReady)cb();else readyCbs.push(cb);},onLogo(cb){logoCbs.push(cb);},get fontsReady(){return fontsReady;}};
 })();
 // 차트토템 기기 설정 페이지 동작 (window.MARKET 과 PREVIEW 가 정의된 뒤 실행). 원본: tools/web/settings.js → gen_launcher.py → launcher/settings-*.html
 // 구조: 해시 라우팅 (#/ 홈, #/screen(종목 + 화면 설정), #/screen/add(종목 추가·검색), #/screen/layout, #/wifi, #/system). 상태는 /api/state 폴링.
@@ -679,8 +769,13 @@ const I=n=>`<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;  //
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let state=null, pollTimer=null, failCount=0, toastTimer=null;
 let pendingName=null;   // {v, until}: 방금 바꾼 기기 이름. 기기가 반영하기 전 폴링이 옛 이름으로 덮지 않게
-const PAGES=["/","/screen","/screen/add","/screen/layout","/wifi","/wifi/add","/system","/privacy","/licenses"];
-const PARENT={"/screen":"/","/screen/add":"/screen","/screen/layout":"/screen","/wifi":"/","/wifi/add":"/wifi","/system":"/","/privacy":"/","/licenses":"/"};
+const PAGES=["/","/screen","/screen/add","/common","/wifi","/wifi/add","/system","/privacy","/licenses"];   // v3.0.0: /screen = 앱 페이지(#/screen/<앱>[/<탭>]), /common = 화면·시계(티커 바·시간대·밝기·야간)
+const PARENT={"/screen":"/","/screen/add":"/screen","/common":"/","/wifi":"/","/wifi/add":"/wifi","/system":"/","/privacy":"/","/licenses":"/"};
+// ---- 앱 (v3.0.0 앱 플랫폼) ----
+const APP_ICON={kstock:"candlestick",coin:"coins",clock:"clock",dday:"calendar"};
+const APP_NAMES={kstock:"주식",coin:"코인",clock:"시계",dday:"디데이"};
+const THEME_OF={kstock:"stock",coin:"stock",clock:"clock",dday:"dday"},THEME_IDX={stock:0,clock:1,dday:2};
+let selApp=null, appTab="layout";   // 앱 페이지에서 보고 있는 앱(기본: 기기에 켜진 앱)과 탭
 const SHOW_KEYS=[["showPrice","price"],["showChange","change"],["showSpark","spark"],["showDate","date"],["showSeconds","seconds"],["show12h","h12"]];   // 기기 ID 배지는 항상 켜 둔다 (토글 없음)   // symbols 비트는 UI 에서 뺐다 (항상 켬)
 let prevPage=null, curPage=null;
 const TZ_PRESETS=[["KST-9","서울 (KST)"],["JST-9","도쿄 (JST)"],["HKT-8","홍콩 (HKT)"],["CST-8","상하이 · 싱가포르"],["IST-5:30","뭄바이 (IST)"],
@@ -714,6 +809,7 @@ const codesOf=s=>s&&s.codes?s.codes:(s?[s[MARKET.key]]:[]);
 let draft=null, applying=null;   // applying: {since, target} 명령을 보냈고 기기 상태가 target(보낸 시점의 초안)에 닿기를 기다리는 중
 let sendTimer=null, sendFails=0;
 function extract(s){return {codes:codesOf(s).slice(),layout:s.layout||"S01",theme:s.theme||"stock",colors:s.colors||"",tz:s.tz||"",dateFmt:s.dateFmt||0,rotate:s.rotate==null?5:s.rotate,
+  app:s.app||s.variant||MARKET.key==="base"?(s.app||"coin"):(s.app||"kstock"),tb:s.tb==null?null:s.tb|0,dd:s.dd||"",lays:String(s.lays||"").split(","),   // v3.0.0: 지금 앱 · 티커 바 · 디데이 목록 · 앱별 레이아웃 (옛 펌웨어는 tb null → 숨김)
   chart:!!s.showChart,bl:s.brightness==null?60:s.brightness,show:Object.assign({price:true,change:true,spark:true,date:true,seconds:false,h12:false,id:true},s.show||{}),
   night:s.night?{on:!!s.night.on,from:s.night.from|0,to:s.night.to|0,mode:s.night.mode|0}:null,
   cname:s.cname|0,cnames:s.cnames||"",cint:s.cint||"1d",   // 코인 이름 표시·한글 이름·봉 간격 (2.10.0, 주식은 cnames 가 비어 있다)   // night: 2.6.24 부터 (옛 펌웨어는 null → 행을 숨긴다). active 는 상태라 초안에 넣지 않는다
@@ -738,6 +834,10 @@ function diffParams(base){
   if(draft.cnames!==base.cnames)p.push("cnames="+encodeURIComponent(draft.cnames));
   if(draft.cint!==base.cint)p.push("cint="+draft.cint);
   if(draft.autoup!=null&&base.autoup!=null&&draft.autoup!==base.autoup)p.push("autoup="+(draft.autoup?1:0));
+  if(draft.app!==base.app&&["kstock","coin","clock","dday"].includes(draft.app))p.push("app="+draft.app);   // 시계·디데이·이 변형의 시세 앱: 즉시 전환. 다른 변형(OTA)은 appUse 가 따로 보낸다
+  if(draft.tb!=null&&base.tb!=null&&draft.tb!==base.tb)p.push("tb="+draft.tb);
+  if(draft.dd!==base.dd)p.push("dd="+encodeURIComponent(draft.dd));
+  for(let t=0;t<3;t++)if(draft.lays[t]&&draft.lays[t]!==(base.lays[t]||"")&&t!==THEME_IDX[draft.theme])p.push("alay="+draft.lays[t]);   // 켜지지 않은 앱의 레이아웃만 기억 (켜진 앱은 layout=)
   return p;
 }
 // 화면에 그릴 때 쓰는 상태: 기기 상태 위에 초안을 덮은 것 (아직 없는 종목은 빈 슬롯으로)
@@ -745,7 +845,8 @@ function view(){
   if(!state)return null;
   if(!draft)return state;
   const slots=(state.slots||[]);
-  const v=Object.assign({},state,{codes:draft.codes,layout:draft.layout,theme:draft.theme,colors:draft.colors,tz:draft.tz,dateFmt:draft.dateFmt,rotate:draft.rotate,showChart:draft.chart,brightness:draft.bl,show:draft.show,night:draft.night,cname:draft.cname,cnames:draft.cnames,cint:draft.cint});
+  const v=Object.assign({},state,{codes:draft.codes,layout:draft.layout,theme:draft.theme,colors:draft.colors,tz:draft.tz,dateFmt:draft.dateFmt,rotate:draft.rotate,showChart:draft.chart,brightness:draft.bl,show:draft.show,night:draft.night,cname:draft.cname,cnames:draft.cnames,cint:draft.cint,
+    app:draft.app,tb:draft.tb==null?state.tb:draft.tb,dd:draft.dd,lays:draft.lays.join(",")});
   if(draft.autoup!=null&&state.fw)v.fw=Object.assign({},state.fw,{auto:draft.autoup});
   v.slots=draft.codes.map(c=>slots.find(x=>x.code===c)||{code:c,price:0,change:0,ok:false,validating:false,error:"",pending:true});
   const lay=(layouts||[]).find(l=>l.id===draft.layout);if(lay){v.layoutName=lay.name;v.theme=lay.theme;}
@@ -804,7 +905,9 @@ function checkApplied(s){
 // ---- 라우팅 ----
 function go(p){location.hash="#"+p;}
 function waEnter(){WA.sel=null;WA.manual=false;WA.sent=null;WA.seenSeq=-1;$("waStatus").classList.add("hidden");$("waPick").classList.remove("hidden");$("waForm").classList.add("hidden");$("waPass").value="";$("waSsid").value="";$("waNow").checked=true;if(state)waScan();else WA.waitSeq=-2;}
-function page(){let p=location.hash.slice(1)||"/";if(p==="/symbols")p="/screen";return PAGES.includes(p)?p:null;}
+function page(){let p=location.hash.slice(1)||"/";if(p==="/symbols"||p==="/screen/layout")p="/screen";
+  const m=/^\/screen\/(kstock|coin|clock|dday)(?:\/(layout|options|data))?$/.exec(p);if(m){selApp=m[1];if(m[2])appTab=m[2];p="/screen";}   // 런처 홈에서 앱·탭을 지정해 들어온다
+  return PAGES.includes(p)?p:null;}
 function route(){
   let p=page();if(!p){history.replaceState(null,"",location.pathname+"#/");p="/";}
   const changed=p!==curPage;
@@ -828,7 +931,8 @@ window.addEventListener("hashchange",route);
 // ---- 홈 ----
 function renderHome(s){
   const codes=codesOf(s),slots=s.slots||[],act=slots[s.active]||null;
-  const items=[["monitor","화면",(s.layoutName||"-")+" · 종목 "+codes.length+"/"+(s.max||5),"/screen"],   // 레이아웃 이름 · 종목 수까지만 (표시 중 종목명은 뺐다, 0.7.30)
+  const items=[["layout-grid","앱",(APP_NAMES[s.app]||"주식")+" · "+(s.layoutName||"-")+(THEME_OF[s.app]==="stock"?" · 종목 "+codes.length+"/"+(s.max||5):""),"/screen"],   // v3.0.0: 켜진 앱 · 레이아웃
+    ["sun","화면 · 시계","티커 바 · 시간대 · 밝기 · 야간 모드","/common"],
     ["wifi","Wi-Fi",s.ssid||"연결 안 됨","/wifi"],
     ["settings","시스템",(s.fw&&s.fw.available?"새 펌웨어 v"+s.fw.latest+" · ":"")+"v"+s.version,"/system",!!(s.fw&&s.fw.available)]];
   $("homeMenu").innerHTML=items.map(x=>`<button class="menu" data-go="${x[3]}">${I(x[0])}<span class="mtext"><span class="mlbl">${x[1]}${x[4]?'<span class="newtag">NEW</span>':""}</span><span class="msub">${esc(x[2])}</span></span></button>`).join("");
@@ -911,28 +1015,101 @@ function addSymbol(raw){
 }
 function applySymbol(v){addSymbol(v);}
 
-// ---- 화면 ----
-let layouts=null, themeTab=null, layoutKey="";
-async function loadLayouts(){try{layouts=(await (await fetch("/api/layouts",{cache:"no-store"})).json()).layouts||[];}catch(e){layouts=[];}if(state){renderLayouts(view(),true);renderAll();}}   // 목록이 오면 화면 페이지(전환 간격 행 등)도 바로 갱신
+// ---- 앱 페이지 (v3.0.0): 앱 칩 → 미리보기 → 레이아웃 | 옵션 | 데이터 ----
+let layouts=null, layoutApps=null, layoutKey="";
+async function loadLayouts(){try{const j=await (await fetch("/api/layouts",{cache:"no-store"})).json();layouts=j.layouts||[];layoutApps=j.apps||null;}catch(e){layouts=[];}if(state)renderAll();}
+const myMarket=()=>MARKET.key==="base"?"coin":"kstock";
+const otherMarket=()=>MARKET.key==="base"?"kstock":"coin";
+// 앱 페이지의 앱 목록: 이 변형의 시세 앱 · 시계 · 디데이 (+ 권한이 있으면 다른 변형의 시세 앱 — OTA 약 30초)
+function appIds(s){const ids=[myMarket(),"clock","dday"];if(Array.isArray(s.apps)&&s.apps.includes(otherMarket()))ids.splice(1,0,otherMarket());return ids;}
+function curApp(s){return s.app||myMarket();}
+function selLayoutId(s){const app=selApp||curApp(s);if(app===curApp(s))return s.layout;if(app===otherMarket())return s.layout;   // 다른 변형: 알 수 없어 지금 것
+  const t=THEME_IDX[THEME_OF[app]];const lays=String(s.lays||"").split(",");if(lays[t])return lays[t];const first=(layouts||[]).find(l=>l.theme===THEME_OF[app]);return first?first.id:s.layout;}
+function renderChips(s){const box=$("appChips"),ids=appIds(s),cur=curApp(s),sel=selApp||cur;
+  const key=ids.join("|")+"|"+cur+"|"+sel;if(box.dataset.key===key)return;box.dataset.key=key;box.innerHTML="";
+  ids.forEach(id=>{const b=document.createElement("button");b.className="appchip"+(id===sel?" on":"")+(id===cur?" run":"");b.setAttribute("role","tab");b.setAttribute("aria-selected",id===sel);b.dataset.app=id;
+    b.innerHTML=`${I(APP_ICON[id])}${esc(APP_NAMES[id])}${id===cur?"<i></i>":""}`;box.appendChild(b);});}
 function renderScreen(s){
-  $("layoutValue").textContent=s.layoutName||"-";
-  if(window.PREVIEW)PREVIEW.draw($("mainPreview"),s.layout||"S01",s);
-  const colors=s.colors||"kr";
-  $("colorsSeg").querySelectorAll("button").forEach(b=>{const on=b.dataset.value===colors;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
-  const show=s.show||{},clock=s.theme==="clock";
+  const cur=curApp(s);if(!selApp||!appIds(s).includes(selApp))selApp=cur;
+  const app=selApp,theme=THEME_OF[app],stock=theme==="stock",clock=theme==="clock",other=app===otherMarket();
+  renderChips(s);
+  document.querySelector('[data-page="/screen"] h1').textContent=APP_NAMES[app]||"앱";
+  $("appOn").classList.toggle("hidden",app!==cur);$("appUse").classList.toggle("hidden",app===cur);
+  $("appUse").textContent=other?"이 앱으로 바꾸기 (약 30초)":"이 앱으로 전환";
+  $("appOtaMsg").classList.toggle("hidden",!other);if(other)$("appOtaMsg").textContent=APP_NAMES[app]+" 앱은 다른 펌웨어라 바꾸는 데 약 30초 걸리고 기기가 다시 시작해요. Wi-Fi·앱 연결·두 앱의 종목은 그대로 남아요.";
+  $("appTabs").querySelectorAll("button").forEach(b=>{const on=b.dataset.tab===appTab;b.classList.toggle("on",on);b.setAttribute("aria-selected",on);});
+  $("tabLayout").classList.toggle("hidden",appTab!=="layout"||other);$("tabOptions").classList.toggle("hidden",appTab!=="options"||other);$("tabData").classList.toggle("hidden",appTab!=="data"||other);
+  const lid=selLayoutId(s);
+  if(window.PREVIEW)PREVIEW.draw($("mainPreview"),lid,s);
+  // 레이아웃 격자: 이 앱의 레이아웃만
+  if(layouts){const key=theme+"|"+lid+"|"+layouts.length;const grid=$("layoutGrid");
+    if(key!==layoutKey){layoutKey=key;grid.innerHTML="";
+      layouts.filter(l=>l.theme===theme).forEach(l=>{const b=document.createElement("button");b.className="lay"+(l.id===lid?" on":"");b.dataset.layout=l.id;b.setAttribute("aria-pressed",l.id===lid);
+        b.innerHTML=`<span class="check">${I("check")}</span><canvas width="240" height="240"></canvas><b>${esc(l.name)}</b><div class="desc">${esc(l.desc||"")}</div><span class="tag">${l.single?"종목 전환":stock||clock?"전체 표시":"디데이"}</span>`;
+        b.onclick=()=>setLayout(l);grid.appendChild(b);});}
+    if(window.PREVIEW)grid.querySelectorAll(".lay").forEach(b=>PREVIEW.draw(b.querySelector("canvas"),b.dataset.layout,s));}
+  else loadLayouts();
+  // 옵션 탭: 앱에 맞는 행만
+  const show=s.show||{};
   SHOW_KEYS.forEach(([id,k])=>{const el=$(id);if(document.activeElement!==el)el.checked=show[k]!==false;});
-  $("showSparkRow").classList.toggle("hidden",clock||s.layout==="S07");   // TAPE 는 라인 차트가 없다
-  $("showDateRow").classList.toggle("hidden",!clock);
-  const coin=MARKET.key==="base";   // 코인: 이름 표시(심볼/한글)·봉 간격 (2.10.0)
-  $("cnameRow").classList.toggle("hidden",!coin);const charted=["S01","S02","S03","S04","S05","S06"].includes(s.layout);   // 봉(차트·라인)을 쓰는 레이아웃만 (펌웨어 LAYOUTS 의 wantCandles). TAPE·시계 테마는 차트가 없다
-  $("cintRow").classList.toggle("hidden",!coin||!charted);
+  const coin=MARKET.key==="base";
+  $("cnameRow").classList.toggle("hidden",!stock||!coin);
+  const charted=["S01","S02","S03","S04","S05","S06"].includes(lid);$("cintRow").classList.toggle("hidden",!stock||!coin||!charted);
   $("cnameSeg").querySelectorAll("button").forEach(b=>{const on=+b.dataset.value===(s.cname|0);b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
   const ci=$("cint");if(document.activeElement!==ci)ci.value=s.cint||"1d";
-  // 화면 전환 간격: 종목을 하나씩 돌려 보여 주는 레이아웃(single: HERO·CHART·SPLIT·HANDS·STACK)에서만. 전체를 한 화면에 보이는 레이아웃은 숨김
-  const lay=(layouts||[]).find(l=>l.id===s.layout);const single=lay?lay.single:["S01","S03","S06","C02","C05"].includes(s.layout);  // 목록이 오기 전엔 알려진 ID 로 판단 (깜빡임 방지)
-  $("rotateRow").classList.toggle("hidden",!single);
-  $("showSecondsRow").classList.toggle("hidden",!clock);$("show12hRow").classList.toggle("hidden",!clock||s.layout==="C02");  // HANDS(아날로그)는 초침만 해당, 12시간제 없음
-  // 밝기: 어둡게 1 · 보통 50 · 밝게 75. 다른 값(옛 슬라이더로 맞춘 값)은 가장 가까운 단계로 표시
+  ["showPriceRow","showChangeRow"].forEach(id=>$(id).classList.toggle("hidden",!stock&&!clock));
+  $("showSparkRow").classList.toggle("hidden",!stock||lid==="S07");
+  $("showDateRow").classList.toggle("hidden",!clock);$("showSecondsRow").classList.toggle("hidden",!clock);$("show12hRow").classList.toggle("hidden",!clock||lid==="C02");
+  const lay=(layouts||[]).find(l=>l.id===lid);const single=lay?lay.single:["S01","S03","S06","C02","C05"].includes(lid);
+  const rotRow=stock||clock?single:lid==="D01";$("rotateRow").classList.toggle("hidden",!rotRow);
+  const r=$("rotate");if(document.activeElement!==r)r.value=String(s.rotate==null?5:s.rotate);
+  $("rotateHint").textContent=theme==="dday"?"디데이가 여러 개면 이 간격으로 넘어가요":(codesOf(s).length>1?(s.rotate>0?s.rotate+"초마다 다음 종목으로":"전환 꺼짐 · 첫 종목만"):"종목을 더 추가하면 차례로 넘어가요");
+  $("optNone").classList.toggle("hidden",stock||clock||rotRow);
+  // 데이터 탭
+  $("symBox").classList.toggle("hidden",!stock);$("ddayBox").classList.toggle("hidden",theme!=="dday");$("dataNone").classList.toggle("hidden",stock||theme==="dday");
+  if(stock)renderList(s);
+  if(theme==="dday")renderDday(s);
+}
+function setLayout(l){
+  if(!draft)return;
+  const t=THEME_IDX[l.theme];
+  if(THEME_OF[selApp||draft.app]===draft.theme||l.theme===draft.theme){if(l.id===draft.layout)return;draft.layout=l.id;draft.theme=l.theme;draft.lays[t]=l.id;}   // 켜진 앱: 바로 바꾼다
+  else{if(draft.lays[t]===l.id)return;draft.lays[t]=l.id;}   // 다른 앱: 기억만 (alay=)
+  markDirty();
+}
+function setTz(v){v=(v||"").trim();if(!v){setMsg("screenMsg","시간대를 입력해 주세요.","err");return;}draft.tz=v;markDirty();}
+// 「이 앱으로 전환」: 시계·디데이·이 변형의 시세 앱은 설정 명령 하나(app=). 다른 변형은 OTA (2.9.0 appSwitch 와 같은 흐름)
+$("appUse").onclick=()=>{if(!draft||!state)return;const app=selApp||curApp(state);
+  if(app===otherMarket()){const btn=$("appUse");if(!confirm(APP_NAMES[app]+" 앱으로 바꿀까요?\n\n약 30초 걸리고 기기가 다시 시작해요. Wi-Fi·앱 연결·두 앱의 종목은 그대로 남아요."))return;btn.disabled=true;
+    post("/api/settings?app="+app).then(()=>{appSwitching={from:state.variant,to:app,since:Date.now()};toast(APP_NAMES[app]+" 앱으로 바꾸기 시작했어요 · 기기 화면을 보세요");pollSoon(CLOUD?5000:3000);}).catch(e=>{toast(e.message==="apps"?"이 기기엔 "+APP_NAMES[app]+" 앱 권한이 없어요":"시작하지 못했어요: "+e.message);}).finally(()=>{btn.disabled=false;});return;}
+  draft.app=app;draft.theme=THEME_OF[app];const t=THEME_IDX[draft.theme];const lid=draft.lays[t]||selLayoutId(view());draft.layout=lid;draft.lays[t]=lid;markDirty();};
+$("appChips").onclick=e=>{const b=e.target.closest(".appchip");if(!b||!state)return;selApp=b.dataset.app;layoutKey="";renderScreen(view());};
+$("appTabs").onclick=e=>{const b=e.target.closest("button[data-tab]");if(!b||!state)return;appTab=b.dataset.tab;renderScreen(view());};
+// ---- 디데이 편집 (데이터 탭): draft.dd 문자열 ↔ 항목 (형식은 펌웨어 layout_dday.h) ----
+const ddParse=spec=>(window.PREVIEW&&PREVIEW.parseDd?PREVIEW.parseDd(spec,new Date()):[]);
+const ddSer=list=>list.map(it=>`${it.t}|${it.y}-${String(it.m).padStart(2,"0")}-${String(it.d).padStart(2,"0")}|${it.yearly?"y":""}|${it.sy?`${it.sy}-${String(it.sm).padStart(2,"0")}-${String(it.sd).padStart(2,"0")}`:""}`).join(";");
+function renderDday(s){const list=ddParse(s.dd||""),box=$("ddList");box.innerHTML="";$("ddCount").textContent=list.length+"/8";
+  if(!list.length)box.innerHTML='<div class="msg">아직 디데이가 없어요. 아래에서 추가하면 기기 화면에 바로 보여요.</div>';
+  list.forEach((it,i)=>{const row=document.createElement("div");row.className="setrow ddrow";const v=it.n==null?"-":it.n===0?"D-DAY":it.n>0?"D-"+it.n:"D+"+(-it.n);
+    row.innerHTML=`${I("calendar")}<span class="mtext"><span class="mlbl"></span><span class="msub">${it.y}.${String(it.m).padStart(2,"0")}.${String(it.d).padStart(2,"0")}${it.yearly?" · 매년":""}${it.sy?" · 시작 "+it.sy+"."+String(it.sm).padStart(2,"0")+"."+String(it.sd).padStart(2,"0"):""}</span></span><span class="dv${it.n==null?"":it.n===0?" today":it.n<0?" past":""}">${v}</span><button class="rm" title="삭제" aria-label="삭제">${I("x")}</button>`;
+    row.querySelector(".mlbl").textContent=it.t;
+    row.querySelector(".rm").onclick=()=>{const l=ddParse(draft.dd);l.splice(i,1);draft.dd=ddSer(l);markDirty();toast(it.t+" 을(를) 지웠어요");};
+    box.appendChild(row);});
+  const full=list.length>=8;$("ddAdd").disabled=full;}
+$("ddHasStart").onchange=e=>$("ddStartRow").classList.toggle("hidden",!e.target.checked);
+$("ddAdd").onclick=()=>{if(!draft)return;const t=$("ddTitle").value.trim().replace(/[|;]/g," ").slice(0,12),d=$("ddDate").value,y=$("ddYearly").checked,st=$("ddHasStart").checked?$("ddStart").value:"";
+  if(!t){setMsg("ddMsg","제목을 넣어 주세요.","err");$("ddTitle").focus();return;}if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){setMsg("ddMsg","날짜를 골라 주세요.","err");return;}
+  if(st&&!/^\d{4}-\d{2}-\d{2}$/.test(st)){setMsg("ddMsg","시작일을 골라 주세요.","err");return;}
+  const l=ddParse(draft.dd);if(l.length>=8){setMsg("ddMsg","디데이는 8개까지예요.","err");return;}
+  draft.dd=(draft.dd?draft.dd+";":"")+`${t}|${d}|${y?"y":""}|${st}`;$("ddTitle").value="";$("ddDate").value="";$("ddYearly").checked=false;$("ddHasStart").checked=false;$("ddStart").value="";$("ddStartRow").classList.add("hidden");
+  setMsg("ddMsg","최대 8개 · 제목은 12자까지. 기기 화면에는 가까운 날짜부터 보여요.");markDirty();toast(t+" 을(를) 추가했어요");};
+// ---- 공통 (화면 · 시계): 티커 바 · 시간대 · 날짜 형식 · 색 · 밝기 · 야간 ----
+function renderCommon(s){
+  const tb=s.tb==null?null:s.tb|0;$("tbRow").classList.toggle("hidden",tb===null);$("tbSegRow").classList.toggle("hidden",tb===null);
+  if(tb!==null){$("tbSeg").querySelectorAll("button").forEach(b=>{const on=+b.dataset.value===tb;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
+    $("tbHint").textContent=tb===0?"꺼짐 · 디데이 같은 앱에서 시세가 안 보여요":tb===1?"아래 한 줄 · 종목명 · 가격 · 등락률이 차례로 돌아요":tb===2?"아래 두 종목씩 나란히":"위쪽 한 줄 · 등락색 띠 · 작은 차트";}
+  const colors=s.colors||"kr";
+  $("colorsSeg").querySelectorAll("button").forEach(b=>{const on=b.dataset.value===colors;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
   const BL=[1,50,75],blNear=BL.reduce((a,b)=>Math.abs(b-(s.brightness||0))<Math.abs(a-(s.brightness||0))?b:a,BL[0]);
   $("blSeg").querySelectorAll("button").forEach(b=>{const on=+b.dataset.value===blNear;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
   renderNight(s);
@@ -942,8 +1119,8 @@ function renderScreen(s){
     if(!preset&&document.activeElement!==$("tzCustom"))$("tzCustom").value=s.tz||"";}
   const df=$("dateFmt");if(!df.options.length){const today=new Date();for(let n=0;n<5;n++)df.add(new Option(fmtDate(n,today),String(n)));}
   if(document.activeElement!==df)df.value=String(s.dateFmt||0);
-  $("dateFmtRow").classList.toggle("hidden",!clock);
 }
+$("tbSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft||draft.tb==null)return;draft.tb=+b.dataset.value;markDirty();};
 // 야간 모드: 켜면 시작·끝 시간과 화면 밝기(끄기/어둡게/그대로) 행이 나온다. 옛 펌웨어(night 없음)는 전부 숨김
 function renderNight(s){
   const n=s.night;
@@ -953,34 +1130,12 @@ function renderNight(s){
   if(document.activeElement!==$("night"))$("night").checked=!!n.on;
   [["nightFrom",n.from],["nightTo",n.to]].forEach(([id,v])=>{const el=$(id);
     if(!el.options.length)for(let m=0;m<1440;m+=30)el.add(new Option(fmtMin(m),String(m)));
-    if(![...el.options].some(o=>+o.value===v))el.add(new Option(fmtMin(v),String(v)));   // 30분 단위가 아닌 값(API 로 맞춘 것)도 보이게
+    if(![...el.options].some(o=>+o.value===v))el.add(new Option(fmtMin(v),String(v)));
     if(document.activeElement!==el)el.value=String(v);});
   $("nightSeg").querySelectorAll("button").forEach(b=>{const on=+b.dataset.value===n.mode;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
   const live=state&&state.night&&state.night.active&&n.on;
   $("nightHint").textContent=!n.on?"정해진 시간에 화면을 어둡게":n.from===n.to?"시작과 끝이 같아서 켜지지 않아요":fmtMin(n.from)+" ~ "+fmtMin(n.to)+" · "+NIGHT_MODES[n.mode]+(live?" · 지금 적용 중":"");
 }
-function renderLayouts(s,force){
-  if(!layouts){loadLayouts();return;}
-  const t=themeTab||s.theme||"stock";
-  $("themeSeg").querySelectorAll("button").forEach(b=>{const on=b.dataset.value===t;b.classList.toggle("on",on);b.setAttribute("aria-checked",on);});
-  $("themeTip").textContent=t==="stock"?"주식 테마: 시세가 전면에 나와요.":"시계 테마: 겉보기엔 탁상시계예요. 종목은 작게 들어가요.";
-  const key=t+"|"+s.layout+"|"+layouts.length;
-  const grid=$("layoutGrid");
-  if(key!==layoutKey||force){
-    layoutKey=key;grid.innerHTML="";
-    layouts.filter(l=>l.theme===t).forEach(l=>{const b=document.createElement("button");b.className="lay"+(l.id===s.layout?" on":"");b.dataset.layout=l.id;b.setAttribute("aria-pressed",l.id===s.layout);
-      b.innerHTML=`<span class="check">${I("check")}</span><canvas width="240" height="240"></canvas><b>${esc(l.name)}</b><div class="desc">${esc(l.desc||"")}</div><span class="tag">${l.single?"종목 전환":"전체 표시"}</span>`;
-      b.onclick=()=>setLayout(l);grid.appendChild(b);});
-  }
-  if(window.PREVIEW)grid.querySelectorAll(".lay").forEach(b=>PREVIEW.draw(b.querySelector("canvas"),b.dataset.layout,s));
-}
-function setLayout(l){
-  if(!draft||l.id===draft.layout)return;
-  draft.layout=l.id;draft.theme=l.theme;themeTab=null;
-  markDirty();  // 선택은 미리보기·저장 바에 바로 보이므로 토스트는 띄우지 않는다
-}
-function setTz(v){v=(v||"").trim();if(!v){setMsg("screenMsg","시간대를 입력해 주세요.","err");return;}draft.tz=v;markDirty();}
-
 // ---- 저장된 Wi-Fi 목록 (즉시 반영: 기기 옆에서만) ----
 let wifiKnownKey="";
 // 저장된 Wi-Fi 목록: 지금 것 외에는 「전환」(지금 바꾸기) 과 삭제. 명령은 모두 /api/settings (LAN·클라우드 같은 경로, 클라우드는 Worker 가 비밀번호를 감싼다)
@@ -1048,9 +1203,9 @@ function waTrack(s){const w=WA.sent;if(!w)return;const known=(s.wifiKnown||[]).i
 function renderPage(p){
   const s=view();if(!s)return;
   if(p==="/")renderHome(s);
-  else if(p==="/screen"){renderScreen(s);renderList(s);}
+  else if(p==="/screen")renderScreen(s);
   else if(p==="/screen/add")renderList(s);
-  else if(p==="/screen/layout")renderLayouts(s);
+  else if(p==="/common")renderCommon(s);
   else if(p==="/wifi/add"){if(WA.sent)waTrack(s);else renderWifiAdd(s);}
   else if(p==="/wifi"){$("wifiState").innerHTML=s.ssid?'<span class="ok">연결됨</span>':"연결 안 됨";$("wifiSsid").textContent=s.ssid||"-";$("wifiIp").textContent=s.ip||"-";renderWifiKnown(s);}
   else if(p==="/system"){renderFw(s);renderAutoUp(s);renderApp(s);$("sysHeap").textContent=(s.heap/1024).toFixed(1)+" KB";$("sysInterval").textContent=Math.round(s.interval/1000)+"초";
@@ -1088,10 +1243,6 @@ $("blSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;d
 $("cnameSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.cname=+b.dataset.value;markDirty();};
 $("cint").onchange=e=>{if(!draft)return;draft.cint=e.target.value;markDirty();};
 $("colorsSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!draft)return;draft.colors=b.dataset.value;document.body.classList.toggle("kr",draft.colors==="kr");markDirty();};
-// 테마 설명은 (i) 를 누를 때만 말풍선으로
-$("themeInfo").onclick=e=>{e.stopPropagation();const tip=$("themeTip");tip.classList.toggle("on");clearTimeout(tip._t);if(tip.classList.contains("on"))tip._t=setTimeout(()=>tip.classList.remove("on"),4000);};
-document.addEventListener("click",()=>{const tip=$("themeTip");if(tip)tip.classList.remove("on");});
-$("themeSeg").onclick=e=>{const b=e.target.closest("button");if(!b||!state)return;themeTab=b.dataset.value;renderLayouts(view());};
 $("tz").onchange=e=>{if(e.target.value==="custom"){$("tzCustomRow").classList.remove("hidden");$("tzCustom").focus();return;}$("tzCustomRow").classList.add("hidden");setTz(e.target.value);};
 $("tzSave").onclick=()=>setTz($("tzCustom").value);
 $("dateFmt").onchange=e=>{draft.dateFmt=+e.target.value;markDirty();};
@@ -1184,7 +1335,8 @@ function maybeHomeHint(s){
 
 route();
 loadState();setInterval(()=>{if(!applying)loadState();},POLL_MS);
-if(window.PREVIEW&&PREVIEW.onReady)PREVIEW.onReady(()=>{layoutKey="";renderAll();});   // 기기 폰트를 다 받으면 미리보기를 기기 글꼴로 다시
+if(window.PREVIEW&&PREVIEW.onReady)PREVIEW.onReady(()=>{layoutKey="";renderAll();});
+// 앱 페이지 미리보기는 앱 칩·탭을 바꿔도 같은 캔버스를 쓴다. 홈 「앱」 행에서 들어오면 기기에 켜진 앱이 선택된다   // 기기 폰트를 다 받으면 미리보기를 기기 글꼴로 다시
 
 // 화면 페이지 미리보기 축소 (2.6.1): 스크롤한 만큼 미리보기 높이를 줄여(최대 반) 위쪽 가장자리가 헤더 아래 8px 에 고정돼 보이게 한다.
 // .pvstick 의 sticky top 이 -(폭/2) 라 폭/2 만큼 스크롤하면 위 절반이 헤더 뒤로 들어가고, 그만큼 scale 을 줄이면 아래 내용은 평소 속도로 흐른다.

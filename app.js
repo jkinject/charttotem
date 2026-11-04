@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.9.3";
+const APP_VERSION = "0.10.0";   // 0.10: 앱 플랫폼 홈 (기기 화면 미리보기 · 앱 아이콘 줄 · 공통 메뉴)
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -69,9 +69,17 @@ const THUMB = `<img src="icons/device.png" alt="" onerror="this.remove()"><svg v
   <rect x="26" y="30" width="20" height="6" rx="1.5" fill="#e8e8ec"/><rect x="14" y="54" width="44" height="3" rx="1.5" fill="#3a3d3a"/></svg>`;
 // 기기 아이콘(토템 캐릭터 12종): TOTEMS·hashTotem·totemOf·totemSrc 는 totems.js (설정 페이지와 공유). 이미지가 없으면(캐시 전·구버전) 기기 그림으로 폴백
 function thumbHtml(d) { const i = totemOf(d); return `<img class="totem" src="${totemSrc(i)}" alt="${TOTEMS[i][1]} 아이콘" onerror="this.outerHTML=THUMB">`; }
-// 3개 빠른 메뉴: 기기 설정(홈) · 화면 관리(#/screen 종목·레이아웃) · 네트워크(#/wifi)
-const TILES = [["settings", "기기 설정", "종목 · 화면 · 시스템", ""], ["monitor", "화면 관리", "종목 · 레이아웃", "/screen"], ["wifi", "네트워크", "Wi-Fi 설정", "/wifi"]];
-function setTileLinks(el, d) { el.querySelectorAll(".tile").forEach((a, i) => { a.href = settingsUrl(d, TILES[i][3]); }); }
+// ---- 0.10 앱 플랫폼 홈 (시안 B「지금 켜진 앱 중심」): 기기 화면 미리보기 + 켜진 앱 이름 + 「설정」 · 「다른 앱으로 바꾸기」 아이콘 줄 · 공통 2열 ----
+const APP_NAMES = { kstock: "주식", coin: "코인", clock: "시계", dday: "디데이" };
+const APP_ICON = { kstock: "candlestick", coin: "coins", clock: "clock", dday: "calendar" };
+const GENERIC = ["clock", "dday"];   // 펌웨어 안에서 즉시 바뀌는 앱. 주식↔코인은 OTA (약 30초)
+// 공통 메뉴: 설정 페이지의 해시. 종목은 그 기기의 시세 앱 데이터 탭으로
+const COMMON = (d) => [["layers", "종목", `/screen/${d.variant === "coin" ? "coin" : "kstock"}/data`], ["list", "티커 바", "/common"], ["clock", "시계 · 시간대", "/common"], ["moon", "야간 모드", "/common"],
+  ["sun", "밝기", "/common"], ["wifi", "Wi-Fi", "/wifi"], ["google", "구글 계정", null], ["settings", "시스템", "/system"]];
+// 미리보기(preview.js)의 날짜 줄용 (설정 페이지 settings.js 와 같은 형식)
+const KWD = ["일", "월", "화", "수", "목", "금", "토"], WD3 = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"], WDM = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MON3 = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+window.fmtDate = (n, d) => { const m = d.getMonth() + 1, dd = d.getDate(), w = d.getDay(), p2 = (x) => String(x).padStart(2, "0");
+  return n === 1 ? MON3[m - 1] + " " + dd + "  " + WD3[w] : n === 2 ? d.getFullYear() + "-" + p2(m) + "-" + p2(dd) + " (" + KWD[w] + ")" : n === 3 ? m + "월 " + dd + "일 " + KWD[w] + "요일" : n === 4 ? p2(m) + "/" + p2(dd) + " (" + WDM[w] + ")" : p2(m) + "-" + p2(dd) + " (" + KWD[w] + ")"; };
 function setStatus(el, kind, text) { const st = el.querySelector('[data-r="st"]'); st.className = "st " + kind; st.textContent = text; }
 function agoText(sec) { if (sec == null) return ""; return sec < 90 ? sec + "초 전" : sec < 5400 ? Math.round(sec / 60) + "분 전" : sec < 172800 ? Math.round(sec / 3600) + "시간 전" : Math.round(sec / 86400) + "일 전"; }
 
@@ -95,9 +103,15 @@ function renderDevices() {
         <button class="more" data-r="more" title="아이콘 바꾸기 · 이름 바꾸기 · 기기 삭제" aria-label="더보기">${I("more")}</button>
       </div>
       <div class="msg hidden" data-r="msg"></div>
-      <div class="tiles" data-r="tiles">${TILES.map(([ic, l, s]) => `<a class="tile">${I(ic)}<b>${l}</b><span>${s}</span></a>`).join("")}</div>
+      <div class="devbody" data-r="tiles">
+        <div class="devprev"><div class="scr"><canvas width="480" height="480" role="img" aria-label="기기 화면 미리보기"></canvas></div>
+          <div class="pinfo"><span class="papp" data-r="appn">확인 중…</span><span class="play" data-r="layn"></span><a class="btnpill" data-r="cfg" href="${settingsUrl(d, "/screen")}">설정</a></div></div>
+        <div class="caption">다른 앱으로 바꾸기</div>
+        <div class="approw" data-r="apps"><span class="msg">기기 상태를 받는 중…</span></div>
+        <div class="caption">공통</div>
+        <div class="common2" data-r="common">${COMMON(d).map(([ic, l, h]) => `<a class="cbtn${h ? "" : " off"}" ${h ? `href="${settingsUrl(d, h)}"` : ""}>${I(ic)}<span>${l}</span>${h ? "" : '<small>준비 중</small>'}</a>`).join("")}</div>
+      </div>
       `;
-    setTileLinks(el, d);
     el.querySelector('[data-r="more"]').onclick = () => deviceMenu(d);
     // 머리 영역(아이콘·이름·ID) 전체를 누르면 「기기 설정」과 같은 페이지로. ⋯ 버튼과 이름 편집 중인 입력칸은 제외, 연결 해제(타일 비활성) 상태면 안 감
     el.querySelector(".devhead").onclick = (e) => {
@@ -121,7 +135,7 @@ async function refreshDevice(d) {
   if (!info.ok) { setStatus(el, "wait", "확인 중"); m.className = "msg"; m.textContent = "서버에 닿지 않아요. 인터넷 연결을 확인해 주세요."; return; }
   d.lost = false;
   if (info.name !== undefined && info.name !== d.name) d.name = info.name;
-  if (info.variant && info.variant !== d.variant) { d.variant = info.variant; setTileLinks(el, d); }
+  if (info.variant && info.variant !== d.variant) { d.variant = info.variant; el.querySelector('[data-r="common"]').innerHTML = COMMON(d).map(([ic, l, h]) => `<a class="cbtn${h ? "" : " off"}" ${h ? `href="${settingsUrl(d, h)}"` : ""}>${I(ic)}<span>${l}</span>${h ? "" : '<small>준비 중</small>'}</a>`).join(""); }
   d.fw = info.fw; d.online = info.online; d.age = info.age; d.lastSeen = Date.now();
   save(KEY_CLOUD, cloudDevices);
   el.querySelector('[data-r="name"]').textContent = fmtName(d);
@@ -129,6 +143,36 @@ async function refreshDevice(d) {
   // 상태는 이름 옆 알약 글자로. 문제가 있을 때만 한 줄 더 (정보 과잉 방지)
   if (info.online) { setStatus(el, "on", "연결됨"); m.className = "msg hidden"; m.textContent = ""; }
   else { setStatus(el, "off", "오프라인"); m.className = "msg err"; m.textContent = "오프라인" + (info.age != null ? " · 마지막 연결 " + agoText(info.age) : "") + " · 아래 도움말 참고"; }
+  d.apps = info.apps || null;
+  // 기기 화면 미리보기·켜진 앱: /p/{id}/state (서버가 보관한 마지막 상태. 오프라인이어도 마지막 화면)
+  const st = await api(`/p/${d.id}/state`, { token: d.token });
+  if (st && st.ok !== false && st.layout) { d.state = st; renderDevState(d); }
+}
+function renderDevState(d) {
+  const el = cardOf(d), s = d.state; if (!el || !s) return;
+  const cv = el.querySelector(".devprev canvas"); if (cv && window.PREVIEW) PREVIEW.draw(cv, s.layout || "S01", s);
+  const app = s.app || (s.variant || d.variant || "kstock"), mine = (s.variant || d.variant) === "coin" ? "coin" : "kstock", other = mine === "coin" ? "kstock" : "coin";
+  el.querySelector('[data-r="appn"]').textContent = (APP_NAMES[app] || app) + " · " + (s.layoutName || s.layout || "");
+  el.querySelector('[data-r="layn"]').textContent = s.app ? "기기에 켜진 앱" : "펌웨어 3.0 부터 앱을 바꿀 수 있어요";
+  el.querySelector('[data-r="cfg"]').href = settingsUrl(d, `/screen/${s.app ? app : mine}`);
+  const row = el.querySelector('[data-r="apps"]'); row.innerHTML = "";
+  if (!s.app) { row.innerHTML = '<span class="msg">기기 펌웨어를 3.0 으로 업데이트하면 시계·디데이 앱을 쓸 수 있어요.</span>'; return; }
+  const ids = [mine]; if (Array.isArray(d.apps) && d.apps.includes(other)) ids.push(other); ids.push("clock", "dday");
+  ids.forEach((id) => {
+    const b = document.createElement("button"); b.className = "appbtn" + (id === app ? " on" : ""); b.dataset.app = id;
+    b.innerHTML = `<i class="tileic ${id}">${I(APP_ICON[id])}</i><span>${APP_NAMES[id]}</span>${id === other ? '<small>약 30초</small>' : ""}`;
+    b.onclick = () => switchApp(d, id, other);
+    row.appendChild(b);
+  });
+}
+async function switchApp(d, id, other) {
+  if (!d.state || id === d.state.app) { location.href = settingsUrl(d, `/screen/${id}`); return; }   // 켜진 앱을 누르면 설정으로
+  if (id === other && !confirm(`${APP_NAMES[id]} 앱으로 바꿀까요?\n\n약 30초 걸리고 기기가 다시 시작해요. Wi-Fi·앱 연결·두 앱의 종목은 그대로 남아요.`)) return;
+  const r = await api(`/p/${d.id}/settings?app=${id}`, { method: "POST", token: d.token });
+  if (!r.ok) { toast(r.error === "apps" ? `이 기기엔 ${APP_NAMES[id]} 앱 권한이 없어요` : "바꾸지 못했어요: " + r.error); return; }
+  toast(id === other ? `${APP_NAMES[id]} 앱으로 바꾸는 중 · 기기 화면을 보세요` : `${APP_NAMES[id]} 앱으로 바꿨어요`);
+  if (id !== other) { d.state.app = id; const lays = String(d.state.lays || "").split(","), t = { kstock: 0, coin: 0, clock: 1, dday: 2 }[id]; if (lays[t]) { d.state.layout = lays[t]; d.state.layoutName = lays[t]; } renderDevState(d); }
+  setTimeout(() => refreshDevice(d), 2500); setTimeout(() => refreshDevice(d), 6000);
 }
 function refreshAll() { for (const d of cloudDevices) refreshDevice(d); }
 
