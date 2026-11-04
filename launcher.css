@@ -148,3 +148,6 @@
 .cbtn .ic{width:20px;height:20px;color:var(--tx);flex:none}.cbtn span{flex:1;min-width:0;font-size:14px;line-height:1.2;word-break:keep-all}.cbtn small{font-size:11px;color:var(--mut);flex:none}
 .cbtn.off{opacity:.5}.cbtn:active{background:var(--ac2)}
 .page.home .caption{padding:10px 20px 6px}
+/* 0.10.2: 공통 「Wi-Fi」·「시스템」 아래 상태 한 줄 (연결된 Wi-Fi 이름 · 펌웨어 버전 · NEW) */
+.cbtn span .sub{display:block;font-size:11px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.cbtn span .sub .newtag{vertical-align:0;margin-left:4px}

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=a13f8fc4">
+<title>차트토템 설정</title><link rel="stylesheet" href="style.css?v=457dc06e">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="theme-color" content="#FFFFFF"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"></head>
 <body><main class="app">
@@ -57,22 +57,8 @@
 
 <div class="offline" role="alert"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg><b class="ttl">기기와 연결이 끊겼어요</b><button id="retry"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>다시 시도</button></div>
 
-<section class="page home" data-page="/">
- <header class="top"><a class="back cloud-only" id="cloudBack" href="./" aria-label="기기 목록으로"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></a><h1>설정</h1><span class="conn"><i class="dot" id="connDot"></i><span id="connText">연결 중</span></span></header>
- <div class="profile"><span class="avatar" aria-hidden="true"></span><div class="ptext"><div class="pname"><span id="devTitle">차트토템</span><button class="editbtn" id="devEdit" aria-label="기기 이름 수정"><svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg></button></div><div class="psub" id="devSub"></div></div></div>
- <div class="band"></div>
- <nav class="list" id="homeMenu"></nav>
- <div class="band"></div>
- <div class="caption">정보</div>
- <nav class="list">
-  <button class="menu" data-go="/privacy"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span class="mtext"><span class="mlbl">개인정보처리방침</span></span></button>
-  <button class="menu" data-go="/licenses"><svg class="ic" aria-hidden="true"><use href="#i-file-text"/></svg><span class="mtext"><span class="mlbl">오픈소스 라이선스</span></span></button>
- </nav>
- <div class="hintbox hidden" id="homeHint"><b><svg class="ic" aria-hidden="true"><use href="#i-smartphone"/></svg>홈 화면에 추가해 두세요</b><div id="homeHintText"></div><div class="row"><button id="homeHintLater">나중에</button><button id="homeHintDone">추가했어요</button></div></div>
-</section>
-
 <section class="page" data-page="/screen">
- <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">앱</h1><button class="pillbtn hidden" id="appUse">이 앱으로 전환</button><span class="onchip hidden" id="appOn"><i class="dot"></i>기기에 켜짐</span></header>
+ <header class="top"><a class="back cloud-only" href="./" aria-label="기기 목록으로"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></a><h1 tabindex="-1">앱</h1><button class="pillbtn hidden" id="appUse">이 앱으로 전환</button><span class="onchip hidden" id="appOn"><i class="dot"></i>실행 중인 앱</span></header>
  <div class="appchips" id="appChips" role="tablist" aria-label="앱"></div>
  <div class="pvstick"><div class="preview"><canvas id="mainPreview" width="480" height="480" role="img" aria-label="기기 화면 미리보기"></canvas></div></div>
  <div class="msg hidden" id="appOtaMsg"></div>
@@ -140,6 +126,11 @@
   <div class="msg hidden" id="dataNone">이 앱은 따로 넣을 데이터가 없어요.</div>
  </div>
  <div class="hint" id="screenMsg"></div>
+ <div class="band local-only"></div>
+ <nav class="list local-only">
+  <button class="menu" data-go="/wifi"><svg class="ic" aria-hidden="true"><use href="#i-wifi"/></svg><span class="mtext"><span class="mlbl">Wi-Fi</span><span class="msub" id="wifiSubLocal"></span></span></button>
+  <button class="menu" data-go="/system"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg><span class="mtext"><span class="mlbl">시스템</span><span class="msub" id="sysSubLocal"></span></span></button>
+ </nav>
 </section>
 
 <section class="page" data-page="/screen/add">
@@ -206,9 +197,9 @@
 <section class="page" data-page="/system">
  <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">시스템</h1></header>
  <div class="list">
+  <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg><span class="mtext"><span class="mlbl namerow"><span id="devTitle">차트토템</span><button class="editbtn" id="devEdit" aria-label="기기 이름 수정"><svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg></button></span><span class="msub wrap" id="devSub"></span></span></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span class="mtext"><span class="mlbl">펌웨어 버전</span><span class="msub wrap" id="sysVer">-</span></span><button class="pillbtn hidden" id="fwUpdate">업데이트</button></div>
   <div class="setrow hidden" id="autoUpRow"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><span class="mtext"><span class="mlbl">자동 업데이트</span><span class="msub wrap" id="autoUpHint"></span></span><label class="switch"><input id="autoUp" type="checkbox" aria-label="자동 업데이트"><i></i></label></div>
-  <div class="setrow hidden" id="appRow"><svg class="ic" aria-hidden="true"><use href="#i-repeat"/></svg><span class="mtext"><span class="mlbl">앱</span><span class="msub wrap" id="appSub">-</span></span><button class="pillbtn hidden" id="appSwitch">바꾸기</button></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-memory"/></svg><span class="mtext"><span class="mlbl">여유 메모리</span><span class="msub wrap" id="sysHeap">-</span></span></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg><span class="mtext"><span class="mlbl">시세 갱신 주기</span><span class="msub wrap" id="sysInterval">-</span></span></div>
   <div class="setrow"><svg class="ic" aria-hidden="true"><use href="#i-hourglass"/></svg><span class="mtext"><span class="mlbl">가동 시간</span><span class="msub wrap" id="sysUptime">-</span></span></div>
@@ -222,87 +213,12 @@
  </nav>
 </section>
 
-<section class="page" data-page="/privacy">
- <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">개인정보처리방침</h1></header>
- <div class="doc">
-  <p>차트토템은 책상 위에서 시세와 시각을 보여 주는 기기예요. <b>계정·이름·연락처 같은 개인정보는 받지 않아요.</b> 앱에서 어디서든 설정할 수 있도록 기기는 자기 상태를 중계 서버(Cloudflare Workers)에 올리고, 앱은 그 서버를 통해서만 기기와 대화해요. 아래에 무엇이 어디로 가고 어떻게 지우는지 적었어요.</p>
-  <h2>기기가 중계 서버에 올리는 것</h2>
-  <ul><li>기기 ID, 펌웨어 버전·변형(주식/코인), 기기 이름, 등록한 종목과 지금 시세, 화면 레이아웃·표시 설정, 밝기, 시간대</li><li>연결된 Wi-Fi 이름, 기기에 저장된 Wi-Fi 이름 목록, 「Wi-Fi 추가」에서 주변을 훑었을 때 보인 Wi-Fi 이름 목록, 공유기 안 사설 IP 주소</li><li>진단값(남은 메모리, 켜진 시간, 마지막 재시작 사유, 동기화 소요 시간)</li></ul>
-  <p class="small">서버는 기기마다 <b>마지막 상태 하나</b>만 덮어쓰며 보관하고, 과거 기록은 남기지 않아요. 기기 ↔ 서버 구간은 기기 사양 때문에 암호화되지 않은 HTTP 를 쓰고, 대신 기기만 아는 비밀키 서명으로 위변조를 막아요. 앱 ↔ 서버 구간은 HTTPS 예요.</p>
-  <h2>앱에서 설정할 때 서버를 거치는 것</h2>
-  <ul><li>바꾼 설정(종목·화면·이름 등)은 서버 대기열에 잠시 머물다 기기가 받아 가면 지워져요(최대 50개).</li><li><b>Wi-Fi 비밀번호</b>는 「Wi-Fi 추가 · 변경」에서만 보내요. 앱이 HTTPS 로 서버에 보내면 서버는 기기 전용 키로 암호화해 대기열에 넣고, 평문은 저장하지 않아요. 기기가 받아 가면 대기열에서도 지워져요.</li><li>종목 검색어와 시세 조회는 서버가 네이버 증권에 대신 물어봐요(주식 변형). 검색어는 저장하지 않아요.</li></ul>
-  <h2>앱 연결(페어링)</h2>
-  <ul><li>기기 화면의 6자리 코드로 앱을 연결하면 서버가 연결 토큰을 만들어 기기별로 보관해요(기기당 최대 20개). 토큰마다 만든 시각, 마지막 사용 시각, 연결한 브라우저 종류(브라우저가 보내는 User-Agent 앞 60자)를 함께 둬요. 사람을 식별하는 값은 없어요.</li><li>토큰은 연결한 폰의 브라우저 저장소에만 있어요. 앱의 ⋯ 메뉴 「기기 삭제」를 누르면 그 토큰을 서버에서도 폐기해요.</li></ul>
-  <h2>기기에 저장되는 것</h2>
-  <ul><li>등록한 종목, 화면 레이아웃·표시 설정, 밝기, 시간대, 기기 이름, 중계 서버용 비밀키</li><li>저장한 Wi-Fi 이름과 비밀번호 — 비밀번호는 기기 플래시 메모리에만 있고 서버에는 암호화된 채 잠시 머물 뿐 남지 않아요.</li></ul>
-  <h2>지우기</h2>
-  <ul><li><b>기기 초기화</b>(시스템 → 기기 초기화): 서버에 있는 이 기기의 기록(상태·대기열·연결 토큰·비밀키)을 모두 지우고, 기기도 종목·설정·Wi-Fi 를 지워 처음 상태로 돌아가요. 연결돼 있던 앱은 모두 끊겨요.</li><li><b>기기 삭제</b>(앱 홈의 ⋯ 메뉴): 이 폰의 연결만 끊어요. 기기와 다른 폰의 연결은 그대로예요.</li><li>초기화하지 않은 기기의 기록은 기기가 다시 동기화할 때마다 덮어쓰이며, 따로 지우기 전까지 서버에 남아요.</li></ul>
-  <h2>기기가 접속하는 곳</h2>
-  <ul><li><b>시세</b>: 주식 변형은 네이버 증권, 코인 변형은 Binance 의 공개 시세 API. 요청에는 종목 코드만 들어가요.</li><li><b>시각</b>: NTP 서버(pool.ntp.org, time.nist.gov)</li><li><b>중계 서버</b>(charttotem-cloud.jkinject.workers.dev, Cloudflare): 위의 상태 동기화, 설정 받기, 한글 글꼴 파일 다운로드, 펌웨어 업데이트 확인·다운로드(GitHub Release 를 서버가 대신 받아 전해 줘요)</li><li>그 외 분석·광고 서버에 접속하지 않아요.</li></ul>
-  <h2>앱 (charttotem.lalatap.kr)</h2>
-  <ul><li>GitHub Pages 가 정적 파일을 제공하고, 설정은 Cloudflare 의 중계 서버와만 통신해요. 쿠키·분석 도구·광고 스크립트가 없어요. 두 회사의 서버 접속 기록 처리는 각자의 개인정보처리방침을 따라요.</li><li>브라우저 저장소(localStorage)에는 연결한 기기 목록(기기 ID·연결 토큰·이름·변형·고른 아이콘), 홈 화면 추가 안내를 닫았는지, 오프라인용 앱 파일 캐시만 둬요. 어디에도 보내지 않아요.</li><li>코인 변형 설정 페이지는 코인 로고 이미지를 jsDelivr CDN 에서 받아요(요청에는 코인 심볼만 들어가요).</li></ul>
-  <h2>문의</h2>
-  <p>궁금한 점은 앱의 저장소(GitHub jkinject/charttotem)로 알려 주세요.</p>
-  <p class="small">최종 수정 2026-10-20</p>
- </div>
-</section>
-
-<section class="page" data-page="/licenses">
- <header class="top"><button class="back" aria-label="뒤로 가기"><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"/></svg></button><h1 tabindex="-1">오픈소스 라이선스</h1></header>
- <div class="doc">
-  <p>차트토템 펌웨어와 설정 페이지는 아래 오픈소스를 사용해요. 각 라이선스 전문은 해당 프로젝트 저장소에 있어요.</p>
-  <div class="lic"><b>ESP8266 Arduino Core</b><span>LGPL-2.1 · github.com/esp8266/Arduino</span></div>
-  <div class="lic"><b>TFT_eSPI (Bodmer)</b><span>FreeBSD · MIT · github.com/Bodmer/TFT_eSPI — 화면 드라이버, Font7, FreeFonts(Adafruit GFX)</span></div>
-  <div class="lic"><b>QRCode (Richard Moore)</b><span>MIT · github.com/ricmoo/QRCode — 설정 QR</span></div>
-  <div class="lic"><b>LittleFS</b><span>BSD-3-Clause · github.com/littlefs-project/littlefs — 설정 저장</span></div>
-  <div class="lic"><b>lwIP</b><span>BSD-3-Clause · savannah.nongnu.org/projects/lwip — 네트워크</span></div>
-  <div class="lic"><b>BearSSL</b><span>MIT · bearssl.org — 코인 변형의 HTTPS</span></div>
-  <div class="lic"><b>Pretendard</b><span>SIL Open Font License 1.1 · github.com/orioncactus/pretendard — 기기 화면 한글 글꼴(비트맵 변환)</span></div>
-  <div class="lic"><b>Lucide Icons</b><span>ISC · lucide.dev — 설정 페이지 아이콘</span></div>
-  <div class="lic"><b>PlatformIO · Arduino</b><span>Apache-2.0 / LGPL — 빌드 도구와 프레임워크</span></div>
- </div>
-</section>
-
 <div class="sync" id="syncBar" role="status" aria-live="polite"></div>
 <div class="toast" role="status" aria-live="polite" id="toast"></div>
 </main>
 <script>
 
 // ---- cloud_shim.js ----
-// 기기 아이콘(토템 캐릭터) 12종 — 런처 홈(app.js)과 설정 페이지(cloud_shim.js, gen_launcher.py 가 settings-*.html 에 끼워 넣음)가 같이 쓴다.
-// 기본값은 기기 ID 해시(같은 기기는 어느 폰에서 봐도 같은 아이콘), 홈 ⋯ 메뉴 「아이콘 바꾸기」로 고르면 cloudDevices[].totem 에 저장(이 폰에서만).
-// 이미지: icons/totems/<file>.png 144px — 원본·프롬프트는 루트 저장소 branding/totems/ (python3 branding/totems/make_icons.py).
-const TOTEMS = [["01-bull", "황소"], ["02-bear", "곰"], ["03-owl", "부엉이"], ["04-whale", "고래"], ["05-fox", "여우"], ["06-cat", "고양이"],
-  ["07-rabbit", "토끼"], ["08-penguin", "펭귄"], ["09-frog", "개구리"], ["10-ghost", "유령"], ["11-robot", "로봇"], ["12-octopus", "문어"]];
-function hashTotem(id) { let h = 5381; for (const c of String(id || "").toUpperCase()) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0; return h % TOTEMS.length; }
-function totemOf(d) { return Number.isInteger(d.totem) && d.totem >= 0 && d.totem < TOTEMS.length ? d.totem : hashTotem(d.id); }
-function totemSrc(i) { return `icons/totems/${TOTEMS[i][0]}.png`; }
-
-// 아이콘 고르기 바닥 시트 (CSS: launcher.css 의 .sheet-bd/.sheet/.totem-grid — 설정 페이지 style.css 에도 들어 있다).
-// 누르면 d.totem 을 바꾸고 onPick(i) 를 부른 뒤 시트를 바로 닫는다. 저장·화면 갱신은 호출자 몫. #sheet 가 없으면 만든다.
-function openTotemPicker(d, name, onPick) {
-  let sh = document.getElementById("sheet");
-  if (!sh) { sh = document.createElement("div"); sh.id = "sheet"; sh.className = "sheet-bd"; document.body.appendChild(sh); }
-  const cur = totemOf(d), h = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  sh.innerHTML = `<div class="sheet" role="dialog" aria-label="아이콘 바꾸기"><div class="sheet-title">${h(name)} 의 아이콘</div>
-    <div class="totem-grid">${TOTEMS.map(([f, n], i) => `<button type="button" class="${i === cur ? "on" : ""}" data-i="${i}" aria-label="${n}" aria-pressed="${i === cur}"><img src="${totemSrc(i)}" alt=""><span>${n}</span></button>`).join("")}</div>
-    <button type="button" class="cancel" data-a="cancel">닫기</button></div>`;
-  const close = () => { sh.classList.remove("on"); setTimeout(() => { sh.innerHTML = ""; }, 200); };
-  sh.onclick = (e) => {
-    const b = e.target.closest("[data-i]");
-    if (b) {
-      const i = +b.dataset.i;
-      d.totem = i;
-      b.classList.add("on"); b.setAttribute("aria-pressed", "true");
-      onPick(i);
-      setTimeout(close, 120);   // 고른 테두리가 잠깐 보인 뒤 닫힌다
-      return;
-    }
-    if (e.target.closest("[data-a]") || e.target === sh) close();
-  };
-  requestAnimationFrame(() => sh.classList.add("on"));
-}
-
 // 클라우드 모드 shim (런처 PWA 에서 연 설정 페이지: launcher/settings-<variant>.html, tools/gen_launcher.py 가 끼워 넣는다).
 // 기기 설정 페이지 JS(settings.js, page_*.h)는 "/api/..." 를 그대로 부르고, 여기서 그 요청을 클라우드 중계(cloud/API.md)로 돌린다.
 //   ?id=A75E1F  +  localStorage ct.cloudDevices 의 토큰  →  https://<worker>/p/A75E1F/...  (Authorization: Bearer)
@@ -316,24 +232,7 @@ function openTotemPicker(d, name, onPick) {
   window.CLOUD={base:BASE,id,token:dev.token,name:dev.name||"",variant:dev.variant||""};
   document.documentElement.classList.add("cloud");
   if(document.body)document.body.classList.add("cloud");
-  // 머리의 아바타를 런처 홈 카드와 같은 기기 아이콘(totems.js, gen_launcher.py 가 앞에 끼워 넣음)으로. 누르면 아이콘 고르기 시트(홈과 같은 것, 이 폰의 ct.cloudDevices 에 저장).
-  // 이미지를 못 받으면 원래 동그라미로 둔다
-  const av=document.querySelector(".profile .avatar");
-  if(av&&typeof totemOf==="function"){
-    const im=new Image();im.alt="";
-    im.onload=()=>{
-      av.classList.add("totem");av.removeAttribute("aria-hidden");av.setAttribute("role","button");av.setAttribute("aria-label","아이콘 바꾸기");av.tabIndex=0;
-      const badge=document.createElement("span");badge.className="avbadge";badge.innerHTML='<svg class="ic" aria-hidden="true"><use href="#i-pencil"/></svg>';
-      av.replaceChildren(im,badge);
-      const open=()=>openTotemPicker(dev,(document.getElementById("devTitle")||{}).textContent||dev.name||"차트토템 "+id.slice(-4),(i)=>{
-        try{localStorage.setItem("ct.cloudDevices",JSON.stringify(devs));}catch(e){}
-        im.src=totemSrc(i);
-        if(typeof toast==="function")toast("아이콘을 "+TOTEMS[i][1]+"(으)로 바꿨어요");
-      });
-      av.onclick=open;av.onkeydown=(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}};
-    };
-    im.src=totemSrc(totemOf(dev));
-  }
+  // (v3.0.1) 설정 홈·머리 아바타는 없앴다. 기기 아이콘·이름은 런처 홈 카드(app.js)에서 바꾼다
   const MAP={"/api/state":"/state","/api/layouts":"/layouts","/api/search":"/search","/api/quote":"/quote","/api/settings":"/settings","/restart":"/restart"};
   const orig=window.fetch.bind(window);
   const deny=()=>Promise.resolve(new Response('{"ok":false,"error":"local only"}',{status:400,headers:{"content-type":"application/json"}}));
@@ -761,7 +660,8 @@ function draw(canvas,layoutId,state){const px=canvas.width;const x=canvas.getCon
 return {draw,ids:Object.keys(L),parseDd,onReady(cb){if(fontsReady)cb();else readyCbs.push(cb);},onLogo(cb){logoCbs.push(cb);},get fontsReady(){return fontsReady;}};
 })();
 // 차트토템 기기 설정 페이지 동작 (window.MARKET 과 PREVIEW 가 정의된 뒤 실행). 원본: tools/web/settings.js → gen_launcher.py → launcher/settings-*.html
-// 구조: 해시 라우팅 (#/ 홈, #/screen(종목 + 화면 설정), #/screen/add(종목 추가·검색), #/screen/layout, #/wifi, #/system). 상태는 /api/state 폴링.
+// 구조: 해시 라우팅 (#/screen 앱 페이지가 첫 화면, #/screen/add(종목 추가·검색), #/wifi, #/system). 상태는 /api/state 폴링.
+// v3.0.1: 설정 홈(#/)은 없앴다 — 기기 이름·아이콘·Wi-Fi·시스템 진입·정보 문서는 런처 홈 카드와 각 페이지로 옮겼다. 맨 위 페이지의 뒤로는 런처(./)로, IP 접속(로컬)에서는 /screen 으로.
 // v2.6 자동 저장: 화면 설정은 초안(draft)에 반영되고, 마지막 변경 뒤 SEND_DEBOUNCE_MS 가 지나면 기기 상태(또는 직전에 보낸 목표)와의 차이만
 //   명령 하나(/api/settings?codes=..&layout=..)로 보낸다. 포크 채널(cloud/API.md /d/{id}/ws) 덕에 1~2초 안에 기기에 반영되므로 저장 버튼이 없다.
 //   하단 상태 줄(#syncBar)이 "기기에 반영 중… → 반영됐어요" 를 보여 주고, 기기가 꺼져 있으면 명령은 서버 큐에 남아 켜질 때 반영된다(상단 오프라인 배너).
@@ -773,8 +673,8 @@ const I=n=>`<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;  //
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let state=null, pollTimer=null, failCount=0, toastTimer=null;
 let pendingName=null;   // {v, until}: 방금 바꾼 기기 이름. 기기가 반영하기 전 폴링이 옛 이름으로 덮지 않게
-const PAGES=["/","/screen","/screen/add","/wifi","/wifi/add","/system","/privacy","/licenses"];   // v3.0.0: /screen = 앱 페이지(#/screen[/<앱>][/<탭>]). 공통(티커 바·시간대·밝기·야간)은 옵션 탭 아래
-const PARENT={"/screen":"/","/screen/add":"/screen","/wifi":"/","/wifi/add":"/wifi","/system":"/","/privacy":"/","/licenses":"/"};
+const PAGES=["/screen","/screen/add","/wifi","/wifi/add","/system"];   // v3.0.0: /screen = 앱 페이지(#/screen[/<앱>][/<탭>]). 공통(티커 바·시간대·밝기·야간)은 옵션 탭 아래
+const PARENT={"/screen/add":"/screen","/wifi/add":"/wifi"};   // 없는 것 = 맨 위 페이지
 // ---- 앱 (v3.0.0 앱 플랫폼) ----
 const APP_ICON={kstock:"candlestick",coin:"coins",clock:"clock",dday:"calendar"};
 const APP_NAMES={kstock:"주식",coin:"코인",clock:"시계",dday:"디데이"};
@@ -911,45 +811,42 @@ function checkApplied(s){
 function go(p){location.hash="#"+p;}
 function waEnter(){WA.sel=null;WA.manual=false;WA.sent=null;WA.seenSeq=-1;$("waStatus").classList.add("hidden");$("waPick").classList.remove("hidden");$("waForm").classList.add("hidden");$("waPass").value="";$("waSsid").value="";$("waNow").checked=true;if(state)waScan();else WA.waitSeq=-2;}
 let lastHash=null;
-function page(){let p=location.hash.slice(1)||"/";if(p==="/symbols"||p==="/screen/layout"||p==="/common")p="/screen";
+function page(){let p=location.hash.slice(1)||"/screen";if(p==="/"||p==="/symbols"||p==="/screen/layout"||p==="/common")p="/screen";
   const m=/^\/screen(?:\/(kstock|coin|clock|dday))?(?:\/(layout|options|data))?$/.exec(p);
   if(m){if(location.hash!==lastHash){lastHash=location.hash;if(m[1])selApp=m[1];if(m[2])appTab=m[2];}p="/screen";}   // 런처 홈에서 앱·탭을 지정해 들어온다. 같은 해시를 다시 읽을 땐 그대로
   return PAGES.includes(p)?p:null;}
 function setAppRoute(){const h="#/screen/"+(selApp||"")+"/"+appTab;lastHash=h;history.replaceState(null,"",location.pathname+location.search+h);}
 function route(){
-  let p=page();if(!p){history.replaceState(null,"",location.pathname+"#/");p="/";}
+  let p=page();if(!p){history.replaceState(null,"",location.pathname+location.search+"#/screen");p="/screen";}
   const changed=p!==curPage;
   if(changed){prevPage=curPage;curPage=p;}
   if(changed&&p==="/wifi/add")waEnter();
   document.querySelectorAll(".page").forEach(x=>x.classList.toggle("on",x.dataset.page===p));
   const h=document.querySelector(`[data-page="${p}"] h1`);
-  document.title=p==="/"?"차트토템 설정":h.textContent+" · 차트토템";
+  document.title=h.textContent+" · 차트토템";
   scrollTo(0,0);
-  if(p!=="/"&&h)h.focus({preventScroll:true});
+  if(h)h.focus({preventScroll:true});
   if(p==="/screen/add"){const inp=$(MARKET.inputId);if(inp)setTimeout(()=>inp.focus(),50);if(changed&&MARKET.onPage)MARKET.onPage();}
   if(state)renderPage(p);
 }
-function back(){const p=page()||"/";const up=PARENT[p]||"/";if(prevPage===up)history.back();else go(up);}
+function back(){const p=page()||"/screen";const up=PARENT[p];if(!up){if(CLOUD)location.href="./";else go("/screen");return;}if(prevPage===up)history.back();else go(up);}
 document.addEventListener("click",e=>{
   const g=e.target.closest("[data-go]");if(g){go(g.dataset.go);return;}
   if(e.target.closest(".back")){back();}
 });
 window.addEventListener("hashchange",route);
 
-// ---- 홈 ----
-function renderHome(s){
-  const codes=codesOf(s),slots=s.slots||[],act=slots[s.active]||null;
-  const items=[["layout-grid","앱",(APP_NAMES[s.app]||"주식")+" · "+(s.layoutName||"-")+(THEME_OF[s.app]==="stock"?" · 종목 "+codes.length+"/"+(s.max||5):""),"/screen"],   // v3.0.0: 켜진 앱 · 레이아웃
-    ["wifi","Wi-Fi",s.ssid||"연결 안 됨","/wifi"],
-    ["settings","시스템",(s.fw&&s.fw.available?"새 펌웨어 v"+s.fw.latest+" · ":"")+"v"+s.version,"/system",!!(s.fw&&s.fw.available)]];
-  $("homeMenu").innerHTML=items.map(x=>`<button class="menu" data-go="${x[3]}">${I(x[0])}<span class="mtext"><span class="mlbl">${x[1]}${x[4]?'<span class="newtag">NEW</span>':""}</span><span class="msub">${esc(x[2])}</span></span></button>`).join("");
+// ---- 기기 이름 (시스템 페이지 첫 행) · 로컬(IP) 전용 바로가기 부제 ----
+function renderDevName(s){
   if(pendingName&&(s.name===pendingName.v||Date.now()>pendingName.until))pendingName=null;
   const nm=pendingName?pendingName.v:s.name;
   $("devTitle").textContent=nm||"차트토템 "+(s.id||"").slice(-4);
   $("devSub").textContent="ID "+(s.id||"")+(!CLOUD&&s.host?" · "+s.host:"");
+  if(!CLOUD){$("wifiSubLocal").textContent=s.ssid||"연결 안 됨";$("sysSubLocal").textContent=(s.fw&&s.fw.available?"새 펌웨어 v"+s.fw.latest+" · ":"")+"v"+s.version;}
   MARKET.render(s);
 }
-function setConn(ok,sub){$("connDot").className="dot"+(ok?"":" off");$("connText").textContent=ok?"연결됨":"끊김";const off=document.querySelector(".offline");off.classList.toggle("on",!ok);
+function setConn(ok,sub){const off=document.querySelector(".offline");   // (v3.0.1) 「연결됨」 표시는 뺐다 — 끊겼을 때 위 배너만
+ off.classList.toggle("on",!ok);
   let t=off.querySelector(".sub");if(!t){t=document.createElement("span");t.className="sub";off.insertBefore(t,off.querySelector("button"));}t.textContent=sub||"";}
 
 // ---- 종목 (초안) ----
@@ -1222,15 +1119,14 @@ function waTrack(s){const w=WA.sent;if(!w)return;const known=(s.wifiKnown||[]).i
 // ---- 페이지 그리기 / 상태 폴링 ----
 function renderPage(p){
   const s=view();if(!s)return;
-  if(p==="/")renderHome(s);
-  else if(p==="/screen")renderScreen(s);
+  if(p==="/screen")renderScreen(s);
   else if(p==="/screen/add")renderList(s);
   else if(p==="/wifi/add"){if(WA.sent)waTrack(s);else renderWifiAdd(s);}
   else if(p==="/wifi"){$("wifiState").innerHTML=s.ssid?'<span class="ok">연결됨</span>':"연결 안 됨";$("wifiSsid").textContent=s.ssid||"-";$("wifiIp").textContent=s.ip||"-";renderWifiKnown(s);}
-  else if(p==="/system"){renderFw(s);renderAutoUp(s);renderApp(s);$("sysHeap").textContent=(s.heap/1024).toFixed(1)+" KB";$("sysInterval").textContent=Math.round(s.interval/1000)+"초";
+  else if(p==="/system"){renderFw(s);renderAutoUp(s);$("sysHeap").textContent=(s.heap/1024).toFixed(1)+" KB";$("sysInterval").textContent=Math.round(s.interval/1000)+"초";
     const m=Math.floor(s.uptime/60),h=Math.floor(m/60),d=Math.floor(h/24);$("sysUptime").textContent=d?d+"일 "+(h%24)+"시간":h?h+"시간 "+(m%60)+"분":m+"분";$("sysErr").textContent=s.error||"없음"}
 }
-function renderAll(){const s=view();if(!s)return;renderHome(s);const p=page()||"/";if(p!=="/")renderPage(p);}
+function renderAll(){const s=view();if(!s)return;renderDevName(s);renderPage(page()||"/screen");}
 async function loadState(){
   let s;try{const r=await fetch("/api/state",{cache:"no-store"});if(r.status===401&&CLOUD){setConn(false,"이 기기와의 연결이 해제됐어요. 앱에서 다시 연결해 주세요.");return;}s=await r.json();}
   catch(e){if(++failCount>=2)setConn(false,CLOUD?"서버에 닿지 않아요":"");return;}
@@ -1243,7 +1139,7 @@ async function loadState(){
   // 초안: 보내는 중(예약·대기)이 아니면 기기 상태를 그대로 따른다 (다른 폰에서 바꾼 것도 보이게). 보내는 중이면 초안을 지킨다
   if(applying)checkApplied(s);
   if(!draft||(!applying&&!sendTimer))draft=extract(s);
-  if(first){loadLayouts();if(MARKET.screenHint)setMsg("screenMsg",MARKET.screenHint);maybeHomeHint(s);}
+  if(first){loadLayouts();if(MARKET.screenHint)setMsg("screenMsg",MARKET.screenHint);}
   document.body.classList.toggle("kr",((draft&&draft.colors)||s.colors||"")==="kr");
   renderStatus();
   renderAll();
@@ -1304,25 +1200,8 @@ $("fwUpdate").onclick=()=>{const fw=(state&&state.fw)||{};if(!fw.available)retur
   $("fwUpdate").disabled=true;
   post("/api/settings?update=1").then(()=>{fwInstalling={from:state.version,to:fw.latest,since:Date.now()};renderFw(state);toast("업데이트를 시작했어요");pollSoon(CLOUD?5000:3000);})
     .catch(e=>{$("fwUpdate").disabled=false;toast("시작하지 못했어요: "+e.message);});};
-// ---- 앱 전환 (v2.9.0): /api/state 의 apps(권한)·variant·fw.switching. 전환형 기기(권한에 두 앱)만 「바꾸기」(OTA 약 1분). 주식만·코인만 기기는 행을 숨긴다 (2026-10-28 사용자: 업그레이드 판매 안 함) ----
-const APP_NAME={kstock:"주식",coin:"코인"};
+// (v3.0.1) 시스템 페이지의 「앱 바꾸기」 행은 뺐다 — 주식↔코인 전환은 런처 홈 카드의 앱 줄과 앱 페이지 「이 앱으로 전환」에서 (appSwitching 은 그 흐름이 쓴다)
 let appSwitching=null;   // {from, to, since}
-function renderApp(s){
-  const row=$("appRow"),sub=$("appSub"),btn=$("appSwitch");if(!row)return;
-  const cur=s.variant||MARKET.key==="base"?(s.variant||"coin"):(s.variant||"kstock"),other=cur==="coin"?"kstock":"coin",apps=Array.isArray(s.apps)?s.apps:null;
-  if(!apps||!apps.length){row.classList.add("hidden");return;}   // 옛 Worker·권한 미확인: 행을 숨긴다
-  row.classList.remove("hidden");
-  const sw=(s.fw&&s.fw.switching)||"";
-  if(appSwitching&&s.variant&&s.variant!==appSwitching.from){appSwitching=null;toast(APP_NAME[s.variant]+" 앱으로 바뀌었어요");}
-  if(sw||appSwitching){sub.textContent=APP_NAME[cur]+" → "+APP_NAME[sw||appSwitching.to]+" 앱으로 바꾸는 중… 약 1분, 기기 화면을 보세요";btn.classList.add("hidden");return;}
-  if(!apps.includes(other)){row.classList.add("hidden");return;}   // 전환형이 아니면 숨긴다
-  sub.textContent="지금 "+APP_NAME[cur]+" 앱 · "+APP_NAME[other]+" 앱으로 바꿀 수 있어요";btn.textContent=APP_NAME[other]+"으로 바꾸기";btn.dataset.mode="switch";
-  btn.classList.remove("hidden");btn.disabled=false;}
-$("appSwitch").onclick=()=>{const s=state||{},btn=$("appSwitch");if(!s.variant)return;const other=s.variant==="coin"?"kstock":"coin";
-  if(!confirm(APP_NAME[other]+" 앱으로 바꿀까요?\n\n약 1분 걸리고 기기가 다시 시작해요. Wi-Fi·앱 연결·두 앱의 종목은 그대로 남아요."))return;
-  btn.disabled=true;
-  post("/api/settings?app="+other).then(()=>{appSwitching={from:s.variant,to:other,since:Date.now()};renderApp(state);toast(APP_NAME[other]+" 앱으로 바꾸기 시작했어요");pollSoon(CLOUD?5000:3000);})
-    .catch(e=>{btn.disabled=false;toast(e.message==="apps"?"이 기기엔 "+APP_NAME[other]+" 앱 권한이 없어요":"시작하지 못했어요: "+e.message);});};
 $("restart").onclick=()=>{if(confirm("기기를 재시작할까요?")){fetch("/restart").catch(()=>{});toast(CLOUD?(wsUp()?"재시작 명령을 보냈어요 · 곧 재시작해요":"재시작 명령을 보냈어요 · 최대 30초 뒤 재시작해요"):"기기를 재시작하고 있어요");if(!CLOUD)setTimeout(()=>setConn(false),1500);}};
 // 기기 초기화: 두 번 확인 → /api/settings?reset=1 (LAN·클라우드 같은 경로). 기기는 서버 기록을 지우고(앱 연결 모두 해제) 설정·Wi-Fi 를 지운 뒤 재시작한다
 const factoryReset=$("factoryReset");if(factoryReset)factoryReset.onclick=()=>{
@@ -1336,26 +1215,10 @@ const factoryReset=$("factoryReset");if(factoryReset)factoryReset.onclick=()=>{
 const wifiReset=$("wifiReset");if(wifiReset)wifiReset.onclick=()=>{if(confirm("저장된 Wi-Fi를 지우고 초기 설정 화면으로 돌아갈까요? 기기 화면에 QR이 다시 떠요."))fetch("/api/wifi/reset",{method:"POST"}).then(()=>toast("초기 설정 모드로 전환해요")).catch(()=>{});};
 $("retry").onclick=()=>{failCount=0;loadState();};
 
-// 홈 화면 추가 안내 — 런처(PWA)가 없을 때만
-function maybeHomeHint(s){
-  if(s.launcher||CLOUD)return;
-  let done=false;try{done=localStorage.getItem("homeHintDone")==="1";}catch(e){}
-  const fromSetup=location.search.indexOf("from=setup")>=0;
-  if(done&&!fromSetup)return;
-  const ua=navigator.userAgent, ios=/iPhone|iPad|iPod/.test(ua), samsung=/SamsungBrowser/.test(ua);
-  let how=ios?"Safari 아래쪽 공유 버튼(□↑) → 「홈 화면에 추가」":samsung?"아래 메뉴(≡) → 「현재 페이지 추가」 → 「홈 화면」":"오른쪽 위 메뉴(⋮) → 「홈 화면에 추가」";
-  if(fromSetup&&!ios)how="이 창이 Wi-Fi 로그인 창이면 먼저 오른쪽 위 메뉴(⋮) → 「브라우저에서 열기」로 연 다음, "+how;
-  $("homeHintText").textContent="다음에 기기 설정을 바로 열 수 있어요. "+how;
-  $("homeHint").classList.remove("hidden");
-  const hide=()=>$("homeHint").classList.add("hidden");
-  $("homeHintLater").onclick=hide;
-  $("homeHintDone").onclick=()=>{try{localStorage.setItem("homeHintDone","1");}catch(e){}hide();};
-}
-
 route();
 loadState();setInterval(()=>{if(!applying)loadState();},POLL_MS);
 if(window.PREVIEW&&PREVIEW.onReady)PREVIEW.onReady(()=>{layoutKey="";renderAll();});
-// 앱 페이지 미리보기는 앱 칩·탭을 바꿔도 같은 캔버스를 쓴다. 홈 「앱」 행에서 들어오면 기기에 켜진 앱이 선택된다   // 기기 폰트를 다 받으면 미리보기를 기기 글꼴로 다시
+// 앱 페이지 미리보기는 앱 칩·탭을 바꿔도 같은 캔버스를 쓴다. 해시에 앱이 없으면 기기에 켜진 앱이 선택된다   // 기기 폰트를 다 받으면 미리보기를 기기 글꼴로 다시
 
 // 화면 페이지 미리보기 축소 (2.6.1): 스크롤한 만큼 미리보기 높이를 줄여(최대 반) 위쪽 가장자리가 헤더 아래 8px 에 고정돼 보이게 한다.
 // .pvstick 의 sticky top 이 -(폭/2) 라 폭/2 만큼 스크롤하면 위 절반이 헤더 뒤로 들어가고, 그만큼 scale 을 줄이면 아래 내용은 평소 속도로 흐른다.

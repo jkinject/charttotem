@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.10.1";   // 0.10: 앱 플랫폼 홈 (기기 화면 미리보기 · 앱 아이콘 줄 · 공통 메뉴)
+const APP_VERSION = "0.10.2";   // 0.10: 앱 플랫폼 홈 (기기 화면 미리보기 · 앱 아이콘 줄 · 공통 메뉴). 0.10.2: 설정 홈을 없애고 정보 문서·Wi-Fi/펌웨어 상태를 여기로
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -23,15 +23,16 @@ let cloudDevices = load(KEY_CLOUD);
 let devMode = false; try { devMode = localStorage.getItem(KEY_DEV) === "1"; } catch (e) {}
 
 // ------------------------------------------------------------
-// 라우팅: #/ 홈, #/add 기기 연결
+// 라우팅: #/ 홈, #/add 기기 연결, #/privacy · #/licenses 정보 문서 (0.10.2: 설정 페이지에서 옮겨 옴)
 // ------------------------------------------------------------
-const PAGES = ["/", "/add"];
+const PAGES = ["/", "/add", "/privacy", "/licenses"];
 function page() { const p = location.hash.slice(1) || "/"; return PAGES.includes(p.split("?")[0]) ? p.split("?")[0] : "/"; }
 function go(p) { location.hash = "#" + p; }
 function route() {
   const p = page();
   document.querySelectorAll(".page").forEach((x) => x.classList.toggle("on", x.dataset.page === p));
   scrollTo(0, 0);
+  const h = document.querySelector(`[data-page="${p}"] h1`); if (p !== "/" && h) h.focus({ preventScroll: true });
   if (p === "/add") { const q = new URLSearchParams((location.hash.split("?")[1] || "")); if (q.get("id")) $("pairId").value = q.get("id").toUpperCase(); pairReset(false); setTimeout(() => ($("pairId").value ? $("pairNext") : $("pairId")).focus(), 50); }
   else { pairStop(); }
 }
@@ -75,7 +76,8 @@ const APP_ICON = { kstock: "candlestick", coin: "coins", clock: "clock", dday: "
 const GENERIC = ["clock", "dday"];   // 펌웨어 안에서 즉시 바뀌는 앱. 주식↔코인은 OTA (약 30초)
 // 공통 메뉴: 설정 페이지의 해시. 종목은 그 기기의 시세 앱 데이터 탭으로
 const COMMON = (d) => [["layers", "종목", `/screen/${d.variant === "coin" ? "coin" : "kstock"}/data`], ["list", "티커 바", "/screen/options"], ["clock", "시계 · 시간대", "/screen/options"], ["moon", "야간 모드", "/screen/options"],
-  ["sun", "밝기", "/screen/options"], ["wifi", "Wi-Fi", "/wifi"], ["google", "구글 계정", null], ["settings", "시스템", "/system"]];   // 공통 옵션은 앱 페이지 옵션 탭 아래(0.10.1)
+  ["sun", "밝기", "/screen/options"], ["wifi", "Wi-Fi", "/wifi", "wifi"], ["google", "구글 계정", null], ["settings", "시스템", "/system", "system"]];   // 공통 옵션은 앱 페이지 옵션 탭 아래(0.10.1). 넷째 값: 상태 줄 키(renderDevState 가 채움)
+const commonHtml = (d) => COMMON(d).map(([ic, l, h, k]) => `<a class="cbtn${h ? "" : " off"}" ${h ? `href="${settingsUrl(d, h)}"` : ""}${k ? ` data-c="${k}"` : ""}>${I(ic)}<span>${l}${k ? '<small class="sub"></small>' : ""}</span>${h ? "" : '<small>준비 중</small>'}</a>`).join("");
 // 미리보기(preview.js)의 날짜 줄용 (설정 페이지 settings.js 와 같은 형식)
 const KWD = ["일", "월", "화", "수", "목", "금", "토"], WD3 = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"], WDM = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MON3 = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 window.fmtDate = (n, d) => { const m = d.getMonth() + 1, dd = d.getDate(), w = d.getDay(), p2 = (x) => String(x).padStart(2, "0");
@@ -109,7 +111,7 @@ function renderDevices() {
         <div class="caption">다른 앱으로 바꾸기</div>
         <div class="approw" data-r="apps"><span class="msg">기기 상태를 받는 중…</span></div>
         <div class="caption">공통</div>
-        <div class="common2" data-r="common">${COMMON(d).map(([ic, l, h]) => `<a class="cbtn${h ? "" : " off"}" ${h ? `href="${settingsUrl(d, h)}"` : ""}>${I(ic)}<span>${l}</span>${h ? "" : '<small>준비 중</small>'}</a>`).join("")}</div>
+        <div class="common2" data-r="common">${commonHtml(d)}</div>
       </div>
       `;
     el.querySelector('[data-r="more"]').onclick = () => deviceMenu(d);
@@ -117,7 +119,7 @@ function renderDevices() {
     el.querySelector(".devhead").onclick = (e) => {
       if (e.target.closest(".more, .pname-edit, .editbtn")) return;
       if (el.querySelector('[data-r="tiles"]').classList.contains("disabled")) return;
-      location.href = settingsUrl(d, TILES[0][3]);
+      location.href = settingsUrl(d, "/screen");
     };
     box.appendChild(el);
   }
@@ -135,7 +137,7 @@ async function refreshDevice(d) {
   if (!info.ok) { setStatus(el, "wait", "확인 중"); m.className = "msg"; m.textContent = "서버에 닿지 않아요. 인터넷 연결을 확인해 주세요."; return; }
   d.lost = false;
   if (info.name !== undefined && info.name !== d.name) d.name = info.name;
-  if (info.variant && info.variant !== d.variant) { d.variant = info.variant; el.querySelector('[data-r="common"]').innerHTML = COMMON(d).map(([ic, l, h]) => `<a class="cbtn${h ? "" : " off"}" ${h ? `href="${settingsUrl(d, h)}"` : ""}>${I(ic)}<span>${l}</span>${h ? "" : '<small>준비 중</small>'}</a>`).join(""); }
+  if (info.variant && info.variant !== d.variant) { d.variant = info.variant; el.querySelector('[data-r="common"]').innerHTML = commonHtml(d); }
   d.fw = info.fw; d.online = info.online; d.age = info.age; d.lastSeen = Date.now();
   save(KEY_CLOUD, cloudDevices);
   el.querySelector('[data-r="name"]').textContent = fmtName(d);
@@ -155,6 +157,10 @@ function renderDevState(d) {
   el.querySelector('[data-r="appn"]').textContent = (APP_NAMES[app] || app) + " · " + (s.layoutName || s.layout || "");
   el.querySelector('[data-r="layn"]').textContent = s.app ? "기기에 켜진 앱" : "펌웨어 3.0 부터 앱을 바꿀 수 있어요";
   el.querySelector('[data-r="cfg"]').href = settingsUrl(d, `/screen/${s.app ? app : mine}`);
+  // 공통 「Wi-Fi」·「시스템」 아래 상태 한 줄: 연결된 Wi-Fi 이름, 펌웨어 버전(새 버전이 있으면 NEW)
+  const wsub = el.querySelector('[data-c="wifi"] .sub'), ssub = el.querySelector('[data-c="system"] .sub');
+  if (wsub) wsub.textContent = s.ssid || "연결 안 됨";
+  if (ssub) { const fw = s.fw || {}; ssub.innerHTML = esc("v" + (s.version || "")) + (fw.available ? ' <b class="newtag">NEW</b>' : ""); }
   const row = el.querySelector('[data-r="apps"]'); row.innerHTML = "";
   if (!s.app) { row.innerHTML = '<span class="msg">기기 펌웨어를 3.0 으로 업데이트하면 시계·디데이 앱을 쓸 수 있어요.</span>'; return; }
   const ids = [mine]; if (Array.isArray(d.apps) && d.apps.includes(other)) ids.push(other); ids.push("clock", "dday");
@@ -381,10 +387,10 @@ const FAQ = [
   ["기기를 다른 곳으로 옮겼어요", `<p><b>미리 저장해 두는 방법</b>: 옮기기 전에 기기 설정 → Wi-Fi → 「Wi-Fi 추가 · 변경」에서 새 장소의 Wi-Fi 이름과 비밀번호를 넣고 「지금 바로 바꾸기」를 끄면 저장만 돼요. 그 장소에서 켜면 바로 붙어요.</p><p><b>그냥 옮겼다면</b>: 새 장소에서 켜면 저장된 Wi-Fi 를 차례로 찾아본 뒤(몇십 초) 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 이 떠요. 그 QR 을 찍어 그곳 Wi-Fi 에 한 번만 연결하면 돼요.</p><p>이전 Wi-Fi 도 그대로 기억하니 돌아가면 알아서 붙고, 이 앱은 다시 연결할 필요가 없어요.</p>`],
   ["공유기를 바꿨거나 Wi-Fi 비밀번호가 바뀌었어요", `<p>기기가 붙을 Wi-Fi 가 없으면 앱으로는 바꿀 수 없어요. 기기는 1~2분 안에 화면에 <b>Wi-Fi 를 못 찾았어요</b> 와 QR 을 띄우니, 폰 카메라로 그 QR 을 찍고 새 Wi-Fi 를 골라 비밀번호를 넣어 주세요.</p><p>아직 옛 Wi-Fi 에 붙어 있는 상태라면 기기 설정 → Wi-Fi → 「Wi-Fi 추가 · 변경」에서 미리 새 Wi-Fi 를 저장해 두세요. 비밀번호는 기기 전용 키로 암호화돼 가고, 바꾸기에 실패하면 기기가 이전 Wi-Fi 로 스스로 돌아가요.</p>`],
   ["회사 Wi-Fi 에 안 붙어요", `<p>아이디·비밀번호 로그인 방식(기업용)이나 웹 로그인이 뜨는 Wi-Fi, 5GHz 전용 Wi-Fi 에는 기기가 붙을 수 없어요.</p><p>폰 핫스팟이나 소형 공유기를 쓰세요.</p>`],
-  ["기기 ID 가 어디 있나요?", `<p>기기 화면 <b>오른쪽 위 구석</b>에 항상 작은 회색 글자로 적혀 있어요 (예: A75E1F). 처음 연결할 때는 「Wi-Fi 연결 완료」 화면 아래 알약에도 크게 나와요.</p><p>이미 연결한 기기라면 이 앱의 기기 카드와 기기 설정 맨 위(이름 아래 "ID …")에서도 볼 수 있어요.</p>`],
+  ["기기 ID 가 어디 있나요?", `<p>기기 화면 <b>오른쪽 위 구석</b>에 항상 작은 회색 글자로 적혀 있어요 (예: A75E1F). 처음 연결할 때는 「Wi-Fi 연결 완료」 화면 아래 알약에도 크게 나와요.</p><p>이미 연결한 기기라면 이 앱의 기기 카드(이름 아래 "ID …")와 기기 설정 → 시스템에서도 볼 수 있어요.</p>`],
   ["연결 코드가 기기 화면에 안 떠요", `<p>「기기 연결」에서 ID 를 넣고 다음을 누르면 기기 화면에 숫자 6자리가 떠요. 보통 바로 뜨고, 늦어도 30초 안이에요. 기기가 꺼져 있거나 Wi-Fi 에 연결되지 않았으면 뜨지 않아요.</p><p>숫자는 10분 동안만 유효해요. 지나면 「처음부터」를 눌러 다시 받으세요.</p>`],
   ["설정을 바꿨는데 기기가 안 바뀌어요", `<p>설정은 바꾸는 즉시 기기로 가고 보통 1~2초 안에 반영돼요. 설정 화면 아래 "기기에 반영됐어요" 가 뜨면 끝이에요.</p><p>계속 "반영 중" 이거나 "(최대 30초)" 가 붙어 있으면 기기가 오프라인이거나 예전 펌웨어예요. 기기가 켜지면 바뀐 설정이 그때 반영돼요. 위의 오프라인 항목도 확인해 주세요.</p>`],
-  ["펌웨어 업데이트는 어떻게 하나요?", `<p>기본으로 켜져 있는 <b>자동 업데이트</b>가 새 버전이 나오면 새벽 5시대(기기에 설정된 시간대 기준, 기기마다 몇 분씩 다름)에 스스로 설치해요. 기기를 켤 때 새 버전이 있으면 그때도 바로 설치해요.</p><p>바로 설치하려면 기기 설정 홈의 「시스템」에 <b>NEW</b> 표시가 뜬 뒤 들어가서 「업데이트」를 누르세요. 1~2분 걸리고 기기 화면에 진행률이 보인 뒤 다시 시작해요. 그동안 전원을 빼지 마세요.</p><p>스스로 설치하는 게 싫으면 「시스템」에서 자동 업데이트를 꺼 두세요. 그러면 「업데이트」를 누를 때만 설치해요.</p>`],
+  ["펌웨어 업데이트는 어떻게 하나요?", `<p>기본으로 켜져 있는 <b>자동 업데이트</b>가 새 버전이 나오면 새벽 5시대(기기에 설정된 시간대 기준, 기기마다 몇 분씩 다름)에 스스로 설치해요. 기기를 켤 때 새 버전이 있으면 그때도 바로 설치해요.</p><p>바로 설치하려면 기기 카드 공통의 「시스템」에 <b>NEW</b> 표시가 뜬 뒤 들어가서 「업데이트」를 누르세요. 1~2분 걸리고 기기 화면에 진행률이 보인 뒤 다시 시작해요. 그동안 전원을 빼지 마세요.</p><p>스스로 설치하는 게 싫으면 「시스템」에서 자동 업데이트를 꺼 두세요. 그러면 「업데이트」를 누를 때만 설치해요.</p>`],
   ["다른 폰에서도 이 기기를 설정하고 싶어요", `<p>그 폰에서 이 앱을 열고 「기기 연결」로 같은 ID 와 기기 화면의 숫자 코드로 연결하면 돼요. 한 기기에 여러 폰을 연결할 수 있어요.</p>`],
   ["앱에서 기기를 빼고 싶어요", `<p>기기 항목 오른쪽 ⋯ 을 누르고 <b>기기 삭제</b>를 고르면 이 폰에서만 연결이 끊겨요. 기기 자체 설정과 다른 폰의 연결은 그대로예요.</p>`],
   ["기기를 처음 상태로 되돌리고 싶어요 (양도·처분)", `<p>기기 설정 → 「시스템」 → <b>기기 초기화</b>를 누르세요. 종목·화면 설정·저장된 Wi-Fi 를 지우고, 서버에 있는 이 기기의 기록과 연결된 모든 폰의 연결도 함께 끊겨요. 기기는 다시 시작해 처음의 Wi-Fi 설정 QR 화면으로 돌아가요.</p><p>이 폰에서만 빼려면 위의 「기기 삭제」로 충분해요.</p>`],

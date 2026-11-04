@@ -20,7 +20,7 @@ button{background:none;border:0;padding:0;cursor:pointer;text-align:left}
 .offline button .ic{width:14px;height:14px}
 .top{height:56px;display:flex;align-items:center;gap:4px;padding:0 20px 0 8px;position:sticky;top:0;z-index:10;background:var(--bg)}
 .top h1{font-size:20px;font-weight:700;margin:0 0 0 4px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.home .top h1{margin-left:12px}
+body:not(.cloud) [data-page="/screen"] .top h1{margin-left:12px}   /* IP 접속(로컬)은 앱 페이지가 맨 위라 뒤로 버튼이 없다 */
 .back{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;color:var(--tx)}
 .back .ic{width:26px;height:26px;stroke-width:2.2}
 .conn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut);font-weight:600}
@@ -198,6 +198,8 @@ body.cloud .local-only{display:none !important}
 .editbtn .ic{width:18px;height:18px}
 .seg .updn{display:inline-flex;gap:1px;margin-right:5px;font-size:10px;line-height:1}
 .seg .updn b{font-weight:900}
+.namerow{display:flex;align-items:center;gap:2px;min-height:32px}
+.namerow .pname-edit{font-size:17px;width:min(50vw,200px)}
 .pname-edit{font:inherit;font-size:22px;font-weight:700;color:var(--tx);border:0;border-bottom:2px solid var(--ac);border-radius:0;background:none;padding:0 2px;width:min(56vw,220px);outline:none;vertical-align:baseline}
 .editbtn.on{color:var(--ac)}
 .chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mut);flex:1}
@@ -206,7 +208,7 @@ body.cloud .local-only{display:none !important}
 .scount{display:inline-flex;align-items:center;gap:8px}
 .spin{width:14px;height:14px;border-radius:50%;border:2px solid #0002;border-top-color:var(--ac);animation:spin .8s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
-.segrow{display:flex;align-items:center;gap:4px;padding:0 20px;position:relative}
+.segrow{display:flex;align-items:center;gap:4px;padding:0 20px 14px;position:relative}   /* 아래 여백: 세그먼트(--bg2)가 같은 색 구분 띠(.band)에 붙어 깨져 보이지 않게 (3.0.1) */
 .segrow .seg.wide{flex:1;margin:4px 0 0}
 .info{width:36px;height:36px;display:grid;place-items:center;color:var(--mut);border-radius:50%;flex:none;margin-top:4px}
 .info .ic{width:20px;height:20px}
@@ -399,3 +401,6 @@ body.cloud .local-only{display:none !important}
 .cbtn .ic{width:20px;height:20px;color:var(--tx);flex:none}.cbtn span{flex:1;min-width:0;font-size:14px;line-height:1.2;word-break:keep-all}.cbtn small{font-size:11px;color:var(--mut);flex:none}
 .cbtn.off{opacity:.5}.cbtn:active{background:var(--ac2)}
 .page.home .caption{padding:10px 20px 6px}
+/* 0.10.2: 공통 「Wi-Fi」·「시스템」 아래 상태 한 줄 (연결된 Wi-Fi 이름 · 펌웨어 버전 · NEW) */
+.cbtn span .sub{display:block;font-size:11px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.cbtn span .sub .newtag{vertical-align:0;margin-left:4px}
