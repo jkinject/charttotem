@@ -68,6 +68,9 @@ function labelOf(t) {
   return { iPhone: "iPhone", iPad: "iPad", Android: "Android 폰", Macintosh: "Mac", Windows: "Windows PC", Linux: "Linux" }[m ? m[0] : ""] || "브라우저";
 }
 const isOld = (d) => !!(latestFw && d.registered && d.fw && cmpVer(d.fw, latestFw) < 0);
+// 재부팅 집계 (2026-11-05): 서버가 sync 의 uptime 이 줄 때 세어 둔 것 (요약 reboots 누적 · crashes 그중 크래시 · rebootAt 최근 30번 시각)
+const rebootsSince = (d, sec) => (d.rebootAt || []).filter((t) => t >= now() - sec).length;
+const rebootKindText = (k) => ({ crash: "크래시", power: "전원·재시작" }[k] || k || "");
 
 // ---- 로그인 ----
 $("loginForm").addEventListener("submit", async (e) => {
@@ -131,7 +134,7 @@ async function loadDevices() {
 
 // ---- 요약 칩 ----
 function counts() {
-  const c = { all: devices.length, online: 0, offline: 0, unset: 0, old: 0, gone: 0, ws: 0, kstock: 0, coin: 0, apps: 0 };
+  const c = { all: devices.length, online: 0, offline: 0, unset: 0, old: 0, gone: 0, ws: 0, kstock: 0, coin: 0, apps: 0, rbDevs: 0, rb7: 0, rb1: 0, crash7: 0 };
   for (const d of devices) {
     if (!d.registered) { c.gone++; continue; }
     if (d.online) c.online++; else c.offline++;
@@ -140,6 +143,8 @@ function counts() {
     if (d.ws) c.ws++;
     if (d.variant === "kstock") c.kstock++; else if (d.variant === "coin") c.coin++;
     c.apps += (d.tokens || []).length;
+    const r7 = rebootsSince(d, 7 * 86400);
+    if (r7) { c.rbDevs++; c.rb7 += r7; c.rb1 += rebootsSince(d, 86400); }
   }
   return c;
 }
@@ -149,6 +154,7 @@ function renderChips() {
     ["all", c.all, "전체 기기", ""], ["online", c.online, "온라인", "good"], ["offline", c.offline, "오프라인", c.offline ? "bad" : ""],
     ["unset", c.unset, "세팅 전 (앱 미연결)", c.unset ? "warn" : ""], ["old", c.old, "구버전 펌웨어" + (latestFw ? " (최신 " + latestFw + ")" : ""), c.old ? "warn" : ""],
     ["gone", c.gone, "초기화됨 (기록만)", ""],
+    ["reboot", c.rbDevs + "대 " + c.rb7 + "회", "7일 재부팅 (24시간 " + c.rb1 + "회)", c.rbDevs ? "bad" : ""],
     [null, c.ws, "포크 채널 연결", ""], [null, c.kstock + " / " + c.coin, "주식 / 코인", ""], [null, c.apps, "연결된 앱(토큰)", ""],
   ];
   $("chips").innerHTML = chips.map(([f, n, label, cls]) => `<div class="chip ${cls}${f && f === filter ? " on" : ""}"${f ? ` data-f="${f}"` : ' style="cursor:default"'}><b>${esc(n)}</b><span>${esc(label)}</span></div>`).join("");
@@ -166,6 +172,7 @@ function matches(d) {
   if (filter === "unset" && !(d.registered && d.st && d.st.setupDone === false)) return false;
   if (filter === "old" && !isOld(d)) return false;
   if (filter === "gone" && d.registered) return false;
+  if (filter === "reboot" && !rebootsSince(d, 7 * 86400)) return false;
   if (query) {
     const hay = [d.id, d.name, d.fw, d.variant, d.st && d.st.ssid, d.st && d.st.ip, d.st && d.st.layoutName, ...(d.codes || []), ...(d.slots || []).map((s) => s.name)].join(" ").toLowerCase();
     if (!hay.includes(query)) return false;
@@ -192,7 +199,7 @@ function renderTable() {
     const fwAvail = st.fw && st.fw.available ? `<span class="tag warn">NEW ${esc(st.fw.latest)}</span>` : "";
     return `<tr data-id="${d.id}" class="${selected.has(d.id) ? "sel" : ""}">
       <td class="c"><input type="checkbox" data-sel="${d.id}" ${selected.has(d.id) ? "checked" : ""} ${d.registered ? "" : "disabled"}></td>
-      <td><span class="st ${cls}">${label}</span>${st.setupDone === false && d.registered ? '<br><span class="tag warn">세팅 전</span>' : ""}${d.pending && d.pending.length ? `<br><span class="tag">대기 명령 ${d.pending.length}</span>` : ""}</td>
+      <td><span class="st ${cls}">${label}</span>${st.setupDone === false && d.registered ? '<br><span class="tag warn">세팅 전</span>' : ""}${d.pending && d.pending.length ? `<br><span class="tag">대기 명령 ${d.pending.length}</span>` : ""}${rebootsSince(d, 7 * 86400) ? `<br><span class="tag bad" title="7일 재부팅 ${rebootsSince(d, 7 * 86400)}회 · 누적 ${d.reboots || 0}회 (크래시 ${d.crashes || 0})">재부팅 ${rebootsSince(d, 7 * 86400)}회</span>` : ""}</td>
       <td><span class="devid">${esc(d.id)}</span><br><span class="devname">${esc(d.name || "(이름 없음)")}</span></td>
       <td><b>${esc(variantName(d.variant))}</b><br>${apps}</td>
       <td class="mono">${esc(baseVer(d.fw) || "-")}<br>${fwTag}${fwAvail}</td>
@@ -227,9 +234,14 @@ $("bulk").addEventListener("click", async (e) => {
 });
 
 // ---- 최근 활동 ----
-const EV = { register: "등록", reregister: "재등록", first: "첫 동기화", fw: "펌웨어", back: "다시 연결", cmd: "명령", pair: "연결 코드", paired: "앱 연결", pairfail: "연결 실패", unpair: "앱 해제", apps: "앱 권한" };
+const EV = { register: "등록", reregister: "재등록", first: "첫 동기화", fw: "펌웨어", back: "다시 연결", cmd: "명령", pair: "연결 코드", paired: "앱 연결", pairfail: "연결 실패", unpair: "앱 해제", apps: "앱 권한", reboot: "재부팅" };
 function evText(l) {
   if (l.ev === "back") return "오프라인이었다가 다시 연결 (" + dur(Number(l.d)) + " 만에)";
+  if (l.ev === "reboot") {   // 서버 rebootKind: "crash ex=29 rs=2 up=98 n=1 epc1=.." | "power up=60"
+    const kv = {}; for (const p of String(l.d || "").split(" ").slice(1)) { const i = p.indexOf("="); if (i > 0) kv[p.slice(0, i)] = p.slice(i + 1); }
+    if (/^crash/.test(l.d)) return `크래시로 재부팅 (예외 ${kv.ex || "?"}, 가동 ${dur(Number(kv.up))} 만에, 전원 켠 뒤 ${kv.n || "?"}번째)`;
+    return `전원이 꺼졌거나 재시작됨 (직전 가동 ${dur(Number(kv.up))})`;
+  }
   if (l.ev === "pair") return "앱이 연결 코드를 요청";
   if (l.ev === "pairfail") return "연결 코드 5회 틀림";
   if (l.ev === "cmd") return cmdText(l.d);
@@ -325,6 +337,7 @@ function renderDetail(d, raw, layouts = []) {
       <dt>Wi-Fi</dt><dd>${esc(st.ssid || "-")} <span class="dim">${esc(st.ip || "")}</span>${Array.isArray(st.wifiKnown) && st.wifiKnown.length ? `<br><span class="dim">저장됨: ${esc(st.wifiKnown.join(", "))}</span>` : ""}</dd>
       <dt>밝기 · 야간</dt><dd>${esc(st.brightness != null ? st.brightness + "%" : "-")} · ${esc(night)}</dd>
       <dt>가동 · 메모리</dt><dd>${esc(dur(st.uptime))} · 힙 ${esc(num(st.heap))}B <span class="dim">(최소 ${esc(num(st.heapMin))})</span></dd>
+      <dt>재부팅</dt><dd>${d.reboots ? `누적 ${esc(d.reboots)}회 <span class="dim">(크래시 ${esc(d.crashes || 0)}) · 7일 ${esc(rebootsSince(d, 7 * 86400))}회 · 마지막 ${esc(ago(d.lastReboot))} ${esc(rebootKindText(d.lastRebootKind))}</span>` : '<span class="dim">없음 (서버가 세기 시작한 뒤로)</span>'}${st.crash ? `<br><span class="dim">마지막 크래시 기록: 예외 ${esc(st.crash.ex)} · ${esc(st.crash.ago)}번 부팅 전 · 가동 ${esc(dur(st.crash.up))} 만에 · epc1 ${esc(st.crash.epc1)}</span>` : ""}${st.stall && st.stall.n ? `<br><span class="dim">루프 막힘 ${esc(st.stall.n)}회 · 최대 ${esc(num(st.stall.max))}ms (${esc(st.stall.maxAt)})</span>` : ""}</dd>
       <dt>시각 · 글꼴</dt><dd>${st.timeSynced ? "맞춤" : "아직"} · ${esc(st.font || "-")} · ${esc(st.tz || "")}</dd>
       ${st.error ? `<dt>오류</dt><dd class="msg err" style="display:block">${esc(st.error)}</dd>` : ""}
     </dl></div>
