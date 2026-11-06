@@ -17,7 +17,11 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:64px}
 body{margin:0;background:var(--bg2);color:var(--tx);font:16px/1.65 var(--font);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
-main{max-width:640px;margin:0 auto;background:var(--bg);min-height:100vh;padding-bottom:40px}
+main{max-width:640px;margin:0 auto;background:var(--bg);min-height:100vh;padding-bottom:88px}
+.ask{position:fixed;z-index:6;right:max(16px,calc(50% - 304px));bottom:calc(16px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:6px;padding:10px 14px;border-radius:999px;background:#fff;color:var(--tx);font-size:14px;font-weight:600;line-height:1.2;text-decoration:none;box-shadow:0 0 0 1px var(--ln),0 4px 14px #0000001f}
+.ask svg{flex:none;width:16px;height:16px;color:var(--mut)}
+.already{margin:0;padding:2px 20px;font-size:13px;line-height:1.4;color:var(--mut);text-align:right}
+.already a{display:inline-block;padding:8px 0;color:inherit;text-underline-offset:2px}
 .hero{padding:0 0 24px}
 .hero img{display:block;width:100%;height:auto;background:#e9e9ea}
 .hero .eyebrow{margin:20px 20px 0;font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--ac-tx)}
@@ -69,6 +73,7 @@ body.only-ios .os-android,body.only-android .os-ios{display:none}
 <body>
 <main>
 
+<p class="already">이미 설정을 마쳤다면 <a href="/">설정 앱으로 이동</a></p>
 <header class="hero">
   <img src="img/09-lineup-3colors.jpg" width="900" height="600" alt="차트토템 주식시계 블랙·오렌지·화이트">
   <p class="eyebrow">CHART TOTEM</p>
@@ -122,6 +127,7 @@ body.only-ios .os-android,body.only-android .os-ios{display:none}
 </section><section id="faq"><h2>문제가 생겼을 때</h2><details><summary>QR이 안 찍혀요</summary><p>기기와 폰 사이를 15~20cm 정도로 두고 다시 비춰 보세요. Android는 카메라 설정의 「QR 코드 스캔」을 켜거나 Google 렌즈로 찍어 보세요.</p></details><details><summary>집 Wi-Fi가 목록에 안 보여요</summary><p>차트토템은 2.4GHz Wi-Fi만 연결돼요. 공유기가 5GHz만 켜져 있다면 2.4GHz를 켜 주세요. 기기를 공유기 가까이에 두고 「다시 검색」을 누르거나, 「목록에 없나요?」에서 이름을 직접 입력해도 돼요.</p></details><details><summary>「비밀번호가 틀린 것 같아요」가 나와요</summary><p>대소문자와 특수문자를 다시 확인해 주세요. 입력칸 오른쪽 눈 모양을 누르면 비밀번호가 보여요.</p></details><details><summary>앱에서 「기기를 찾을 수 없어요」가 나와요</summary><p>기기 화면이 「Wi-Fi 연결 완료」나 시세 화면인지 확인해 주세요. 아직 Wi-Fi 연결 전이라면 2~3단계를 먼저 해 주세요. ID는 숫자와 A~F로 된 6자리예요.</p></details><details><summary>연결 코드가 만료됐어요</summary><p>코드는 10분 동안만 유효해요. 앱에서 「처음부터」를 누르면 새 코드가 떠요.</p></details><details><summary>이사했거나 공유기를 바꿨어요</summary><p>저장된 Wi-Fi를 찾지 못하면 기기 화면에 「Wi-Fi 를 못 찾았어요」와 QR이 떠요. 2~3단계와 같은 방법으로 새 Wi-Fi를 연결하면 돼요.</p></details><details><summary>가족 폰에서도 설정하고 싶어요</summary><p>다른 폰에서도 차트토템 앱의 「기기 연결하기」로 같은 기기를 연결할 수 있어요. 기기 화면 오른쪽 위 구석에 ID가 작게 적혀 있어요.</p></details><details><summary>처음 상태로 되돌리고 싶어요</summary><p>앱의 기기 설정 → 「시스템」 → 「기기 초기화」를 누르면 종목·화면 설정·Wi-Fi·앱 연결이 모두 지워지고 1단계 화면으로 돌아가요.</p></details></section>
 <footer>차트토템 · <a href="/">앱 열기</a></footer>
 </main>
+<a class="ask" href="https://talk.naver.com/ct/wh9xfth" target="_blank" rel="noopener" aria-label="네이버 톡톡으로 문의하기"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.7 1.7 5.1 4.3 6.5L5.5 21l4.1-2.3c.8.2 1.6.3 2.4.3 5.5 0 10-3.6 10-8s-4.5-8-10-8z"/></svg>문의하기</a>
 <script>
 (function(){var ua=navigator.userAgent,def=/Android/i.test(ua)?'android':'ios',k='ctg-os',os=def;
 try{os=localStorage.getItem(k)||def}catch(e){}
