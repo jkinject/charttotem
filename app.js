@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.9.4";
+const APP_VERSION = "0.9.5";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -90,14 +90,17 @@ function renderDevices() {
         <div class="thumb">${thumbHtml(d)}</div>
         <div class="dtext">
           <div class="drow"><span class="pname" data-r="name">${esc(fmtName(d))}</span><span class="st wait" data-r="st">확인 중</span></div>
-          <div class="psub"><span>ID ${esc(d.id)}</span>${d.variant ? `<span class="badge">${esc(variantLabel(d.variant))}</span>` : ""}</div>
+          <div class="psub"><span>ID ${esc(d.id)}</span><span class="badge${d.variant ? "" : " hidden"}" data-r="badge">${esc(variantLabel(d.variant))}</span></div>
         </div>
         <button class="more" data-r="more" title="아이콘 바꾸기 · 이름 바꾸기 · 기기 삭제" aria-label="더보기">${I("more")}</button>
       </div>
       <div class="msg hidden" data-r="msg"></div>
       <div class="tiles" data-r="tiles">${TILES.map(([ic, l, s]) => `<a class="tile">${I(ic)}<b>${l}</b><span>${s}</span></a>`).join("")}</div>
+      <div class="appsw hidden" data-r="appsw" aria-live="polite"></div>
       `;
     setTileLinks(el, d);
+    el.querySelector('[data-r="appsw"]').onclick = (e) => { if (e.target.closest("button")) switchApp(d); };
+    renderAppSwitch(el, d);   // 저장해 둔 권한으로 바로 그린다 (응답을 기다리며 카드 높이가 튀지 않게)
     el.querySelector('[data-r="more"]').onclick = () => deviceMenu(d);
     // 머리 영역(아이콘·이름·ID) 전체를 누르면 「기기 설정」과 같은 페이지로. ⋯ 버튼과 이름 편집 중인 입력칸은 제외, 연결 해제(타일 비활성) 상태면 안 감
     el.querySelector(".devhead").onclick = (e) => {
@@ -110,24 +113,74 @@ function renderDevices() {
 }
 function cardOf(d) { return document.querySelector(`.dev[data-key="${CSS.escape(d.id)}"]`); }
 
+// ---- 앱 전환 (홈 카드, 0.9.5): 「시스템」 안에 있어 못 찾던 주식↔코인 전환을 카드로 꺼냈다. 권한에 두 앱이 다 있는 올인원 기기에만 보인다.
+// 권한·변형은 홈이 이미 15초마다 부르는 /info 에 실려 있어 Worker 요청이 늘지 않는다. 전환 중 표시는 d.switching {from,to,since} 로 저장해 새로고침해도 이어진다.
+// 기기가 새 펌웨어로 sync 하면 Worker 의 variant 가 바뀌고, 그걸 /info 로 보고 끝낸다. 실패 신호는 따로 없으므로 SWITCH_TIMEOUT_MS 가 지나면 되돌린다.
+const SWITCH_TIMEOUT_MS = 5 * 60 * 1000;
+const switchStarting = new Set();   // 확인 창을 지나 요청을 보내는 동안 (버튼 잠금)
+function isAllInOne(d) { return Array.isArray(d.apps) && d.apps.includes("kstock") && d.apps.includes("coin"); }
+function otherApp(v) { return v === "coin" ? "kstock" : "coin"; }
+function renderAppSwitch(el, d) {
+  const row = el.querySelector('[data-r="appsw"]'); if (!row) return;
+  const show = !d.lost && isAllInOne(d) && !!variantLabel(d.variant);
+  row.classList.toggle("hidden", !show);
+  if (!show) return;
+  const sw = d.switching;
+  row.classList.toggle("busy", !!sw);
+  const html = sw
+    ? `${I("repeat")}<span class="aswtext"><b>${variantLabel(sw.from)} → ${variantLabel(sw.to)} 바꾸는 중</b><span>약 1분 · 기기 화면을 보세요</span></span>`
+    : `${I("repeat")}<span class="aswtext"><b>지금 ${variantLabel(d.variant)} 앱</b></span><button class="aswbtn"${d.online && !switchStarting.has(d.id) ? "" : " disabled"}>${variantLabel(otherApp(d.variant))}으로 바꾸기</button>`;
+  if (row._html !== html) { row.innerHTML = html; row._html = html; }   // 폴링 때마다 다시 그리면 누르는 순간의 버튼이 사라질 수 있다
+}
+async function switchApp(d) {
+  if (d.switching || switchStarting.has(d.id)) return;
+  const from = d.variant, to = otherApp(from), name = variantLabel(to);
+  if (!confirm(`${name} 앱으로 바꿀까요?\n\n약 1분 걸리고 기기가 다시 시작해요. Wi-Fi·앱 연결·두 앱의 종목은 그대로 남아요.`)) return;
+  const el = cardOf(d);
+  switchStarting.add(d.id); renderAppSwitch(el, d);
+  try {
+    await refreshDevice(d);   // 저장된 값이 낡았을 수 있다: 꺼진 기기에 명령이 쌓이면 나중에 뜬금없이 바뀌고, 설정 페이지에서 이미 바꿨을 수도 있다
+    if (d.variant !== from) { toast(`이미 ${variantLabel(d.variant)} 앱이에요`); return; }
+    if (!d.online) { toast("기기가 오프라인이에요. 전원과 Wi-Fi 를 확인해 주세요"); return; }
+    const r = await api(`/p/${d.id}/settings?app=${to}`, { method: "POST", token: d.token });
+    if (!r.ok) { toast(r.error === "apps" ? `이 기기엔 ${name} 앱 권한이 없어요` : "시작하지 못했어요. 잠시 뒤 다시 시도해 주세요"); return; }
+    d.switching = { from, to, since: Date.now() };
+    save(KEY_CLOUD, cloudDevices);
+    setStatus(el, "wait", "바꾸는 중");
+    toast(`${name} 앱으로 바꾸기 시작했어요`);
+  } finally {
+    switchStarting.delete(d.id); renderAppSwitch(cardOf(d) || el, d);
+  }
+}
+
 async function refreshDevice(d) {
   const el = cardOf(d); if (!el) return;
   const info = await api(`/p/${d.id}/info`, { token: d.token });
   const m = el.querySelector('[data-r="msg"]'), tiles = el.querySelector('[data-r="tiles"]');
   if (info._status === 401) {   // 토큰이 폐기됐다 (기기 초기화 등)
     setStatus(el, "off", "연결 해제"); m.className = "msg err"; m.textContent = "연결이 해제됐어요. 「기기 연결」에서 다시 연결해 주세요.";
-    tiles.classList.add("disabled"); d.lost = true; save(KEY_CLOUD, cloudDevices); return;
+    tiles.classList.add("disabled"); d.lost = true; d.switching = null; save(KEY_CLOUD, cloudDevices); renderAppSwitch(el, d); return;
   }
   if (!info.ok) { setStatus(el, "wait", "확인 중"); m.className = "msg"; m.textContent = "서버에 닿지 않아요. 인터넷 연결을 확인해 주세요."; return; }
   d.lost = false;
   if (info.name !== undefined && info.name !== d.name) d.name = info.name;
-  if (info.variant && info.variant !== d.variant) { d.variant = info.variant; setTileLinks(el, d); }
+  if (info.variant && info.variant !== d.variant) {
+    d.variant = info.variant; setTileLinks(el, d);
+    const badge = el.querySelector('[data-r="badge"]'); badge.textContent = variantLabel(d.variant); badge.classList.remove("hidden");
+  }
   d.fw = info.fw; d.online = info.online; d.age = info.age; d.lastSeen = Date.now();
+  d.apps = Array.isArray(info.apps) ? info.apps : null;
+  if (d.switching) {
+    if (d.variant === d.switching.to) { d.switching = null; toast(`${variantLabel(d.variant)} 앱으로 바뀌었어요`); }
+    else if (Date.now() - d.switching.since > SWITCH_TIMEOUT_MS) { d.switching = null; toast("앱을 바꾸지 못했어요. 기기 전원과 Wi-Fi 를 확인한 뒤 다시 눌러 주세요"); }
+  }
   save(KEY_CLOUD, cloudDevices);
   el.querySelector('[data-r="name"]').textContent = fmtName(d);
   tiles.classList.remove("disabled");
   // 상태는 이름 옆 알약 글자로. 문제가 있을 때만 한 줄 더 (정보 과잉 방지)
-  if (info.online) { setStatus(el, "on", "연결됨"); m.className = "msg hidden"; m.textContent = ""; }
+  renderAppSwitch(el, d);
+  if (d.switching) { setStatus(el, "wait", "바꾸는 중"); m.className = "msg hidden"; m.textContent = ""; }   // 다시 시작하는 동안 오프라인으로 보여도 놀라지 않게
+  else if (info.online) { setStatus(el, "on", "연결됨"); m.className = "msg hidden"; m.textContent = ""; }
   else { setStatus(el, "off", "오프라인"); m.className = "msg err"; m.textContent = "오프라인" + (info.age != null ? " · 마지막 연결 " + agoText(info.age) : "") + " · 아래 도움말 참고"; }
 }
 function refreshAll() { for (const d of cloudDevices) refreshDevice(d); }
