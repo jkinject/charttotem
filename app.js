@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.9.6";
+const APP_VERSION = "0.9.7";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -408,6 +408,8 @@ async function fbSubmit() {
   $("fbForm").classList.add("hidden"); $("fbDone").classList.remove("hidden");
   fbCloseTimer = setTimeout(fbHide, 1600);
 }
+// 새 서비스워커가 넘겨받을 때 새로고침해도 되는가: 홈 화면이고, 의견 팝업이 닫혀 있을 때만 (업데이트 직후 쓰던 글이 날아가지 않게). 안 하면 다음에 열 때 새 버전이 보인다
+function swShouldReload(hadController) { return hadController && (location.hash === "" || location.hash === "#/" || location.hash === "#") && $("fbBd").classList.contains("hidden"); }
 $("fbOpen").onclick = fbShow;
 $("fbCancel").onclick = fbHide;
 $("fbSend").onclick = fbSubmit;
@@ -511,7 +513,7 @@ $("installLater").onclick = () => $("installCard").classList.add("hidden");
     // 처음 설치(이전 컨트롤러 없음)와 기기 연결·설정 같은 다른 화면에서는 새로고침하지 않는다
     const hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (hadController && (location.hash === "" || location.hash === "#/" || location.hash === "#")) location.reload();
+      if (swShouldReload(hadController)) location.reload();
     });
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
