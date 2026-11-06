@@ -336,6 +336,22 @@ body.cloud .local-only{display:none !important}
 .tile b{font-size:15px;font-weight:700;line-height:1.2}
 .tile span{font-size:12px;color:var(--mut);line-height:1.3}
 .tiles.disabled{opacity:.45;pointer-events:none}
+/* 의견 건의하기 팝업: 폰 키보드에 가리지 않게 위쪽에 */
+.fb-bd{position:fixed;inset:0;z-index:50;background:#0006;display:flex;align-items:flex-start;justify-content:center;padding:max(10vh,24px) 16px 16px;overflow:auto}
+.fb{width:100%;max-width:420px;box-sizing:border-box;background:var(--bg);border-radius:18px;padding:22px 20px 16px;color:var(--tx)}
+.fb h2{margin:0;font-size:18px;font-weight:700;line-height:1.3}
+.fb p{margin:6px 0 14px;font-size:14px;color:var(--mut);line-height:1.45}
+.fb textarea{display:block;width:100%;box-sizing:border-box;min-height:132px;padding:12px 14px;border:0;border-radius:12px;background:var(--bg2);color:inherit;font:inherit;font-size:16px;line-height:1.5;resize:none;outline:0}
+.fb textarea:focus{box-shadow:inset 0 0 0 1.5px var(--tx)}
+.fb .msg{margin:10px 0 0;padding:0}
+.fb-note{margin-top:10px;font-size:12px;color:var(--mut)}
+.fb-btns{display:grid;grid-template-columns:1fr 1.6fr;gap:8px;margin-top:14px}
+.fb-btns button{min-height:48px;border-radius:12px;background:var(--bg2);font-size:15px;font-weight:700;text-align:center}
+.fb-btns .send{background:var(--tx);color:var(--bg)}
+.fb-btns .send:disabled{opacity:.35;cursor:default}
+.fb-done{display:flex;flex-direction:column;align-items:center;gap:10px;padding:26px 0 20px;cursor:pointer}
+.fb-done .ic{width:44px;height:44px;padding:10px;box-sizing:border-box;border-radius:50%;background:var(--ac2);color:#2e8f6e}
+.fb-done b{font-size:17px;font-weight:700}
 /* 앱 전환 행 (올인원 기기만): 타일 아래 전체 폭. 타일 칸 사이와 같은 10px 간격이 되도록 .tiles 아래 여백만큼 끌어올린다 */
 .appsw{display:flex;align-items:center;gap:10px;margin:-8px 20px 18px;padding:8px 8px 8px 14px;min-height:56px;box-sizing:border-box;border-radius:12px;background:var(--bg2);color:var(--tx)}
 .appsw>.ic{width:22px;height:22px;flex:none}

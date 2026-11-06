@@ -3,7 +3,7 @@
 //   어디서든(집 밖에서도) 설정 페이지(settings-<variant>.html?id=)를 연다. 설정 요청은 cloud_shim.js 가 Worker 로 보낸다.
 // - 기기 목록은 localStorage ct.cloudDevices [{id, token, name, variant, addedAt, totem?}]. totem 은 TOTEMS 인덱스(사용자가 고른 것). 없으면 기기 ID 해시로 정한다.
 // - IP 직접 연결(LNA, 같은 Wi-Fi)은 개발자 모드(버전 7번 탭 또는 ?dev=1)에서만. 옛 ct.devices 는 거기서만 보인다.
-const APP_VERSION = "0.9.5";
+const APP_VERSION = "0.9.6";
 const CLOUD = "https://charttotem-cloud.jkinject.workers.dev";
 const KEY_CLOUD = "ct.cloudDevices";
 const KEY_DEVICES = "ct.devices";     // 개발자 모드: IP 기기
@@ -380,6 +380,42 @@ let verTaps = 0, verTapAt = 0;
 $("ver").onclick = () => { const now = Date.now(); verTaps = now - verTapAt < 1500 ? verTaps + 1 : 1; verTapAt = now; if (verTaps >= 7) { verTaps = 0; setDevMode(!devMode); toast(devMode ? "개발자 모드를 켰어요 (IP 직접 연결)" : "개발자 모드를 껐어요"); } };
 
 // ------------------------------------------------------------
+// ------------------------------------------------------------
+// 의견 건의하기 (0.9.6): 팝업 → 글 → 「제출되었습니다」 → 저절로 닫힘. 로그인·연락처 없이. Worker POST /feedback (cloud/src/feedback.js), 관리자 페이지에서 모아 본다
+// 키보드에 가리지 않게 바닥 시트가 아니라 위쪽에 띄운다. 글이 있으면 바깥을 눌러도 닫지 않고, 실패해도 글을 지우지 않는다
+// ------------------------------------------------------------
+let fbCloseTimer = null;
+function fbMsg(t) { const m = $("fbMsg"); m.textContent = t || ""; m.classList.toggle("hidden", !t); }
+function fbSync() { $("fbSend").disabled = !$("fbText").value.trim(); }
+function fbShow() {
+  clearTimeout(fbCloseTimer);
+  $("fbForm").classList.remove("hidden"); $("fbDone").classList.add("hidden");
+  $("fbNote").classList.toggle("hidden", !cloudDevices.length);
+  $("fbSend").textContent = "제출하기"; fbMsg(""); fbSync();
+  $("fbBd").classList.remove("hidden");
+  $("fbText").focus();
+}
+function fbHide() { clearTimeout(fbCloseTimer); $("fbBd").classList.add("hidden"); $("fbOpen").focus(); }
+let fbSending = false;
+async function fbSubmit() {
+  const text = $("fbText").value.trim();
+  if (!text || fbSending) return;
+  fbSending = true; $("fbSend").disabled = true; $("fbSend").textContent = "보내는 중…"; fbMsg("");
+  const r = await api("/feedback", { method: "POST", body: { text, devices: cloudDevices.map((d) => d.id), appVersion: APP_VERSION } });
+  fbSending = false; $("fbSend").textContent = "제출하기"; fbSync();
+  if (!r.ok) { fbMsg(r.error === "rate" ? "잠시 뒤에 다시 보내 주세요." : r.error === "long" ? "글이 너무 길어요. 조금 줄여 주세요." : "보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요."); return; }
+  $("fbText").value = ""; fbSync();
+  $("fbForm").classList.add("hidden"); $("fbDone").classList.remove("hidden");
+  fbCloseTimer = setTimeout(fbHide, 1600);
+}
+$("fbOpen").onclick = fbShow;
+$("fbCancel").onclick = fbHide;
+$("fbSend").onclick = fbSubmit;
+$("fbText").oninput = fbSync;
+$("fbDone").onclick = fbHide;
+$("fbBd").onclick = (e) => { if (e.target === $("fbBd") && !$("fbText").value.trim()) fbHide(); };
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("fbBd").classList.contains("hidden")) fbHide(); });
+
 // 도움말: FAQ 목록. 질문을 누르면 그 답만 펼친다 (항목이 늘어나도 위에서 아래로 훑을 수 있게)
 // ------------------------------------------------------------
 const FAQ_ICON = ["wifi", "arrow-left-right", "repeat", "wifi-off", "fingerprint", "monitor", "settings", "upload", "smartphone", "trash", "triangle-alert"];

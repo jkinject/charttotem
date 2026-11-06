@@ -21,6 +21,7 @@
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-message-circle" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
 <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
 <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></symbol>
 <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></symbol>
@@ -98,6 +99,12 @@
   </div>
 
   <div class="card">
+  <nav class="list">
+    <button class="menu" id="fbOpen"><svg class="ic" aria-hidden="true"><use href="#i-message-circle"/></svg><span class="mtext"><span class="mlbl">의견 건의하기</span><span class="msub">아주 사소한 의견도 좋아요</span></span><span class="chev"><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></button>
+  </nav>
+  </div>
+
+  <div class="card">
   <div class="caption">도움말</div>
   <div class="faq" id="faq"></div>
   </div>
@@ -135,6 +142,19 @@
 </section>
 
 </main>
+<div class="fb-bd hidden" id="fbBd">
+  <div class="fb" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+    <div id="fbForm">
+      <h2 id="fbTitle">의견 건의하기</h2>
+      <p>불편한 점, 바라는 기능, 뭐든 편하게 적어 주세요.</p>
+      <textarea id="fbText" rows="5" maxlength="2000" placeholder="자유롭게 적어 주세요" aria-label="의견"></textarea>
+      <div class="msg err hidden" id="fbMsg" role="alert"></div>
+      <div class="fb-note hidden" id="fbNote">연결된 기기 ID 가 함께 전달돼요</div>
+      <div class="fb-btns"><button id="fbCancel" type="button">취소</button><button id="fbSend" class="send" type="button" disabled>제출하기</button></div>
+    </div>
+    <div class="fb-done hidden" id="fbDone" role="status"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><b>제출되었습니다</b></div>
+  </div>
+</div>
 <div class="toast" role="status" aria-live="polite" id="toast"></div>
 <script src="totems.js"></script>
 <script src="app.js"></script>

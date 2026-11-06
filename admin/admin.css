@@ -180,3 +180,12 @@ details summary{cursor:pointer;color:var(--mut);font-size:13px;padding:6px 0}
 .screen .stitle b{font-size:17px}
 .screen .stitle .dim{font-size:12px}
 .screen .sdesc{color:var(--mut);font-size:13px;line-height:1.5;max-width:380px}
+
+/* 의견 건의 (feedback.js) */
+.fblist{list-style:none;margin:0;padding:0 18px 6px;max-height:420px;overflow:auto}
+.fblist:empty{display:none}
+.fblist li{padding:10px 0;border-top:1px solid var(--ln)}
+.fblist li:first-child{border-top:0}
+.fbmeta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
+.fbmeta .who{font-family:var(--mono);font-weight:700;color:var(--tx);text-decoration:underline;text-underline-offset:2px}
+.fbtext{margin-top:4px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
