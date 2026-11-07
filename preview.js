@@ -74,12 +74,14 @@ function norm(s){
     // 코인 (2.10.0): 코드 "UPBIT:KRW-BTC". 상태에 base/quote/ex/name 이 오고, 아직 없으면(방금 추가) 코드에서 푼다. 이름 옵션(cname)이 켜져 있으면 한글 이름
     const m=coin?/^(?:([A-Z]+):)?([A-Z]+)-([A-Z0-9]+)$/.exec(String(sl.code||"").toUpperCase()):null;
     const base=sl.base||(m?m[3]:sl.code),quote=sl.quote||(m?m[2]:"USDT"),cnm=coin&&s.cname?(sl.name||coinName(s.cnames,base)):"";
-    return {code:sl.code,label:s.variant==="kstock"?(dom?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):(cnm||base),
+    // 해외 주식 티커 (2.13.0, 펌웨어 marketTickerRule): 옵션이 켜져 있고, 국내가 아니고, 티커에 영문자가 있을 때만. 숫자 티커(7203)는 이름
+    const ft=s.variant==="kstock"&&!!s.ftick,tk=ft&&!dom&&/[A-Za-z]/.test(sl.symbolCode||"");
+    return {code:sl.code,tk,label:s.variant==="kstock"?(dom||(ft&&!tk)?(sl.stockName||sl.code):(sl.symbolCode||sl.code)):(cnm||base),
       // name — 코인: 기기 marketDrawSlotName 처럼 한글 이름(옵션) 또는 심볼 (전엔 "BTCUSDT" — WATCHLIST·STACK 이 이름 옵션을 무시했다)
-      name:s.variant==="kstock"?(sl.stockName||sl.code):(cnm||base),ok:!!sl.ok,price:sl.price,currency:coin?(sl.currency||quote):sl.currency,change:sl.change||0,
+      name:s.variant==="kstock"?(tk?sl.symbolCode:(sl.stockName||sl.code)):(cnm||base),ok:!!sl.ok,price:sl.price,currency:coin?(sl.currency||quote):sl.currency,change:sl.change||0,
       up:(sl.change||0)>=0,color:sl.ok?((sl.change||0)>=0?tone.up:tone.down):C.dim,exchange:sl.exchange||"",market:sl.market||"",diff:sl.diff,
       spark:typeof sl.spark==="string"?(sl.spark.match(/\d\d/g)||[]).map(Number):null,
-      tick:s.variant==="kstock"?(sl.symbolCode||sl.code):base,full:s.variant==="kstock"?(sl.stockName||sl.symbolCode||sl.code):(cnm||base+"/"+quote),
+      tick:s.variant==="kstock"?(sl.symbolCode||sl.code):base,full:s.variant==="kstock"?(tk?sl.symbolCode:(sl.stockName||sl.symbolCode||sl.code)):(cnm||base+"/"+quote),
       ex:s.variant==="kstock"?(sl.exchange||""):(sl.ex||(m&&m[1])||"BINANCE"),dayOpen:sl.dayOpen||"",dayHigh:sl.dayHigh||"",dayLow:sl.dayLow||"",diffText:diffText(sl,s.variant)};});
   const sh0=s.show||{};let t=(s.time||"").slice(0,5);const synced=!!s.timeSynced;let d=new Date();
   const hms=(s.time||"").split(":").map(Number);
@@ -148,7 +150,7 @@ function coinLogo(b){if(!b)return null;let e=LOGOS[b];if(!e){const im=new Image(
   im.onerror=()=>{if(!e.alt){e.alt=1;im.src="https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/128/color/"+b.toLowerCase()+".png";}};im.src="https://static.upbit.com/logos/"+b+".png";}
   return e.ok?e.im:null;}
 function title(x,S){const sl=S.slots[S.active];if(!sl)return;
-  if(S.v==="kstock"){text(x,fitEll(x,sl.name,"ko24",S.show.id?190:228),6,4,"ko24",C.title);text(x,(sl.code)+"  "+sl.exchange,6,40,"f2",C.dim);}
+  if(S.v==="kstock"){text(x,fitEll(x,sl.name,"ko24",S.show.id?190:228),6,4,"ko24",C.title);text(x,(sl.tk?"":sl.code+"  ")+sl.exchange,6,40,"f2",C.dim);}
   else{const lg=coinLogo(sl.tick);if(lg){x.save();x.beginPath();x.arc(26,24,20,0,Math.PI*2);x.clip();x.fillStyle="#000";x.fillRect(6,4,40,40);x.drawImage(lg,6,4,40,40);x.restore();}   // 코인 로고 (기기와 같은 업비트 로고, 2.10.2)
     else{dot(x,26,24,19,C.accent);text(x,sl.tick.slice(0,3),26,18,"f2",C.bg,"center");}   // 로고를 못 받으면 기기처럼 글자 동그라미. 코인: 펌웨어 marketDrawTitle 과 같게 — 이름(한글 옵션) 또는 "BTC/KRW", 아래 작게 거래소
     const maxW=S.show.id?142:182,ko=!isAscii(sl.full);if(ko)text(x,fitEll(x,sl.full,"ko24",maxW),52,4,"ko24",C.title);else text(x,sl.full,52,6,fitBold(x,sl.full,maxW,12),C.title);
@@ -215,7 +217,7 @@ const L={
  // S06 SPLIT: 왼쪽 활성 종목 + 오른쪽 나머지 목록
  S06(x,S){const a=S.active,sl=S.slots[a];x.fillStyle=C.bar;x.fillRect(159,8,1,230);text(x,S.time,234,10,"f2",C.dim,"right");if(!sl)return;const ok=sl.ok,tone=sl.color;
   if(S.v!=="coin"&&sl.full!==sl.tick){text(x,fitEll(x,sl.full,"ko24",146),6,6,"ko24",C.white);text(x,sl.tick,6,34,"f2",C.dim);}   // 한글 이름 크게, 코드 작게 (2.8.0)
-  else{const cf=fitBold(x,sl.tick,146,12);text(x,sl.tick,6,8,cf,C.white);fullName(x,sl,6,32,146,C.dim,S);}
+  else{const cf=fitBold(x,sl.tick,146,12);text(x,sl.tick,6,8,cf,C.white);if(!sl.tk)fullName(x,sl,6,32,146,C.dim,S);}
   if(S.show.price){const pr=ok?money(sl,S.v):"loading...",f=ok?fitBold(x,pr,146,24):"f2";text(x,pr,6,midY(f,74),f,ok?C.white:C.dim);}
   if(ok&&S.show.change){const p=pct(sl);text(x,p,6,98,"f2",tone);text(x,sl.diffText,6+measure(x,p,"f2")+8,98,"f2",tone);}
   if(S.show.spark)spark(x,6,122,146,66,seriesOf(sl,36),tone);
@@ -275,5 +277,5 @@ const L={
 function draw(canvas,layoutId,state){const px=canvas.width;const x=canvas.getContext("2d");x.setTransform(1,0,0,1,0,0);x.fillStyle=C.bg;x.fillRect(0,0,px,canvas.height);
   x.scale(px/240,canvas.height/240);const S=norm(state||{});try{(L[layoutId]||L.S01)(x,S);}catch(e){text(x,"preview error",120,110,"f2",C.dim,"center");}
   if(S.show.id&&S.id)text(x,S.id,238,1,"f1",C.dim,"right");}  // 오른쪽 위 기기 ID 배지 (펌웨어 Font1 6x8)
-return {draw,ids:Object.keys(L),onReady(cb){if(fontsReady)cb();else readyCbs.push(cb);},get fontsReady(){return fontsReady;}};
+return {draw,norm,ids:Object.keys(L),onReady(cb){if(fontsReady)cb();else readyCbs.push(cb);},get fontsReady(){return fontsReady;}};
 })();
