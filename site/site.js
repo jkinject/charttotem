@@ -1,6 +1,7 @@
 // 차트토템 소개 사이트 동작. 원본: tools/site/site.js → build.py 가 launcher/site/site.js 로 복사한다.
 // 움직임은 framer-motion 의 브라우저용 번들(site/vendor/motion.js → window.Motion)로 건다.
 // 이 파일이나 번들이 안 불려도 페이지는 전부 보이고, 구매 버튼·화면 고르기 말고는 잃는 게 없다(가격 전환은 head 의 한 줄 스크립트).
+//  0) 방문 통계(GA4 태그가 있을 때만): buy_click · section_view · demo_pick · demo_color
 //  1) 모바일 아래 고정 구매 바: 히어로의 구매 버튼이 위로 지나가면 보이고, 마지막 구매 띠가 보이면 숨긴다
 //  2) 화면 데모: 화면 15개 중 하나를 누르면 큰 기기 화면이 바뀐다. 본체 색도 바꾼다. 건드리기 전까지는 저절로 넘어간다
 //  3) 움직임: 스크롤하면 떠오르기, 숫자 올라가기 (「움직임 줄이기」 설정이면 전부 끈다. 첫 화면 등장은 site.css 의 CSS 애니메이션)
@@ -11,6 +12,28 @@
   var IO = "IntersectionObserver" in window;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  // ---------- 0) 방문 통계(GA4): 태그가 있을 때만. 어느 버튼을 눌렀는지, 어디까지 읽었는지, 데모를 만졌는지
+  var product = (document.body.className.match(/p-(stock|coin)/) || [])[1] || "";
+  var track = function (name, params) {
+    if (typeof window.gtag !== "function") return;
+    params = params || {};
+    params.product = product;
+    window.gtag("event", name, params);
+  };
+  $$("a[data-buy]").forEach(function (a) {
+    a.addEventListener("click", function () { track("buy_click", { button: a.getAttribute("data-buy") }); });
+  });
+  if (IO) {
+    var seen = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        seen.unobserve(e.target);
+        track("section_view", { section: e.target.id });
+      });
+    }, { threshold: 0.25 });
+    $$("main section[id]").forEach(function (s) { seen.observe(s); });
+  }
 
   // ---------- 1) 고정 구매 바
   var bar = $("#buybar"), heroBuy = $("#heroBuy"), fin = $("#final");
@@ -61,11 +84,12 @@
     // 사용자가 직접 고른 뒤에만 화면 이름을 읽어 준다(저절로 넘어갈 때마다 스크린리더가 읽으면 시끄럽다)
     var stop = function () { touched = true; if (timer) { clearInterval(timer); timer = null; } if (nowEl) nowEl.setAttribute("aria-live", "polite"); };
     picks.forEach(function (b, i) {
-      b.addEventListener("click", function () { stop(); show(i, true); });
+      b.addEventListener("click", function () { stop(); show(i, true); track("demo_pick", { screen: b.getAttribute("data-screen") }); });
     });
     swatches.forEach(function (sw) {
       sw.addEventListener("click", function () {
         stop();
+        track("demo_color", { color: sw.getAttribute("data-color") });
         demo.setAttribute("data-color", sw.getAttribute("data-color"));
         swatches.forEach(function (x) { x.setAttribute("aria-pressed", x === sw ? "true" : "false"); });
         if (canAnimate) M.animate(cube, { scale: [0.93, 1.03, 1] }, { duration: 0.35, ease: "easeOut" });
