@@ -32,8 +32,11 @@
   var ver = function () { try { return typeof APP_VERSION === "string" ? APP_VERSION : ""; } catch (e) { return ""; } };
   gtag("js", new Date());
   gtag("config", ID, { send_page_view: false, page_location: clean(location.href), page_referrer: ref, page_title: title() });
+  var last = null;
   function view() {
     var loc = clean(location.href), t = title();
+    if (loc === last) return;   // 같은 화면을 연달아 두 번 세지 않는다(QR 로 들어오면 앱이 곧바로 해시를 바꿔 두 번 불린다)
+    last = loc;
     gtag("set", { page_location: loc, page_referrer: ref, page_title: t });
     gtag("event", "page_view", { page_location: loc, page_referrer: ref, page_title: t, devices: devices(), app_version: ver() });
   }
