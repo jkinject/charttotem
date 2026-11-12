@@ -57,7 +57,9 @@
         if (byUser) M.animate(cube, { rotate: [0, -2.5, 2, 0] }, { duration: 0.4, ease: "easeOut" });
       }
     };
-    var stop = function () { touched = true; if (timer) { clearInterval(timer); timer = null; } };
+    var nowEl = $("#demoNow");
+    // 사용자가 직접 고른 뒤에만 화면 이름을 읽어 준다(저절로 넘어갈 때마다 스크린리더가 읽으면 시끄럽다)
+    var stop = function () { touched = true; if (timer) { clearInterval(timer); timer = null; } if (nowEl) nowEl.setAttribute("aria-live", "polite"); };
     picks.forEach(function (b, i) {
       b.addEventListener("click", function () { stop(); show(i, true); });
     });
@@ -71,13 +73,18 @@
     });
     // 건드리기 전까지, 화면에 보이는 동안만 저절로 넘긴다
     if (IO && !reduce) {
+      var visible = false, held = false;   // held: 마우스·키보드가 데모 위에 있는 동안은 멈춘다
+      var sync = function () {
+        var run = visible && !held && !touched;
+        if (run && !timer) timer = setInterval(function () { show((current + 1) % picks.length, false); }, 2200);
+        else if (!run && timer) { clearInterval(timer); timer = null; }
+      };
       new IntersectionObserver(function (es) {
-        es.forEach(function (e) {
-          if (touched) return;
-          if (e.isIntersecting && !timer) timer = setInterval(function () { show((current + 1) % picks.length, false); }, 2200);
-          else if (!e.isIntersecting && timer) { clearInterval(timer); timer = null; }
-        });
+        es.forEach(function (e) { visible = e.isIntersecting; });
+        sync();
       }, { threshold: 0.3 }).observe(cube);
+      ["pointerenter", "focusin"].forEach(function (ev) { demo.addEventListener(ev, function () { held = true; sync(); }); });
+      ["pointerleave", "focusout"].forEach(function (ev) { demo.addEventListener(ev, function () { held = false; sync(); }); });
     }
   }
 

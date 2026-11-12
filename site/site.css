@@ -87,6 +87,7 @@ figcaption::before{content:"↑ "}
 .proof{margin-top:14px;font-size:14px;font-weight:700}
 .proof a{display:inline-flex;align-items:center;gap:8px;min-height:44px;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
 .proof .stars{color:var(--ink);font-size:14px}
+.proof small{font-size:12px;font-weight:500;color:var(--ink-2)}
 /* 전광판처럼 흐르는 띠 */
 .tape{display:flex;margin-top:40px;overflow:hidden;background:var(--ink);color:#fff;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);font:600 14px/1 var(--sans);white-space:nowrap}
 .tape ul{display:flex;flex:none;animation:tape 36s linear infinite}
@@ -94,6 +95,7 @@ figcaption::before{content:"↑ "}
 .tape i{font-style:normal;font-size:11px}
 .tape .up{color:#ff6b5e}
 .tape .dn{color:#6ea8ff}
+.tape:hover ul{animation-play-state:paused}
 @keyframes tape{to{transform:translateX(-100%)}}
 .stats{display:grid;grid-template-columns:repeat(2,1fr)}
 .stats>div{padding:20px 0 18px;border-bottom:2px solid var(--ink)}
