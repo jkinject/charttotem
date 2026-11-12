@@ -1,0 +1,290 @@
+/* 차트토템 소개 사이트. 원본: tools/site/site.css → build.py 가 launcher/site/site.css 로 복사한다.
+   방향: 종이색 바탕 + 먹색 글자 + 실제 사진. 장식 그라데이션·그림자 카드·이모지 없음.
+   숫자는 시세판처럼 고정폭, 오름은 빨강·내림은 파랑(한국 시장 관례)만 포인트로 쓴다. */
+:root{
+  --paper:#f4f2ed; --paper-2:#eae7df; --card:#fbfaf7;
+  --ink:#15161a; --ink-2:#4b4e56; --ink-3:#85878e;
+  --line:#d7d3c8; --line-2:#c4bfb2;
+  --up:#d9453b; --down:#2c6bd8; --mint:#23805f;
+  --night:#0f1012; --night-2:#1b1c20; --night-line:#2c2d33;
+  --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Roboto Mono",monospace;
+  --gut:20px; --max:1180px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.7 var(--sans);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
+img{display:block;max-width:100%;height:auto}
+picture{display:block}
+a{color:inherit}
+h1,h2,h3,p,ul,ol,dl,dd,figure,blockquote{margin:0;padding:0}
+ul,ol{list-style:none}
+s{text-decoration-thickness:1px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gut)}
+:focus-visible{outline:2px solid var(--down);outline-offset:3px;border-radius:2px}
+.skip{position:absolute;left:8px;top:-60px;z-index:30;background:var(--ink);color:var(--paper);padding:10px 14px;border-radius:4px}
+.skip:focus{top:8px}
+html[data-sale="on"] .list-only,html[data-sale="off"] .sale-only{display:none}
+
+/* ---------- 버튼·링크 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;padding:0 24px;background:var(--ink);color:var(--paper);font-weight:700;font-size:16px;line-height:1.2;letter-spacing:-.01em;text-decoration:none;border-radius:4px;transition:background .15s}
+.btn:hover{background:#000}
+.btn .arr{transition:transform .2s}
+.btn:hover .arr,.lnk:hover .arr{transform:translateX(3px)}
+.btn.sm{min-height:38px;padding:0 14px;font-size:14px}
+.btn.inv{background:var(--paper);color:var(--ink)}
+.btn.inv:hover{background:#fff}
+.lnk{display:inline-flex;align-items:center;gap:6px;font-weight:700;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px}
+.lnk .arr{transition:transform .2s}
+
+/* ---------- 머리말 */
+.top{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:14px;height:56px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;letter-spacing:-.02em;text-decoration:none;margin-right:auto}
+.brand img{border-radius:6px}
+.nav{display:flex;gap:14px;font-size:14px}
+.nav a{text-decoration:none;color:var(--ink-2);padding:6px 0;border-bottom:2px solid transparent}
+.nav a[aria-current]{color:var(--ink);font-weight:700;border-color:var(--ink)}
+.nav a:hover{color:var(--ink)}
+.top-buy{display:none}
+
+/* ---------- 히어로 */
+.hero{padding:28px 0 0}
+.hero-in{display:grid;gap:24px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.06em;color:var(--ink-3)}
+h1{margin-top:14px;font-size:clamp(56px,17vw,124px);line-height:.98;letter-spacing:-.055em;font-weight:800}
+.lead{margin-top:20px;font-size:18px;line-height:1.6;color:var(--ink-2);max-width:21em}
+.hero-fig img{width:100%;aspect-ratio:4/3;object-fit:cover}
+figcaption{margin-top:10px;font:400 12px/1.5 var(--mono);color:var(--ink-3)}
+figcaption::before{content:"↑ "}
+.buybox{margin-top:26px}
+.price .amt{display:block;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.03em}
+.price .amt b{font-family:var(--mono);font-weight:700;letter-spacing:-.04em;margin-right:2px}
+.price.big .amt{font-size:42px}
+.price .quote{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:13px;color:var(--ink-3)}
+.price .dn{color:var(--down);font-weight:600}
+.price .till{color:var(--ink);font-weight:600}
+.buybox .btn{margin-top:18px;width:100%}
+.ship{margin-top:10px;font-size:13px;color:var(--ink-2)}
+.ship span{color:var(--ink-3)}
+.strip{display:flex;flex-wrap:wrap;gap:6px 0;margin-top:36px;padding-top:14px;padding-bottom:14px;border-top:1px solid var(--line);font:500 12px/1.6 var(--mono);color:var(--ink-2)}
+.strip li{display:flex;align-items:center}
+.strip li+li::before{content:"";width:3px;height:3px;border-radius:50%;background:var(--line-2);margin:0 10px}
+
+/* ---------- 섹션 뼈대 */
+.sec{padding:64px 0;border-top:1px solid var(--line)}
+.sec.tint{background:var(--paper-2);border-top-color:transparent}
+.sec.tint+.sec{border-top-color:transparent}
+.rail{display:flex;align-items:baseline;gap:10px;margin-bottom:22px;font-size:13px;color:var(--ink-2)}
+.rail .idx{color:var(--ink-3);font-size:12px}
+.rail .lbl{font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(30px,8.4vw,54px);line-height:1.16;letter-spacing:-.045em;font-weight:800}
+h2.small{font-size:clamp(26px,6vw,36px)}
+h3{font-size:18px;line-height:1.4;letter-spacing:-.02em}
+.txt{margin-top:22px;color:var(--ink-2);font-size:17px;max-width:30em}
+.txt p+p{margin-top:14px}
+.sub{margin-top:18px;color:var(--ink-2);font-size:17px;max-width:32em}
+.note,.fine{margin-top:18px;font-size:13px;line-height:1.6;color:var(--ink-3)}
+.after{margin-top:28px;font-size:15px;color:var(--ink-2)}
+.after .lnk{color:var(--ink);margin-left:6px}
+figure img{width:100%}
+
+/* ---------- 01 만든 이유 */
+.cols{display:grid;gap:28px}
+.facts{margin-top:4px;border-top:1px solid var(--ink)}
+.facts>div{display:grid;grid-template-columns:8.2em 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.facts dt{font-weight:800;letter-spacing:-.02em}
+.facts dd{color:var(--ink-2);font-size:15px}
+.pair{display:grid;gap:28px;margin-top:40px}
+
+/* ---------- 02 화면 (어두운 띠) */
+.sec.dark{background:var(--night);color:#eeece6;border-top:0}
+.sec.dark+.sec{border-top:0}
+.dark .rail,.dark .sub,.dark .after{color:#a3a39e}
+.dark .rail .idx{color:#6f6f6b}
+.dark .rail .lbl,.dark .after .lnk{color:#eeece6}
+.sec-grid>.wide{margin-top:8px}
+.grp{display:flex;align-items:baseline;gap:8px;margin:34px 0 12px;font-size:14px;font-weight:700;color:#eeece6}
+.grp .num{font-size:12px;color:#6f6f6b;font-weight:400}
+.screens{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;margin:0 calc(var(--gut) * -1);padding:0 var(--gut) 10px;scrollbar-width:thin;scrollbar-color:var(--night-line) transparent}
+.screens li{flex:none;width:128px;scroll-snap-align:start}
+.screens img{width:100%;aspect-ratio:1;border-radius:9px;border:1px solid var(--night-line);image-rendering:auto}
+.screens .nm{display:block;margin-top:9px;font:600 11px/1.3 var(--mono);letter-spacing:.03em;color:#eeece6}
+.screens .ds{display:block;margin-top:2px;font-size:12px;line-height:1.4;color:#8b8b86}
+
+/* ---------- 좌우 나눔 */
+.split{display:grid;gap:28px}
+.split h2+.txt{margin-top:20px}
+
+/* ---------- 04 설정 앱 */
+.appgrid{display:grid;gap:30px}
+.shots{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;margin:0 calc(var(--gut) * -1);padding:0 var(--gut) 8px;scrollbar-width:thin}
+.shots figure{flex:none;width:min(58vw,220px);scroll-snap-align:start}
+.shots img{border-radius:14px;border:1px solid var(--line-2);background:#fff}
+.shots figcaption::before{content:""}
+
+/* ---------- 06 크기와 색 */
+.dims{display:grid;grid-template-columns:repeat(4,1fr);margin-top:26px;border-top:1px solid var(--ink)}
+.dims>div{padding:14px 0 0}
+.dims dt{font-size:12px;color:var(--ink-3)}
+.dims dd{font-size:13px;color:var(--ink-2)}
+.dims b{font-size:26px;font-weight:600;color:var(--ink);margin-right:2px}
+.colors{display:grid;gap:22px;margin-top:56px;padding-top:28px;border-top:1px solid var(--line)}
+.colors h3{font-size:22px;letter-spacing:-.03em}
+.colors p{margin-top:8px;color:var(--ink-2)}
+
+/* ---------- 07 가격 */
+.cmp{width:100%;margin-top:30px;border-collapse:collapse;border-top:1px solid var(--ink)}
+.cmp tr{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:16px 0;border-bottom:1px solid var(--line)}
+.cmp th{grid-column:1;text-align:left;font-weight:700;font-size:16px;letter-spacing:-.02em}
+.cmp .why{grid-column:1;color:var(--ink-3);font-size:14px;padding:0}
+.cmp .amt{grid-column:2;grid-row:1/3;align-self:center;text-align:right;font-size:17px;color:var(--ink-3);padding:0;white-space:nowrap}
+.cmp .ours{background:var(--ink);color:var(--paper);padding:20px 16px;margin:0 -16px;border-bottom:0;border-radius:4px}
+.cmp .ours .why{color:#b9b8b2}
+.cmp .ours .amt{color:var(--paper);font-size:24px;font-weight:600}
+.buyrow{margin-top:26px;display:grid;gap:16px}
+.buyrow .fine{margin:0}
+
+/* ---------- 08 후기 */
+.reviews{display:grid;gap:0;margin-top:30px;border-top:1px solid var(--ink)}
+.reviews li{padding:24px 0;border-bottom:1px solid var(--line-2)}
+.reviews blockquote p{font-size:17px;line-height:1.75;letter-spacing:-.01em}
+.reviews.n1 li{max-width:42em}
+.reviews .by{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:14px;font-size:13px;color:var(--ink-3)}
+.stars{color:var(--ink);letter-spacing:.08em;font-size:12px}
+.by time{font-family:var(--mono);font-size:12px}
+
+/* ---------- 09 세팅 */
+.steps{display:grid;gap:0;margin-top:30px;border-top:1px solid var(--ink)}
+.steps li{display:grid;grid-template-columns:96px 1fr;gap:18px;padding:20px 0;border-bottom:1px solid var(--line);align-items:center}
+.steps img{border-radius:9px;background:var(--night)}
+.steps .no{display:block;font-size:12px;color:var(--ink-3)}
+.steps h3{margin-top:2px}
+.steps p{margin-top:4px;font-size:15px;color:var(--ink-2)}
+
+/* ---------- 10 제품 정보 · 11 FAQ · 12 확인 */
+.spec{margin-top:24px;border-top:1px solid var(--ink)}
+.spec>div{display:grid;grid-template-columns:7.2em 1fr;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);font-size:15px}
+.spec dt{color:var(--ink-3)}
+.faq{margin-top:24px;border-top:1px solid var(--ink)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{position:relative;display:block;padding:18px 34px 18px 0;font-weight:700;font-size:17px;letter-spacing:-.02em;cursor:pointer;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";position:absolute;right:4px;top:50%;width:11px;height:11px;margin-top:-8px;border-right:1.6px solid var(--ink-3);border-bottom:1.6px solid var(--ink-3);transform:rotate(45deg);transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(-135deg);margin-top:-2px}
+.faq details p{padding:0 0 20px;color:var(--ink-2);max-width:40em}
+.checks{margin-top:22px;border-top:1px solid var(--ink)}
+.checks li{position:relative;padding:14px 0 14px 22px;border-bottom:1px solid var(--line);color:var(--ink-2);font-size:15px}
+.checks li::before{content:"";position:absolute;left:2px;top:23px;width:7px;height:7px;background:var(--up);border-radius:50%}
+.checks b{color:var(--ink);font-weight:700}
+
+/* ---------- 마지막 구매 띠 */
+.final{background:var(--night);color:#eeece6;padding:72px 0 0}
+.final-in{display:grid;gap:8px}
+.final h2{font-size:clamp(44px,13vw,96px);line-height:1.02;letter-spacing:-.055em}
+.final .price .quote,.final .ship,.final .ship span{color:#a3a39e}
+.final .price .till{color:#eeece6}
+.final .price .dn{color:#7fa8f5}
+.final .fine{color:#8b8b86;max-width:28em}
+.cross{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:64px;padding-top:20px;padding-bottom:22px;border-top:1px solid var(--night-line);font-size:15px;color:#a3a39e}
+.cross .lnk{color:#eeece6}
+
+/* ---------- 꼬리말 */
+.foot{background:var(--night);color:#8b8b86;font-size:13px;padding:8px 0 110px;border-top:1px solid var(--night-line)}
+.foot-in{display:grid;gap:18px;padding-top:26px}
+.f-brand b{color:#eeece6;font-size:16px;font-weight:800;margin-right:8px}
+.f-brand span{font:500 11px var(--mono);letter-spacing:.08em}
+.f-links{display:flex;flex-wrap:wrap;gap:8px 18px}
+.f-links a,.f-info a{color:#c9c8c2;text-decoration:none}
+.f-links a:hover,.f-info a:hover{color:#fff;text-decoration:underline}
+.f-fine{font-size:12px;line-height:1.6;color:#6f6f6b;max-width:46em}
+
+/* ---------- 모바일 아래 고정 구매 바 */
+.buybar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;align-items:center;gap:14px;padding:10px var(--gut) calc(10px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line-2);transform:translateY(105%);transition:transform .25s ease;visibility:hidden}
+.buybar.on{transform:none;visibility:visible}
+.buybar p{flex:1;line-height:1.25;font-size:13px;color:var(--ink-3)}
+.buybar b{font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.04em;margin-right:6px}
+.buybar small{display:block;font-size:12px;margin-top:2px}
+.buybar .btn{min-height:48px;padding:0 26px}
+
+/* ====================== 태블릿 이상 ====================== */
+@media (min-width:640px){
+  :root{--gut:32px}
+  .buybox .btn{width:auto}
+  .pair{grid-template-columns:1fr 1fr}
+  .screens li{width:150px}
+  .reviews.n3{grid-template-columns:1fr 1fr;column-gap:40px}
+  .reviews.n3 li:nth-child(2){grid-row:1/3;grid-column:2}
+  .steps{grid-template-columns:repeat(3,1fr);column-gap:28px;border-top:0}
+  .steps li{grid-template-columns:1fr;align-items:start;border-bottom:0;border-top:1px solid var(--ink);padding-top:20px}
+  .steps img{width:150px}
+  .spec{display:grid;grid-template-columns:1fr 1fr;column-gap:40px}
+  .cmp tr{grid-template-columns:1.1fr 1.4fr auto;align-items:baseline}
+  .cmp .why{grid-column:2}
+  .cmp .amt{grid-column:3;grid-row:1}
+  .buyrow{grid-template-columns:1fr auto;align-items:center}
+  .colors{grid-template-columns:1fr 1.6fr;align-items:end}
+}
+
+/* ====================== 데스크톱 ====================== */
+@media (min-width:900px){
+  :root{--gut:40px}
+  body{font-size:17px}
+  .top-in{height:64px;gap:28px}
+  .nav{gap:26px;font-size:15px}
+  .top-buy{display:inline-flex}
+  .buybar{display:none}
+  .foot{padding-bottom:48px}
+
+  .hero{padding-top:56px}
+  .hero-in{grid-template-columns:5fr 7fr;gap:56px;align-items:end}
+  .hero-txt{padding-bottom:6px}
+  h1{font-size:clamp(84px,9.2vw,132px)}
+  .lead{font-size:20px}
+  .buybox{margin-top:34px}
+  .strip{margin-top:56px;font-size:13px}
+
+  .sec{padding:112px 0}
+  .sec-grid{display:grid;grid-template-columns:150px 1fr;column-gap:40px}
+  .rail{position:sticky;top:96px;align-self:start;flex-direction:column;gap:6px;margin:8px 0 0}
+  .sec-grid>.wide{grid-column:1/-1;margin-top:20px}
+  .txt{font-size:18px}
+  .cols{grid-template-columns:1.1fr 1fr;gap:64px;margin-top:8px;align-items:start}
+  .cols .txt{margin-top:28px}
+  .facts{margin-top:34px}
+  .pair{grid-template-columns:7fr 5fr;gap:40px;margin-top:72px;align-items:start}
+  .pair figure:nth-child(2){margin-top:96px}
+
+  .screens{overflow:visible;margin:0;padding:0;gap:14px}
+  .screens li{flex:1 1 0;width:auto;min-width:0}
+  .grp{margin-top:44px}
+
+  .split{grid-template-columns:1.15fr 1fr;gap:64px;align-items:center}
+  .split.rev>figure{order:2}
+  .appgrid{grid-template-columns:1fr 1.25fr;gap:56px;align-items:start}
+  .shots{overflow:visible;margin:0;padding:0;gap:18px}
+  .shots figure{flex:1 1 0;width:auto;min-width:0}
+  .shots figure:nth-child(2){margin-top:44px}
+  .shots figure:nth-child(3){margin-top:88px}
+
+  .colors{margin-top:96px;padding-top:40px}
+  .cmp{margin-top:44px}
+  .cmp tr{padding:22px 0}
+  .cmp th{font-size:19px}
+  .cmp .why{font-size:16px}
+  .cmp .amt{font-size:20px}
+  .cmp .ours{padding:26px 24px;margin:0 -24px}
+  .cmp .ours .amt{font-size:30px}
+  .reviews blockquote p{font-size:18px}
+  .faq summary{font-size:19px;padding:22px 40px 22px 0}
+
+  .final{padding-top:128px}
+  .final-in{grid-template-columns:1.2fr 1fr;align-items:end;gap:56px}
+  .cross{margin-top:112px}
+  .foot-in{grid-template-columns:1fr 2fr;gap:18px 56px}
+  .f-fine{grid-column:2}
+  .f-info{grid-column:1;grid-row:2}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}

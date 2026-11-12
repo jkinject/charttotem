@@ -372,6 +372,7 @@ body.cloud .local-only{display:none !important}
 .page.home .band{display:none}
 .page.home .caption{padding-top:16px}
 .hero-empty.card{padding:24px 20px 26px}
+.hero-empty .shoplink{display:block;margin-top:16px;padding:6px 0;font-size:13px;color:var(--mut);text-underline-offset:3px}
 .hero-empty .illus-img{width:min(280px,76vw);height:auto;display:block;margin:0 auto 12px}
 .devhead .thumb img{width:100%;height:100%;display:block;object-fit:contain}
 .devhead .thumb img+svg{display:none}

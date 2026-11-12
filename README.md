@@ -145,3 +145,11 @@ GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인.
 ## 0.7.44
 
 - 설정 페이지 오프라인 배너(「기기와 연결이 끊겼어요」)가 좁은 폰에서 제목·「다시 시도」가 세로로 쪼개지던 문제: 1줄은 아이콘·제목·버튼, 부제는 아래 줄 전체 폭(`.offline` flex-wrap, `.sub{order:3;flex-basis:100%}`). 소스는 `firmware/tools/web/settings.css`.
+
+## 0.9.9 — 제품 소개 사이트 (검색 유입 → 네이버 스토어 구매)
+
+- 새 주소 `/stock-clock/`(주식시계), `/coin-clock/`(코인시계). 검색으로 들어온 사람이 읽고 네이버 스마트스토어로 넘어가 사는 페이지다. 루트(`/`)는 그대로 설정 앱.
+- 이 폴더의 `stock-clock/`, `coin-clock/`, `site/site.css`, `site/site.js`, `robots.txt`, `sitemap.xml` 은 **생성물**이다. 손으로 고치지 말고 루트 저장소의 `tools/site/`(문구·가격은 `content.py`)를 고친 뒤 `python3 tools/site/build.py`. 사진(`site/img/`)은 `tools/site/images.py` 가 만든다. 자세한 건 루트 `tools/site/README.md`.
+- 구매 링크는 전부 스토어 상품 주소 + 네이버 사용자정의채널 파라미터(`nt_source=charttotem_site&nt_medium=referral&nt_detail=<버튼 위치>&nt_keyword=<stock|coin>`). 통계는 스마트스토어센터 → 통계 → 마케팅분석 → 사용자정의채널.
+- 앱 첫 화면의 「아직 연결된 기기가 없어요」 카드에 「아직 차트토템이 없다면 · 제품 보기」 링크(기기가 있으면 카드째 안 보인다). `title`·`description` 을 검색 결과용으로 고치고 canonical 추가. 세팅 가이드 꼬리말에 「제품 소개」 링크.
+- 서비스워커는 소개 사이트 경로와 `robots.txt`·`sitemap.xml` 을 가로채지 않는다(앱 셸이 아니다).
