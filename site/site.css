@@ -3,9 +3,9 @@
    숫자는 시세판처럼 고정폭, 오름은 빨강·내림은 파랑(한국 시장 관례)만 포인트로 쓴다. */
 :root{
   --paper:#f4f2ed; --paper-2:#eae7df; --card:#fbfaf7;
-  --ink:#15161a; --ink-2:#4b4e56; --ink-3:#85878e;
+  --ink:#15161a; --ink-2:#4b4e56; --ink-3:#64666d;
   --line:#d7d3c8; --line-2:#c4bfb2;
-  --up:#d9453b; --down:#2c6bd8; --mint:#23805f;
+  --up:#d9453b; --down:#2560c8; --mint:#23805f;
   --night:#0f1012; --night-2:#1b1c20; --night-line:#2c2d33;
   --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Roboto Mono",monospace;
@@ -103,11 +103,11 @@ figure img{width:100%}
 .sec.dark{background:var(--night);color:#eeece6;border-top:0}
 .sec.dark+.sec{border-top:0}
 .dark .rail,.dark .sub,.dark .after{color:#a3a39e}
-.dark .rail .idx{color:#6f6f6b}
+.dark .rail .idx{color:#8f8f8a}
 .dark .rail .lbl,.dark .after .lnk{color:#eeece6}
 .sec-grid>.wide{margin-top:8px}
 .grp{display:flex;align-items:baseline;gap:8px;margin:34px 0 12px;font-size:14px;font-weight:700;color:#eeece6}
-.grp .num{font-size:12px;color:#6f6f6b;font-weight:400}
+.grp .num{font-size:12px;color:#8f8f8a;font-weight:400}
 .screens{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;margin:0 calc(var(--gut) * -1);padding:0 var(--gut) 10px;scrollbar-width:thin;scrollbar-color:var(--night-line) transparent}
 .screens li{flex:none;width:128px;scroll-snap-align:start}
 .screens img{width:100%;aspect-ratio:1;border-radius:9px;border:1px solid var(--night-line);image-rendering:auto}
@@ -198,8 +198,9 @@ figure img{width:100%}
 .f-brand span{font:500 11px var(--mono);letter-spacing:.08em}
 .f-links{display:flex;flex-wrap:wrap;gap:8px 18px}
 .f-links a,.f-info a{color:#c9c8c2;text-decoration:none}
+.f-info a{text-decoration:underline;text-underline-offset:3px}
 .f-links a:hover,.f-info a:hover{color:#fff;text-decoration:underline}
-.f-fine{font-size:12px;line-height:1.6;color:#6f6f6b;max-width:46em}
+.f-fine{font-size:12px;line-height:1.6;color:#8f8f8a;max-width:46em}
 
 /* ---------- 모바일 아래 고정 구매 바 */
 .buybar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;align-items:center;gap:14px;padding:10px var(--gut) calc(10px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line-2);transform:translateY(105%);transition:transform .25s ease;visibility:hidden}
