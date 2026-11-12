@@ -153,3 +153,4 @@ GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인.
 - 구매 링크는 전부 스토어 상품 주소 + 네이버 사용자정의채널 파라미터(`nt_source=charttotem_site&nt_medium=referral&nt_detail=<버튼 위치>&nt_keyword=<stock|coin>`). 통계는 스마트스토어센터 → 통계 → 마케팅분석 → 사용자정의채널.
 - 앱 첫 화면의 「아직 연결된 기기가 없어요」 카드에 「아직 차트토템이 없다면 · 제품 보기」 링크(기기가 있으면 카드째 안 보인다). `title`·`description` 을 검색 결과용으로 고치고 canonical 추가. 세팅 가이드 꼬리말에 「제품 소개」 링크.
 - 서비스워커는 소개 사이트 경로와 `robots.txt`·`sitemap.xml` 을 가로채지 않는다(앱 셸이 아니다).
+- 같은 날 디자인을 두 번 고쳤다(사용자 「칙칙하다」 → 밝은 판 → ui-ux-pro-max·framer-motion 을 써서 블록 스타일 + 눌러 보는 화면 데모 + 움직임). `site/vendor/motion.js` 는 framer-motion 의 브라우저용 번들이다. 후기에는 구매자가 리뷰에 올린 실제 사진을 붙였다.
