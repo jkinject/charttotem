@@ -162,3 +162,10 @@ GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인.
 - 운영 주소(charttotem.lalatap.kr)에서만 동작한다. 개발 주소·로컬·기기 IP 에서는 아무것도 하지 않는다. 기기가 직접 서빙하는 설정 페이지에는 들어가지 않는다(`gen_launcher.py` 가 런처 쪽 머리에만 끼운다).
 - 개인정보처리방침(설정 → 개인정보처리방침, 소스 `firmware/tools/web/settings_body.html`): 「쿠키·분석 도구·광고 스크립트가 없어요」 → 방문 통계 항목 추가, 최종 수정 2026-11-12. 세팅 가이드에는 통계를 넣지 않았다.
 - 테스트 `tests/launcher_ga.test.mjs`.
+
+## 0.9.11 — 문의 창구 (네이버 톡톡 · 이메일)
+
+- 사이트에 문의할 곳이 전화번호뿐이라 네이버 톡톡과 이메일을 넣었다(사용자 요청). 톡톡은 스토어 계정 `https://talk.naver.com/ct/wh9xfth`, 이메일은 `support@lalatap.kr`. `talk.naver.com/ct/wcbgqj` 는 네이버 「판매자 고객센터」라 쓰면 안 된다.
+- 세 곳이 같은 주소를 쓴다: 앱 첫 화면의 「의견 건의하기」 아래 메뉴 두 줄(「네이버 톡톡 문의」, 「이메일 문의」 — 기기가 있든 없든 보인다, 아이콘 `i-mail` 추가), 소개 페이지 꼬리말(톡톡 · 이메일 · 전화 순, 구조화 데이터 `contactPoint.email`, 소스 `tools/site/content.py` 의 `CS_TALK`·`CS_EMAIL`), 세팅 가이드 꼬리말(소스 `store/세팅가이드/build_web.py`, 떠 있는 「문의하기」 버튼은 그대로 톡톡).
+- 테스트 `tests/site.test.mjs`(세 곳의 주소·새 창·이메일 글자 표시, 첫 화면 메뉴가 숨는 카드 밖에 있는지).
+
