@@ -168,4 +168,5 @@ GitHub Pages 로 호스팅: https://charttotem.lalatap.kr/ (커스텀 도메인.
 - 사이트에 문의할 곳이 전화번호뿐이라 네이버 톡톡과 이메일을 넣었다(사용자 요청). 톡톡은 스토어 계정 `https://talk.naver.com/ct/wh9xfth`, 이메일은 `support@lalatap.kr`. `talk.naver.com/ct/wcbgqj` 는 네이버 「판매자 고객센터」라 쓰면 안 된다.
 - 세 곳이 같은 주소를 쓴다: 앱 첫 화면의 「의견 건의하기」 아래 메뉴 두 줄(「네이버 톡톡 문의」, 「이메일 문의」 — 기기가 있든 없든 보인다, 아이콘 `i-mail` 추가), 소개 페이지 꼬리말(톡톡 · 이메일 · 전화 순, 구조화 데이터 `contactPoint.email`, 소스 `tools/site/content.py` 의 `CS_TALK`·`CS_EMAIL`), 세팅 가이드 꼬리말(소스 `store/세팅가이드/build_web.py`, 떠 있는 「문의하기」 버튼은 그대로 톡톡).
 - 테스트 `tests/site.test.mjs`(세 곳의 주소·새 창·이메일 글자 표시, 첫 화면 메뉴가 숨는 카드 밖에 있는지).
+- 같은 날 개인정보처리방침의 「문의」도 「앱의 저장소(GitHub)」에서 이메일·네이버 톡톡으로 바꿨다(소스 `firmware/tools/web/settings_body.html`, 최종 수정 2026-11-13). 방침 안 링크는 밑줄(`.doc a`). 앱 버전은 올리지 않았다.
 
