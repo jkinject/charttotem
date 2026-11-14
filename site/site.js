@@ -2,6 +2,7 @@
 // 움직임은 framer-motion 의 브라우저용 번들(site/vendor/motion.js → window.Motion)로 건다.
 // 이 파일이나 번들이 안 불려도 페이지는 전부 보이고, 구매 버튼·화면 고르기 말고는 잃는 게 없다(가격 전환은 head 의 한 줄 스크립트).
 //  0) 방문 통계(GA4 태그가 있을 때만): buy_click · section_view · demo_pick · demo_color
+//  0b) 유입 경로 넘기기: 처음 들어온 경로(utm_source·referrer)를 구매 링크 nt_medium 에 넣어 스토어 통계에서 쓰레드·인스타를 나눈다
 //  1) 모바일 아래 고정 구매 바: 히어로의 구매 버튼이 위로 지나가면 보이고, 마지막 구매 띠가 보이면 숨긴다
 //  2) 화면 데모: 화면 15개 중 하나를 누르면 큰 기기 화면이 바뀐다. 본체 색도 바꾼다. 건드리기 전까지는 저절로 넘어간다
 //  3) 후기 사진 크게 보기: 사진을 누르면 화면 가득 뜬다. 뒤로 가기(안드로이드 뒤로 버튼 포함)는 페이지를 떠나지 않고 사진만 닫는다
@@ -24,6 +25,51 @@
   };
   $$("a[data-buy]").forEach(function (a) {
     a.addEventListener("click", function () { track("buy_click", { button: a.getAttribute("data-buy") }); });
+  });
+
+  // ---------- 0b) 어디서 왔는지 스토어까지 넘기기
+  // 스마트스토어 통계는 utm_* 을 읽지 않고 nt_* 만 잡는다. 그래서 쓰레드·인스타 프로필 → 소개 사이트 → 스토어로 가면
+  // 스토어에는 「소개 사이트」로만 남는다. 처음 들어온 경로를 이 탭에 기억해 두었다가 구매 링크의 nt_medium 에 넣는다
+  // (nt_source=charttotem_site 는 그대로 → 스토어 사용자정의채널에서 「소개 사이트」 아래 nt_medium 으로 나뉜다).
+  // 경로 = 주소의 utm_source(인스타가 자동으로 붙이는 ig 포함) → 없으면 들어오기 전 페이지(referrer)의 주소 → 둘 다 없으면 direct.
+  // 사이트 안에서 옮겨 다니거나(주식 ↔ 코인 페이지) 스토어에서 돌아오면 기억한 값을 그대로 쓴다. 스크립트가 안 돌면 nt_medium=referral 그대로
+  var ORIGIN_KEY = "ct_origin";
+  var ALIAS = { ig: "instagram", insta: "instagram", fb: "facebook", th: "threads", tw: "x", twitter: "x" };
+  var REF_HOSTS = [   // [호스트 끝, 이름]. 이름이 "" 이면 경로로 치지 않는다(우리 사이트·스토어에서 돌아온 경우)
+    ["threads.net", "threads"], ["threads.com", "threads"], ["instagram.com", "instagram"], ["facebook.com", "facebook"],
+    ["smartstore.naver.com", ""], ["brand.naver.com", ""], ["blog.naver.com", "naver_blog"], ["cafe.naver.com", "naver_cafe"],
+    ["naver.com", "naver"], ["google.com", "google"], ["google.co.kr", "google"], ["daum.net", "daum"],
+    ["youtube.com", "youtube"], ["t.co", "x"], ["x.com", "x"], ["twitter.com", "x"], ["kakao.com", "kakao"]
+  ];
+  var cleanOrigin = function (s) {
+    s = String(s || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 30);
+    return ALIAS[s] || s;
+  };
+  var refOrigin = function (ref) {
+    var h;
+    try { h = new URL(ref).hostname.toLowerCase(); } catch (e) { return ""; }
+    if (!h || h === location.hostname) return "";
+    for (var i = 0; i < REF_HOSTS.length; i++) {
+      var end = REF_HOSTS[i][0];
+      if (h === end || h.slice(-end.length - 1) === "." + end) return REF_HOSTS[i][1];
+    }
+    return "other";
+  };
+  var origin = "";
+  try { origin = cleanOrigin(new URL(location.href).searchParams.get("utm_source")); } catch (e) {}
+  if (!origin) origin = refOrigin(document.referrer);
+  var store = null;
+  try { store = window.sessionStorage; } catch (e) {}
+  try {
+    if (origin) { if (store) store.setItem(ORIGIN_KEY, origin); }
+    else origin = (store && store.getItem(ORIGIN_KEY)) || "";
+  } catch (e) {}
+  if (!origin) origin = "direct";
+  $$("a[data-buy]").forEach(function (a) {
+    try {
+      var u = new URL(a.href);
+      if (u.searchParams.get("nt_source")) { u.searchParams.set("nt_medium", origin); a.href = u.toString(); }
+    } catch (e) {}
   });
   if (IO) {
     var seen = new IntersectionObserver(function (es) {
