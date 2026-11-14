@@ -205,8 +205,28 @@ h3{font-size:18px;line-height:1.4;letter-spacing:-.02em}
 .reviews li{padding:24px 0;border-bottom:1px solid var(--line-2)}
 .reviews blockquote p{font-size:17px;line-height:1.75;letter-spacing:-.01em}
 .rphotos{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.rphotos a{position:relative;display:block;border-radius:10px;cursor:zoom-in;-webkit-tap-highlight-color:transparent}
 .rphotos picture{width:104px}
 .rphotos img{aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--line);border:2px solid var(--ink)}
+/* 후기 사진 크게 보기: site.js 가 만드는 <dialog>. 화면을 다 덮고, 사진 바깥 어두운 곳을 누르면 닫힌다 */
+html.zoom-open{overflow:hidden}   /* 뒤 페이지 스크롤을 잠근다(사라진 스크롤바 자리는 site.js 가 padding 으로 메운다) */
+.zoom{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;
+  padding:calc(64px + env(safe-area-inset-top)) 12px calc(72px + env(safe-area-inset-bottom));
+  background:rgba(15,16,18,.94);color:#fff;overflow:hidden;overscroll-behavior:contain}
+.zoom[open]{display:flex;align-items:center;justify-content:center;animation:zoom-in .18s ease-out}
+.zoom:focus{outline:none}
+.zoom::backdrop{background:rgba(15,16,18,.94)}
+.zoom-pic{width:min(100%,760px,100vh - 136px);width:min(100%,760px,100dvh - 136px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  flex:none;aspect-ratio:1;object-fit:contain;border-radius:12px;background:#24262b center/cover no-repeat}
+.zoom button{display:grid;place-items:center;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.zoom button:hover{background:rgba(255,255,255,.26)}
+.zoom button:focus-visible{outline:2px solid #fff;outline-offset:2px;border-radius:50%}
+.zoom svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.zoom-x{position:absolute;top:calc(8px + env(safe-area-inset-top));right:8px}
+.zoom-bar{position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:18px}
+.zoom-n{min-width:4.5em;text-align:center;font-family:var(--mono);font-size:14px;color:rgba(255,255,255,.82)}
+.zoom-bar[hidden]{display:none}
+@keyframes zoom-in{from{opacity:0}to{opacity:1}}
 .reviews.n1 li{max-width:42em}
 .reviews .by{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:14px;font-size:13px;color:var(--ink-3)}
 .stars{color:var(--red);letter-spacing:.08em;font-size:13px}
@@ -371,4 +391,4 @@ h3{font-size:18px;line-height:1.4;letter-spacing:-.02em}
 .sticker{animation:pop .5s cubic-bezier(.2,.9,.3,1.2) .55s both}
 /* site.js 가 화면 밖 요소에 잠깐 거는 상태(스크립트가 없으면 안 걸린다) */
 .rv-wait{opacity:0;transform:translateY(22px)}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}.tape ul{animation:none}.rv-wait{opacity:1;transform:none}.hero-txt>*,.hero-fig picture,.sticker{animation:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}.tape ul{animation:none}.rv-wait{opacity:1;transform:none}.hero-txt>*,.hero-fig picture,.sticker,.zoom[open]{animation:none}}
