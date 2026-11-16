@@ -3,3 +3,5 @@ Allow: /
 Disallow: /admin/
 
 Sitemap: https://charttotem.lalatap.kr/sitemap.xml
+
+#DaumWebMasterTool:3ca83b6cf2a23d8479a2524d41498f46b183305a3e458a203b001695af72ac02:CNSJIIGOISrSV2aL3hPlgQ==
